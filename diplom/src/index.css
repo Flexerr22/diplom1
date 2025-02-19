@@ -1,0 +1,15 @@
+:root {
+  --font: 'Nunito', serif;
+  --secondary-font: 'Montserrat', serif;
+  --primary-color: #C48CFF;
+  --border-color: #FD0E81;
+  background-color: #ECECFF;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body{
+  font-family: 'Montserrat', serif;
+}

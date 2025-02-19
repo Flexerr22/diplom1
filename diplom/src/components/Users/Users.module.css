@@ -1,0 +1,136 @@
+.black-background {
+    position: relative;
+    width: 100%;
+    
+    background: url('/public/main-photo.png') no-repeat center center / cover;
+}
+
+.black-background::before {
+    content: '';
+    position: absolute;
+    inset: 0; 
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.main {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    z-index: 1; 
+    padding: 70px 0 110px 0 ;
+}
+
+.text-block {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    gap: 77px;
+}
+
+.text-block p {
+    font-size: 48px;
+    font-weight: 300;
+    color: white;
+    line-height: 70px;
+}
+
+.text-block span {
+    color: var(--primary-color);
+}
+
+.fone {
+    position: absolute;
+    width: 301px;
+    height: 123px;
+    left: 0px;
+    top: 425px;
+    background: #CFAEF2;
+    opacity: 0.83;
+    filter: blur(50px);
+}
+
+.text-button {
+    position: relative;
+    z-index: 1;
+}
+
+.users-block{
+    display: flex;
+    gap: 50px;
+    align-items: end;
+}
+
+.user-info{
+    position: relative;
+    border: 2px solid #FD0E81;
+    box-shadow: 10px 6px 40px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 50px 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 46px 64px 45px;
+    gap: 46px;
+}
+
+.person{
+    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.person p{
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border-bottom: 3px solid white;
+    line-height: 40px;
+}
+
+.button{
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: none;
+    padding: 12px 21px;
+    color: white;
+    font-size: 14px;
+    font-family: var(--secondary-font);
+    cursor: pointer;
+}
+.number{
+    position: absolute;
+    color: var(--border-color);
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    right: 14px;
+    top: 0;
+}
+
+.user-info_new{
+    position: relative;
+    border: 2px solid #FD0E81;
+    box-shadow: 10px 6px 40px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 50px 20px 20px 20px;
+    width: 197px;
+    height: 221px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.person_new{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: auto 0;
+}
+
+.person_new p{
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border-bottom: 3px solid white;
+    line-height: 40px;
+}
