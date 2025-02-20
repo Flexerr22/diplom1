@@ -1,0 +1,28 @@
+.button_new{
+    border: none;
+    background: none;
+    color: var(--primary-color);
+    font-size: 16px;
+    font-family: var(--font);
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.button_new:focus{
+    box-shadow: none;
+}
+.input-search{
+    font-family: var(--secondary-font);
+    background-color: white;
+    border: none;
+    padding: 10px 10px;
+    border-radius: 15px;
+    font-size: 16px;
+    outline: none;
+    color: black;
+    border: 1px solid rgba(246, 246, 246, 1);
+    margin-bottom: 15px;
+}
+.main p{
+    font-weight: 600;
+}

@@ -1,0 +1,22 @@
+.main{
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 15px;
+    padding: 10px 0 33px 0;
+    margin-top: 40px;
+}
+
+.main b{
+    font-size: 22px;
+    font-weight: 750;
+    font-family: var(--font);
+}
+
+.checkbox{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-family: var();
+}

@@ -1,0 +1,28 @@
+/* checkbox.module.css */
+.checkbox {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #F1F1F1;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .checkbox:checked {
+    background: #AB56ED;
+  }
+  
+  .checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 3px; 
+    width: 5px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+  }

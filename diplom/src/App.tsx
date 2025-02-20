@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
 import Main from './pages/Main/Main'
-import UserPage from './pages/UserPage/UserPage'
+import ProjectPage from './pages/ProjectPage/ProjectPage'
 
 
 
@@ -21,7 +21,7 @@ function App() {
         <Route
           path="/user"
           element={
-             <UserPage />
+             <ProjectPage />
           }
         />
       </Routes>
