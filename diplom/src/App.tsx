@@ -1,33 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import './App.css'
-import Main from './pages/Main/Main'
-import ProjectPage from './pages/ProjectPage/ProjectPage'
-
-
-
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import Main from "./pages/Main/Main";
+import ProjectPage from "./pages/ProjectPage/ProjectPage";
 
 function App() {
-  
   return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/businessman" element={<ProjectPage />} />
 
-      <Router>
-        <Routes>
-        <Route
-          path="/"
-          element={
-            <Main />
-          }
-        />
-        <Route
-          path="/user"
-          element={
-             <ProjectPage />
-          }
-        />
+        <Route path="/mentor" element={<ProjectPage />} />
+
+        <Route path="/investor" element={<ProjectPage />} />
       </Routes>
-      </Router>
-      
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;

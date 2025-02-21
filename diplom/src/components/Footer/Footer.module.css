@@ -1,60 +1,59 @@
-.footer{
-    background-color: white;
-    margin-top: 100px;
-    padding: 20px 0;
+.footer {
+  background-color: white;
+  margin-top: 100px;
+  padding: 20px 0;
 }
 
-.footer_top{
-    border: 1px solid #ECECFF;
-    padding: 44px 22px;
-    border-radius: 20px;
-    display: flex;
-    justify-content: space-between;
-
+.footer_top {
+  border: 1px solid #ececff;
+  padding: 44px 22px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
 }
 
-.title{
-    font-size: 16px;
-    font-weight: bold;
+.title {
+  font-size: 16px;
+  font-weight: bold;
 }
-.footer_text{
-    margin-top: 30px;
-    font-size: 16px;
-    font-weight: 400;
+.footer_text {
+  margin-top: 30px;
+  font-size: 16px;
+  font-weight: 400;
 }
-.footer_bottom{
-    border: 1px solid #ECECFF;
-    border-radius: 20px;
-    margin-top: 24px;
-    padding: 20px 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.footer_block{
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.footer_bottom {
+  border: 1px solid #ececff;
+  border-radius: 20px;
+  margin-top: 24px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.main{
-    display: flex;
-    flex-direction: column;
+.footer_block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.footer_bottom button{
-    background: white;
-    border: none;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    transition: box-shadow 0.3s ease; 
-    border-radius: 30px;
-    padding: 17px 29px;
-    font-family: var(--font);
-    font-size: 14px;
-    cursor: pointer;
+.main {
+  display: flex;
+  flex-direction: column;
 }
 
-.footer_bottom button:hover {
-    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.4); 
-  }
+.button_help {
+  background: white;
+  border: none;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease;
+  border-radius: 30px;
+  padding: 17px 29px;
+  font-family: var(--font);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.button_help:hover {
+  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.4);
+}
