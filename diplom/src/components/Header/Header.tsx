@@ -12,7 +12,7 @@ function Header() {
       <Container>
         <header className={styles["header"]}>
           <div className={styles["logo"]}>
-            <a href="/">
+            <a href="/main">
               Mentor<span>Connect</span>
             </a>
             <img src="/logo.svg" alt="Логотип" />
@@ -40,23 +40,28 @@ function Header() {
               <img src="/messages.svg" alt="Уведомления" />
               <img src="/like.svg" alt="Избранное" />
             </nav>
-            <Button onClick={() => setModalOpen(true)} appearence="small" className={styles["button_header"]}>
+            <Button
+              onClick={() => setModalOpen(true)}
+              appearence="small"
+              className={styles["button_header"]}
+            >
               Войти
             </Button>
           </div>
         </header>
-        {modalOpen && <div className={styles['modal_main']}>
-            <div className={styles['modal_secondary']}>
-            <button
-                  onClick={() => setModalOpen(false)}
-                  className={styles['close']}
-                >
-                  ✖
-                </button>
-                <Modal />
-            </div>   
-        </div>
-        }
+        {modalOpen && (
+          <div className={styles["modal_main"]}>
+            <div className={styles["modal_secondary"]}>
+              <button
+                onClick={() => setModalOpen(false)}
+                className={styles["close"]}
+              >
+                ✖
+              </button>
+              <Modal closeModal={() => setModalOpen(false)} />
+            </div>
+          </div>
+        )}
       </Container>
     </div>
   );
