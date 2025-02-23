@@ -1,0 +1,33 @@
+.authtorize{
+    display: flex;
+    flex-direction: column;
+    font-family: var(--secondary-font);
+    gap: 30px;
+    padding: 2rem 0;
+}
+.buttons{
+    display: flex;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.auth{
+    background-color: black;
+    border: none;
+    color: white;
+    font-family: var(--font);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+}
+.register{
+    background-color: rgb(190, 190, 190);
+    border: none;
+    color: white;
+    font-family: var(--font);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+}
