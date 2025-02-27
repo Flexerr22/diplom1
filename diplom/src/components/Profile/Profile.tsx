@@ -6,7 +6,7 @@ import { ModalType } from "../Header/Header";
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
   closeModal: () => void;
-  setActiveModal: (value: ModalType) => void;
+  setActiveModal: (value: ModalType | null) => void;
 }
 
 export function Profile({
@@ -20,6 +20,7 @@ export function Profile({
       Cookies.remove("jwt");
       setIsAuth(false);
       closeModal();
+      setActiveModal(null);
     } catch (e) {
       if (e instanceof AxiosError) {
         console.log("Ошибка");
