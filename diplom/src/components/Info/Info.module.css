@@ -35,7 +35,7 @@
 .button_register_info:hover {
   box-shadow: 7px 7px 15px rgba(0, 0, 0, 0.4);
 }
-.modal_main{
+.modal_main {
   position: fixed;
   inset: 0;
   display: flex;
@@ -44,14 +44,14 @@
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 50;
 }
-.modal_secondary{
+.modal_secondary {
   background-color: white;
   padding: 24px;
   border-radius: 30px;
   position: relative;
   width: 400px;
 }
-.close{
+.close {
   position: absolute;
   top: -30px;
   right: -30px;
@@ -61,6 +61,6 @@
   cursor: pointer;
   font-size: 20px;
 }
-.close:hover{
-  color: gray;
+.close:hover {
+  color: black;
 }

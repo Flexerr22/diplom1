@@ -18,9 +18,10 @@ export type Login = {
 
 interface LoginComponentProps {
   closeModal: () => void;
+  setIsAuth: (value: boolean) => void;
 }
 
-export function Login({ closeModal }: LoginComponentProps) {
+export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [error, setError] = useState<string | null>();
@@ -39,6 +40,7 @@ export function Login({ closeModal }: LoginComponentProps) {
         secure: true,
         sameSite: "Strict",
       });
+      setIsAuth(true);
       closeModal();
     } catch (e) {
       if (e instanceof AxiosError) {

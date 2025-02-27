@@ -94,3 +94,14 @@
   color: red;
   margin-bottom: 10px;
 }
+@media (max-height: 800px) {
+  .input {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+    justify-content: space-between;
+  }
+  .login {
+    padding: 0;
+  }
+}

@@ -20,7 +20,7 @@ function Users() {
 
   const navigate = useNavigate();
 
-  const handleNavigate = (id: number) => {
+  const handleUserSelection = (id: number) => {
     setFocusedId(id);
     setSelectedId(id);
 
@@ -93,7 +93,7 @@ function Users() {
                 </div>
                 {focusedId === id && (
                   <button
-                    onClick={() => handleNavigate(id)}
+                    onClick={() => handleUserSelection(id)}
                     className={styles["button"]}
                   >
                     {selectedId === id ? "Вы выбрали" : "Перейти к выбору"}

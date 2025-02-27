@@ -2,17 +2,32 @@
 import Button from "../Button/Button";
 import styles from "./Header.module.css";
 import { Container } from "../Container/Container";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "../Modal/Modal";
+import { Messages } from "../Messages/Messages";
+import { Profile } from "../Profile/Profile";
+import Cookies from "js-cookie";
+
+export type ModalType = "login" | "messages" | "profile" | null;
 
 function Header() {
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [isAuth, setIsAuth] = useState<boolean>(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+
+  useEffect(() => {
+    const jwt = Cookies.get("jwt");
+
+    if (jwt) {
+      setIsAuth(true);
+    }
+  }, []);
+
   return (
     <div className={styles["color"]}>
       <Container>
         <header className={styles["header"]}>
           <div className={styles["logo"]}>
-            <a href="/main">
+            <a href="/">
               Mentor<span>Connect</span>
             </a>
             <img src="/logo.svg" alt="Логотип" />
@@ -36,29 +51,65 @@ function Header() {
 
           <div className={styles["block-icons"]}>
             <nav className={styles["nav-icons"]}>
+              {isAuth && <img src="/plus.svg" alt="Чаты" />}
               <img src="/chat.svg" alt="Чаты" />
-              <img src="/messages.svg" alt="Уведомления" />
+              <img
+                src="/messages.svg"
+                alt="Уведомления"
+                onClick={() => setActiveModal("messages")}
+              />
+
+              {activeModal === "messages" && <Messages />}
+
               <img src="/like.svg" alt="Избранное" />
             </nav>
-            <Button
-              onClick={() => setModalOpen(true)}
-              appearence="small"
-              className={styles["button_header"]}
-            >
-              Войти
-            </Button>
+            {!isAuth ? (
+              <Button
+                onClick={() => setActiveModal("login")}
+                appearence="small"
+                className={styles["button_header"]}
+              >
+                Войти
+              </Button>
+            ) : (
+              <img
+                width={35}
+                height={35}
+                src="/team.avif"
+                alt="Иконка профиля"
+                className={styles.icon_profile}
+                onClick={() => setActiveModal("profile")}
+              />
+            )}
+            {activeModal === "profile" && (
+              <Profile
+                setIsAuth={setIsAuth}
+                setActiveModal={setActiveModal}
+                closeModal={() => setActiveModal(null)}
+              />
+            )}
           </div>
         </header>
-        {modalOpen && (
-          <div className={styles["modal_main"]}>
+        {activeModal === "login" && (
+          <div
+            className={styles["modal_main"]}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setActiveModal(null);
+              }
+            }}
+          >
             <div className={styles["modal_secondary"]}>
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={() => setActiveModal(null)}
                 className={styles["close"]}
               >
                 ✖
               </button>
-              <Modal closeModal={() => setModalOpen(false)} />
+              <Modal
+                closeModal={() => setActiveModal(null)}
+                setIsAuth={setIsAuth}
+              />
             </div>
           </div>
         )}

@@ -102,15 +102,17 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
 
   return (
     <div className={styles["login"]}>
-      <p className={styles["title"]}>Зарегистрировать аккаунт</p>
-      <button className={styles.google}>
-        <img src="/google.svg" width={20} height={20} alt="Иконка google" />
-        Регистрация с помощью Google
-      </button>
-      <div className={styles.border_or}>
-        <div className={styles.border}></div>
-        <p className={styles.or}>OR</p>
-        <div className={styles.border}></div>
+      <div className={styles["login_block"]}>
+        <p className={styles["title"]}>Зарегистрировать аккаунт</p>
+        <button className={styles.google}>
+          <img src="/google.svg" width={20} height={20} alt="Иконка google" />
+          Регистрация с помощью Google
+        </button>
+        <div className={styles.border_or}>
+          <div className={styles.border}></div>
+          <p className={styles.or}>OR</p>
+          <div className={styles.border}></div>
+        </div>
       </div>
       {error && <div className={styles["error"]}>{error}</div>}
       <form className={styles["form_login"]} onSubmit={submit}>

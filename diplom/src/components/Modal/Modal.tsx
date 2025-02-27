@@ -5,28 +5,29 @@ import { Register } from "../Register/Register";
 
 interface ModalProps {
   closeModal: () => void;
+  setIsAuth: (value: boolean) => void;
 }
 
-export function Modal({ closeModal }: ModalProps) {
-  const [isAuth, setIsAuth] = useState(false);
+export function Modal({ closeModal, setIsAuth }: ModalProps) {
+  const [isButtonAuth, setIsButtonAuth] = useState(false);
   return (
     <div className={styles["authtorize"]}>
       <div className={styles["buttons"]}>
         <button
-          className={isAuth ? styles.auth : styles.register}
-          onClick={() => setIsAuth(true)}
+          className={isButtonAuth ? styles.auth : styles.register}
+          onClick={() => setIsButtonAuth(true)}
         >
           Авторизация
         </button>
         <button
-          className={isAuth ? styles.register : styles.auth}
-          onClick={() => setIsAuth(false)}
+          className={isButtonAuth ? styles.register : styles.auth}
+          onClick={() => setIsButtonAuth(false)}
         >
           Регистрация
         </button>
       </div>
-      {isAuth ? (
-        <Login closeModal={closeModal} />
+      {isButtonAuth ? (
+        <Login closeModal={closeModal} setIsAuth={setIsAuth} />
       ) : (
         <Register setIsAuth={setIsAuth} />
       )}
