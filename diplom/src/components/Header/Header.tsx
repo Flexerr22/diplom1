@@ -22,6 +22,12 @@ function Header() {
     }
   }, []);
 
+  const handleClickOutside = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setActiveModal(null);
+    }
+  };
+
   return (
     <div className={styles["color"]}>
       <Container>
@@ -52,14 +58,22 @@ function Header() {
           <div className={styles["block-icons"]}>
             <nav className={styles["nav-icons"]}>
               {isAuth && <img src="/plus.svg" alt="Чаты" />}
-              <img src="/chat.svg" alt="Чаты" />
+              <a href="/chats">
+                <img src="/chat.svg" alt="Чаты" />
+              </a>
               <img
                 src="/messages.svg"
                 alt="Уведомления"
-                onClick={() => setActiveModal("messages")}
+                onClick={() =>
+                  setActiveModal((prev) =>
+                    prev === "messages" ? null : "messages"
+                  )
+                }
               />
 
-              {activeModal === "messages" && <Messages />}
+              {activeModal === "messages" && (
+                <Messages setActiveModal={setActiveModal} />
+              )}
 
               <img src="/like.svg" alt="Избранное" />
             </nav>
@@ -78,27 +92,24 @@ function Header() {
                 src="/team.avif"
                 alt="Иконка профиля"
                 className={styles.icon_profile}
-                onClick={() => setActiveModal("profile")}
+                onClick={() =>
+                  setActiveModal((prev) =>
+                    prev === "profile" ? null : "profile"
+                  )
+                }
               />
             )}
             {activeModal === "profile" && (
               <Profile
                 setIsAuth={setIsAuth}
-                setActiveModal={setActiveModal}
                 closeModal={() => setActiveModal(null)}
+                setActiveModal={setActiveModal}
               />
             )}
           </div>
         </header>
         {activeModal === "login" && (
-          <div
-            className={styles["modal_main"]}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setActiveModal(null);
-              }
-            }}
-          >
+          <div className={styles["modal_main"]} onClick={handleClickOutside}>
             <div className={styles["modal_secondary"]}>
               <button
                 onClick={() => setActiveModal(null)}

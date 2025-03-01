@@ -1,0 +1,131 @@
+.main {
+  background-color: white;
+  margin-top: 44px;
+  display: flex;
+  justify-content: space-between;
+  height: 80vh;
+  flex-direction: column;
+}
+.topbar {
+  display: flex;
+  border-bottom: 1px solid #dbdbdb;
+  padding-top: 44px 0 24px 0;
+  align-items: center;
+  height: 75px;
+}
+.all_messages {
+  display: flex;
+  align-items: center;
+  gap: 63px;
+  width: 30%;
+  border-right: 1px solid #dbdbdb;
+  height: 100%;
+}
+.all_messages p {
+  padding-left: 32px;
+}
+.messages {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.messages p {
+  margin: 3px;
+}
+.peoples {
+  width: 30%;
+  border-right: 1px solid #dbdbdb;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 39px 0 0 33px;
+}
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.blocks {
+  display: flex;
+  flex-direction: column;
+  margin-top: 25px;
+  width: 30%;
+  gap: 20px;
+}
+.people_block {
+  display: flex;
+  max-width: 100%;
+  gap: 25px;
+  border-bottom: 1px solid #dbdbdb;
+  padding-left: 32px;
+  cursor: pointer;
+}
+.people_block img {
+  border-radius: 100%;
+}
+.title_name {
+  font-size: 20px;
+  font-weight: 600;
+}
+.title_time {
+  font-weight: 400;
+  font-size: 14px;
+  color: #cecece;
+}
+.chat {
+  background: linear-gradient(270deg, #92e3fe 0%, #ff96ff 100%);
+  height: 100%;
+  width: 70%;
+  position: relative;
+}
+.all_messages {
+  display: flex;
+  gap: 63px;
+}
+.menu {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border-right: 1px solid #dbdbdb;
+}
+.input {
+  display: flex;
+  align-items: center;
+}
+.chat input {
+  background: white;
+  border: 1px solid #dbdbdb;
+  padding: 16px 30px 16px 100px;
+  position: absolute;
+  font-family: var(--font);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+  bottom: 0;
+}
+.icon {
+  position: absolute;
+  bottom: 15px;
+  right: 38px;
+  cursor: pointer;
+}
+.newMessage {
+  display: flex;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid #dbdbdb;
+  padding: 0.3rem 1.5rem;
+  border-radius: 20px;
+  font-family: var(--font);
+  outline: none;
+  box-sizing: border-box;
+  font-size: 14px;
+  margin-bottom: 30px;
+  width: 30%;
+  position: absolute;
+  bottom: 122px;
+  right: 38px;
+  margin-top: auto;
+}

@@ -97,6 +97,10 @@ a {
 .close:hover {
   color: black;
 }
+.nav-icons {
+  display: flex;
+  align-items: center;
+}
 .nav-icons img {
   z-index: 100;
   cursor: pointer;

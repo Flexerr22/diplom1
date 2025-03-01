@@ -1,9 +1,20 @@
 import { Bell, Ellipsis } from "lucide-react";
 import styles from "./Messages.module.css";
+import { ModalType } from "../Header/Header";
 
-export function Messages() {
+interface MessagesProps {
+  setActiveModal: (value: ModalType) => void;
+}
+
+export function Messages({ setActiveModal }: MessagesProps) {
+  const handleClickOutside = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setActiveModal(null);
+    }
+  };
+
   return (
-    <div className={styles["modal_main"]}>
+    <div className={styles["modal_main"]} onClick={handleClickOutside}>
       <div className={styles["modal_secondary"]}>
         <div className={styles.header}>
           <p>Уведомления</p>

@@ -6,7 +6,7 @@ import { ModalType } from "../Header/Header";
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
   closeModal: () => void;
-  setActiveModal: (value: ModalType | null) => void;
+  setActiveModal: (value: ModalType) => void;
 }
 
 export function Profile({
@@ -20,22 +20,21 @@ export function Profile({
       Cookies.remove("jwt");
       setIsAuth(false);
       closeModal();
-      setActiveModal(null);
     } catch (e) {
       if (e instanceof AxiosError) {
         console.log("Ошибка");
       }
     }
   };
+
+  const handleClickOutside = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setActiveModal(null);
+    }
+  };
+
   return (
-    <div
-      className={styles["modal_main"]}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          setActiveModal(null);
-        }
-      }}
-    >
+    <div className={styles["modal_main"]} onClick={handleClickOutside}>
       <div className={styles["modal_secondary"]}>
         <div className={styles.profile}>
           <img width={100} height={100} src="/team.avif" alt="Иконка профиля" />

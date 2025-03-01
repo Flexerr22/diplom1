@@ -1,14 +1,15 @@
-.sort{
-    background-color: white;
-    padding:0 22px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    border-radius: 15px;
-    font-size: 16px;
-    max-width: 240px;
+.sort {
+  background-color: white;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 15px;
+  font-size: 16px;
+  max-width: 240px;
+  cursor: pointer;
 }
 
-.sort p{
-    color: var(--primary-color);
+.sort p {
+  color: var(--primary-color);
 }

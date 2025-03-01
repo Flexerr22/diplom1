@@ -4,7 +4,12 @@ import { Container } from "../Container/Container";
 import styles from "./Info.module.css";
 import { Modal } from "../Modal/Modal";
 
-export function Info() {
+interface InfoProps {
+  closeModal: () => void;
+  setIsAuth: (value: boolean) => void;
+}
+
+export function Info({ closeModal, setIsAuth }: InfoProps) {
   const [modalOpen, setModalOpen] = useState(false);
   return (
     <Container>
@@ -34,7 +39,7 @@ export function Info() {
               >
                 ✖
               </button>
-              <Modal />
+              <Modal closeModal={closeModal} setIsAuth={setIsAuth} />
             </div>
           </div>
         )}

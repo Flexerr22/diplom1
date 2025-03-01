@@ -6,26 +6,21 @@
   padding: 1rem 2rem;
 }
 .modal_main {
-  position: absolute;
+  position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
   justify-content: center;
-  margin-bottom: 15%;
-  margin-top: 15%;
-  margin-left: 50%;
   z-index: 50;
 }
 .modal_secondary {
   background-color: white;
   padding: 24px;
-  border-radius: 10px;
+  border-radius: 30px;
+  left: 30%;
+  bottom: 5%;
   position: relative;
-  width: 250px;
-  padding: 0.5rem 2rem 4rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
 }
 .profile img {
   border-radius: 100%;
