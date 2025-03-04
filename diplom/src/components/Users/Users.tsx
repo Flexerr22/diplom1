@@ -1,34 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "../Button/Button";
 import { Container } from "../Container/Container";
 import styles from "./Users.module.css";
-import { useLocation, useNavigate } from "react-router-dom";
 
 function Users() {
-  const location = useLocation();
   const [focusedId, setFocusedId] = useState(1);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(0);
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const selectedId = params.get("focusedId");
-    if (selectedId) {
-      setFocusedId(Number(selectedId));
-      setSelectedId(Number(selectedId));
-    }
-  }, [location]);
-
-  const navigate = useNavigate();
-
-  const handleUserSelection = (id: number) => {
+  const handleRoleClick = (id: number) => {
     setFocusedId(id);
     setSelectedId(id);
-
-    const path = id === 1 ? "/businessman" : id === 2 ? "/mentor" : "/investor";
-    navigate(`${path}?focusedId=${id}`);
   };
-
-  const isHomePage = location.pathname === "/";
 
   return (
     <div className={styles["black-background"]}>
@@ -36,17 +18,17 @@ function Users() {
         <main className={styles["main"]}>
           <div className={styles["text-block"]}>
             <p>
-              {isHomePage ? (
+              {selectedId === 0 ? (
                 <>
                   <span className={styles.first}>Выбирайте что для вас</span>{" "}
                   <span className={styles.highlight}>интересно</span>
                 </>
-              ) : selectedId === 1 ? (
+              ) : focusedId === 1 ? (
                 <>
                   <span className={styles.firstWord}>Предприниматель</span> -
                   сможете найти наставников и инвесторов для своих проектов
                 </>
-              ) : selectedId === 2 ? (
+              ) : focusedId === 2 ? (
                 <>
                   <span className={styles.firstWord}>Наставник</span> - всегда
                   поможет вам улучшить ваш проект
@@ -59,9 +41,11 @@ function Users() {
               )}
             </p>
             <div className={styles["fone"]}></div>
-            <Button appearence="big" className={styles["text-button"]}>
-              Создать проект
-            </Button>
+            <a href="/add">
+              <Button appearence="big" className={styles["text-button"]}>
+                Создать проект
+              </Button>
+            </a>
           </div>
 
           <div className={styles["users-block"]}>
@@ -73,7 +57,7 @@ function Users() {
                     ? styles["user-info"]
                     : styles["user-info_new"]
                 }
-                onClick={() => setFocusedId(id)}
+                onClick={() => handleRoleClick(id)}
               >
                 <p className={styles["number"]}>{`0${id}`}</p>
                 <div className={styles["person"]}>
@@ -91,14 +75,6 @@ function Users() {
                       : "Инвесторы"}
                   </p>
                 </div>
-                {focusedId === id && (
-                  <button
-                    onClick={() => handleUserSelection(id)}
-                    className={styles["button"]}
-                  >
-                    {selectedId === id ? "Вы выбрали" : "Перейти к выбору"}
-                  </button>
-                )}
               </div>
             ))}
           </div>

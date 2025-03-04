@@ -1,24 +1,28 @@
-// import { ArrowRight, CircleUserRound } from 'lucide-react';
 import Button from "../Button/Button";
 import styles from "./Header.module.css";
 import { Container } from "../Container/Container";
 import { useEffect, useState } from "react";
 import { Modal } from "../Modal/Modal";
 import { Messages } from "../Messages/Messages";
-import { Profile } from "../Profile/Profile";
 import Cookies from "js-cookie";
+import { Profile } from "../Profile/Profile";
 
 export type ModalType = "login" | "messages" | "profile" | null;
 
 function Header() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
+    const role = Cookies.get("role");
 
     if (jwt) {
       setIsAuth(true);
+    }
+    if (role) {
+      setUserRole(role);
     }
   }, []);
 
@@ -41,23 +45,39 @@ function Header() {
 
           <nav className={styles["nav-text"]}>
             <ul className={styles["ul"]}>
-              <li>
-                <a href="/businessman">Предпринимателям</a>
-              </li>
-              <div className={styles["border"]}></div>
-              <li>
-                <a href="/mentor">Наставникам</a>
-              </li>
-              <div className={styles["border"]}></div>
-              <li>
-                <a href="/investor">Инвесторам</a>
-              </li>
+              {userRole === "entrepreneur" && (
+                <>
+                  <li>
+                    <a href="/roleProjects">Наставникам</a>
+                  </li>
+                  <div className={styles["border"]}></div>
+                  <li>
+                    <a href="/roleProjects">Инвесторам</a>
+                  </li>
+                  <div className={styles["border"]}></div>
+                  <li>
+                    <a href="/my-projects">Мои проекты</a>
+                  </li>
+                </>
+              )}
+
+              {(userRole === "mentor" || userRole === "investor") && (
+                <>
+                  <li>
+                    <a href="/projects">Проекты</a>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
 
           <div className={styles["block-icons"]}>
             <nav className={styles["nav-icons"]}>
-              {isAuth && <img src="/plus.svg" alt="Чаты" />}
+              {isAuth && (
+                <a href="/add">
+                  <img src="/plus.svg" alt="Чаты" />
+                </a>
+              )}
               <a href="/chats">
                 <img src="/chat.svg" alt="Чаты" />
               </a>

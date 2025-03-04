@@ -23,6 +23,7 @@ export function Info({ closeModal, setIsAuth }: InfoProps) {
             нашего проекта прямо сейчас !
           </p>
         </div>
+        
         <Button
           appearence="big"
           className={styles["button_register_info"]}

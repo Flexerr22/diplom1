@@ -4,7 +4,8 @@ import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 
 export interface LoginProps {
-  access_token: string;
+  token: string;
+  role: string;
 }
 
 export type Login = {
@@ -35,7 +36,12 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
           password,
         }
       );
-      Cookies.set("jwt", data.access_token, {
+      Cookies.set("jwt", data.token, {
+        expires: 7,
+        secure: true,
+        sameSite: "Strict",
+      });
+      Cookies.set("role", data.role, {
         expires: 7,
         secure: true,
         sameSite: "Strict",

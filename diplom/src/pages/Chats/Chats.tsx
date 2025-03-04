@@ -49,7 +49,7 @@ function Chats() {
           <div className={styles.chat}>
             <div className={styles.newMessage}>
               <p>Я что-то написал</p>
-              <p>22:48</p>
+              <p className={styles.chat_time}>22:48</p>
             </div>
             <div className={styles.input}>
               <input placeholder="Написать сообщение" type="text" />

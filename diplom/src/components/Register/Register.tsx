@@ -1,6 +1,7 @@
 import styles from "./Register.module.css";
 import { ChangeEvent, FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
+import Cookies from "js-cookie";
 
 export type Register = {
   name: {
@@ -9,7 +10,10 @@ export type Register = {
   email: {
     value: string;
   };
-  password: {
+  password_hash: {
+    value: string;
+  };
+  role: {
     value: string;
   };
 };
@@ -17,7 +21,8 @@ export type Register = {
 export interface RegisterProps {
   name: string;
   email: string;
-  password: string;
+  password_hash: string;
+  role: string;
 }
 
 interface RegisterComponentProps {
@@ -26,27 +31,38 @@ interface RegisterComponentProps {
 
 export function Register({ setIsAuth }: RegisterComponentProps) {
   const [error, setError] = useState<string | null>();
-  const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
-  const [nameError, setNameError] = useState(false);
+  const [, setEmailError] = useState(false);
+  const [, setPasswordError] = useState(false);
+  const [, setNameError] = useState(false);
   const [data, setData] = useState<RegisterProps>({
     name: "",
     email: "",
-    password: "",
+    password_hash: "",
+    role: "",
   });
 
   const sendRegister = async (
     name: string,
     email: string,
-    password: string
+    password_hash: string,
+    role: string
   ) => {
     try {
-      await axios.post<RegisterProps>("http://127.0.0.1:8000/users/register", {
-        name,
-        email,
-        password,
-      });
+      const responce = await axios.post<RegisterProps>(
+        "http://127.0.0.1:8000/users/register",
+        {
+          name,
+          email,
+          password_hash,
+          role,
+        }
+      );
       setIsAuth(true);
+      Cookies.set("role", responce.data.role, {
+        expires: 7,
+        secure: true,
+        sameSite: "Strict",
+      });
     } catch (e) {
       if (e instanceof AxiosError) {
         if (e.response?.status === 401) {
@@ -66,12 +82,12 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
     setNameError(false);
 
     const target = e.target as typeof e.target & Register;
-    const { name, email, password } = target;
+    const { name, email, password_hash, role } = target;
 
-    if (!email.value || !password.value || !name.value) {
+    if (!email.value || !password_hash.value || !name.value || !role.value) {
       setError("Пожалуйста, заполните все поля");
       if (!email.value) setEmailError(true);
-      if (!password.value) setPasswordError(true);
+      if (!password_hash.value) setPasswordError(true);
       if (!name.value) setNameError(true);
       return;
     }
@@ -82,7 +98,7 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
       return;
     }
 
-    sendRegister(name.value, email.value, password.value);
+    sendRegister(name.value, email.value, password_hash.value, role.value);
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +106,7 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
     if (name === "email") {
       setEmailError(false); // Убираем ошибку email
       if (!value) setError("Пожалуйста, заполните email");
-    } else if (name === "password") {
+    } else if (name === "password_hash") {
       setPasswordError(false); // Убираем ошибку password
       if (!value) setError("Пожалуйста, заполните пароль");
     } else if (name === "name") {
@@ -117,6 +133,16 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
       {error && <div className={styles["error"]}>{error}</div>}
       <form className={styles["form_login"]} onSubmit={submit}>
         <div className={styles["input"]}>
+          <label className={styles["label"]}>Роль</label>
+          <input
+            value={data.role}
+            name="role"
+            onChange={handleInputChange}
+            type="text"
+            placeholder="Role"
+          />
+        </div>
+        <div className={styles["input"]}>
           <label className={styles["label"]}>Username</label>
           <input
             value={data.name}
@@ -140,10 +166,10 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
           <label className={styles["label"]}>Password</label>
           <input
             type="password"
-            value={data.password}
+            value={data.password_hash}
             onChange={handleInputChange}
             placeholder="Password"
-            name="password"
+            name="password_hash"
           />
         </div>
         <button type="submit" className={styles["login_button"]}>

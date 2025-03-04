@@ -78,6 +78,8 @@
   height: 100%;
   width: 70%;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 .all_messages {
   display: flex;
@@ -93,7 +95,7 @@
   display: flex;
   align-items: center;
 }
-.chat input {
+.input input {
   background: white;
   border: 1px solid #dbdbdb;
   padding: 16px 30px 16px 100px;
@@ -124,8 +126,13 @@
   font-size: 14px;
   margin-bottom: 30px;
   width: 30%;
-  position: absolute;
-  bottom: 122px;
-  right: 38px;
   margin-top: auto;
+  position: absolute;
+  bottom: 15%;
+  right: 4%;
+}
+.chat_time {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }

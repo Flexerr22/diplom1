@@ -19,6 +19,7 @@
   align-items: end;
   z-index: 1;
   padding: 70px 0 110px 0;
+  height: 60vh;
 }
 
 .text-block {
