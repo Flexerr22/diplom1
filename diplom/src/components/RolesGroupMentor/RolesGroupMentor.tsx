@@ -1,10 +1,10 @@
 import axios from "axios";
 import Search from "../Search/Search";
-import styles from "./RolesGroup.module.css";
+import styles from "./RolesGroupMentor.module.css";
 import { useEffect, useState } from "react";
 import { RolesData, RolesGroupProps } from "../RolesData/RolesData";
 
-export function RolesGroup() {
+export function RolesGroupMentor() {
   const [users, setUsers] = useState<RolesGroupProps[]>([]);
 
   const getAll = async () => {
@@ -13,7 +13,7 @@ export function RolesGroup() {
       .then((responce) => setUsers(responce.data));
   };
   const mentorData = users.filter((prev) => prev.role === "mentor");
-  const investorData = users.filter((prev) => prev.role === "investor");
+
   useEffect(() => {
     getAll();
   });

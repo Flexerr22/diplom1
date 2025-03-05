@@ -9,6 +9,10 @@ export interface ProductProps {
   investment: string;
   role?: string;
   category: string;
+  budget?: string;
+  experience?: string;
+  description?: string;
+  skills?: string;
 }
 
 export function Product({
@@ -16,22 +20,57 @@ export function Product({
   title,
   tagline,
   investment,
+  role,
   category,
+  budget,
+  experience,
+  description,
+  skills,
 }: ProductProps) {
   return (
     <div>
       <div className={styles["product"]}>
         <b className={styles["title"]}>"{title}" </b>
-        <textarea className={styles["description"]} disabled>
-          {tagline}
-        </textarea>
+        {role === "mentor" || role === "investor" ? (
+          <textarea className={styles["description"]} disabled>
+            {description}
+          </textarea>
+        ) : (
+          <textarea className={styles["description"]} disabled>
+            {tagline}
+          </textarea>
+        )}
         <div className={styles["price"]}>
-          <b>Требуемые вложения:</b>
-          <p>{investment}</p>
+          {role === "mentor" ? (
+            <b>Опыт работы:</b>
+          ) : role === "investor" ? (
+            <b>Бюджет:</b>
+          ) : (
+            <b>Требуемые вложения:</b>
+          )}
+          {role === "mentor" ? (
+            <p>{experience}</p>
+          ) : role === "investor" ? (
+            <p>{budget}</p>
+          ) : (
+            <p>{investment}</p>
+          )}
         </div>
         <div className={styles["reit"]}>
-          <b>Специальность: </b>
-          <p>{category}</p>
+          {role === "mentor" ? (
+            <b>Навыки:</b>
+          ) : role === "investor" ? (
+            <b>Бюджет:</b>
+          ) : (
+            <b>Специальность: </b>
+          )}
+          {role === "mentor" ? (
+            <p>{skills}</p>
+          ) : role === "investor" ? (
+            <p>{budget}</p>
+          ) : (
+            <p>{category}</p>
+          )}
         </div>
         <div className={styles["product-bottom"]}>
           <Link to={`/project/${id}`}>

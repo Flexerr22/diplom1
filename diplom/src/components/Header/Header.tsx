@@ -6,6 +6,7 @@ import { Modal } from "../Modal/Modal";
 import { Messages } from "../Messages/Messages";
 import Cookies from "js-cookie";
 import { Profile } from "../Profile/Profile";
+import { jwtDecode } from "jwt-decode";
 
 export type ModalType = "login" | "messages" | "profile" | null;
 
@@ -13,6 +14,7 @@ function Header() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [user_id, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
@@ -20,6 +22,9 @@ function Header() {
 
     if (jwt) {
       setIsAuth(true);
+      // Декодируем JWT, чтобы извлечь user_id
+      const decoded = jwtDecode<{ sub: string }>(jwt); // sub обычно содержит user_id
+      setUserId(decoded.sub); // Устанавливаем user_id
     }
     if (role) {
       setUserRole(role);
@@ -66,7 +71,7 @@ function Header() {
                 </>
               )}
               <li>
-                <a href="/my-projects">Мои проекты</a>
+                <a href={`/my-projects/${user_id}`}>Мои проекты</a>
               </li>
             </ul>
           </nav>

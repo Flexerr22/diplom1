@@ -1,14 +1,14 @@
 import { Container } from "../Container/Container";
 import { Filters } from "../Filters/Filters";
-import { Products } from "../Products/Products";
-import styles from "./menu-components.module.css";
+import { RolesGroupInvestor } from "../RolesGroupInvestor/RolesGroupInvestor";
+import styles from "./MenuInvestor.module.css";
 
-export function MenuComponent() {
+export function MenuInvestor() {
   return (
     <Container>
       <div className={styles["main"]}>
         <Filters />
-        <Products />
+        <RolesGroupInvestor />
       </div>
     </Container>
   );

@@ -1,14 +1,14 @@
 import { Container } from "../Container/Container";
 import { Filters } from "../Filters/Filters";
-import { Products } from "../Products/Products";
-import styles from "./menu-components.module.css";
+import { RolesGroupMentor } from "../RolesGroupMentor/RolesGroupMentor";
+import styles from "./MenuMentor.module.css";
 
-export function MenuComponent() {
+export function MenuMentor() {
   return (
     <Container>
       <div className={styles["main"]}>
         <Filters />
-        <Products />
+        <RolesGroupMentor />
       </div>
     </Container>
   );

@@ -35,7 +35,7 @@ export interface ProductByIdProps {
   typeOfInvestment?: string;
   budget?: string;
   results?: string;
-  user_id: number;
+  user_id?: number;
 }
 
 export function ProjectById() {
@@ -122,7 +122,7 @@ export function ProjectById() {
                 {project.links && (
                   <div className={styles.field}>
                     <label>Ссылки:</label>
-                    <textarea
+                    <input
                       value={project.links}
                       readOnly
                       className={styles.textarea}

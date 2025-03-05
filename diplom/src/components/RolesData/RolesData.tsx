@@ -49,7 +49,7 @@ export function RolesData({
           <p>{specialization}</p>
         </div>
         <div className={styles["product-bottom"]}>
-          <Link to={`/project/${id}`}>
+          <Link to={`/user/${id}`}>
             <Button className={styles["button_product"]}>Подробнее</Button>
           </Link>
         </div>

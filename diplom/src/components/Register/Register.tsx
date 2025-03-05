@@ -106,7 +106,9 @@ export function Register({
     sendRegister(name.value, email.value, password_hash.value, role.value);
   };
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     if (name === "email") {
       setEmailError(false); // Убираем ошибку email
@@ -139,13 +141,11 @@ export function Register({
       <form className={styles["form_login"]} onSubmit={submit}>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Роль</label>
-          <input
-            value={data.role}
-            name="role"
-            onChange={handleInputChange}
-            type="text"
-            placeholder="Role"
-          />
+          <select name="role" value={data.role} onChange={handleInputChange}>
+            <option value={"mentor"}>Наставник</option>
+            <option value={"investor"}>Инвестор</option>
+            <option value={"entrepreneur"}>Предприниматель</option>
+          </select>
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Username</label>
