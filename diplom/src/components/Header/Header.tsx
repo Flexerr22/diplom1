@@ -48,16 +48,13 @@ function Header() {
               {userRole === "entrepreneur" && (
                 <>
                   <li>
-                    <a href="/roleProjects">Наставникам</a>
+                    <a href="/mentor">Наставникам</a>
                   </li>
                   <div className={styles["border"]}></div>
                   <li>
-                    <a href="/roleProjects">Инвесторам</a>
+                    <a href="/investor">Инвесторам</a>
                   </li>
                   <div className={styles["border"]}></div>
-                  <li>
-                    <a href="/my-projects">Мои проекты</a>
-                  </li>
                 </>
               )}
 
@@ -68,6 +65,9 @@ function Header() {
                   </li>
                 </>
               )}
+              <li>
+                <a href="/my-projects">Мои проекты</a>
+              </li>
             </ul>
           </nav>
 

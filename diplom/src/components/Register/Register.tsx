@@ -27,9 +27,13 @@ export interface RegisterProps {
 
 interface RegisterComponentProps {
   setIsAuth: (value: boolean) => void;
+  setIsButtonAuth: (value: boolean) => void;
 }
 
-export function Register({ setIsAuth }: RegisterComponentProps) {
+export function Register({
+  setIsAuth,
+  setIsButtonAuth,
+}: RegisterComponentProps) {
   const [error, setError] = useState<string | null>();
   const [, setEmailError] = useState(false);
   const [, setPasswordError] = useState(false);
@@ -57,7 +61,8 @@ export function Register({ setIsAuth }: RegisterComponentProps) {
           role,
         }
       );
-      setIsAuth(true);
+      setIsAuth(false);
+      setIsButtonAuth(true);
       Cookies.set("role", responce.data.role, {
         expires: 7,
         secure: true,

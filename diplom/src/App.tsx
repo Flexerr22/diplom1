@@ -4,8 +4,6 @@ import Main from "./pages/Main/Main";
 import ProjectPage from "./pages/ProjectPage/ProjectPage";
 import Chats from "./pages/Chats/Chats";
 import { CreateProject } from "./pages/CreateProject/CreateProject";
-import MentorPage from "./pages/MentorPage/MentorPage";
-import InvestorPage from "./pages/InvestorPage/InvestorPage";
 import { ProjectById } from "./components/ProjectById/ProjectById";
 
 function App() {
@@ -15,9 +13,9 @@ function App() {
         <Route path="/" element={<Main />} />
         <Route path="/projects" element={<ProjectPage />} />
 
-        <Route path="/mentor" element={<MentorPage />} />
+        <Route path="/mentor" element={<ProjectPage />} />
 
-        <Route path="/investor" element={<InvestorPage />} />
+        <Route path="/investor" element={<ProjectPage />} />
         <Route path="/chats" element={<Chats />} />
         <Route path="/add" element={<CreateProject />} />
         <Route path="/project/:project_id" element={<ProjectById />} />

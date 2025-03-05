@@ -8,62 +8,37 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
-// interface CreateProjectRequest {
-//   title: string;
-//   description: string;
-//   tagline?: string;
-//   category?: string;
-//   stage?: string;
-//   investment?: string;
-//   equity?: string;
-//   investmentType?: string;
-//   team?: string;
-//   links?: string;
-//   revenue?: string;
-//   goals?: string;
-//   problem?: string;
-//   solution?: string;
-//   targetAudience?: string;
-//   risks?: string;
-//   mentorExperience?: string;
-//   mentorSkills?: string;
-//   mentorWorkFormat?: string;
-//   mentorCollaborationGoals?: string;
-//   mentorCollaborationTerms?: string;
-//   typeOfMentoring?: string;
-//   experience?: string;
-//   role?: string;
-//   achievements?: string;
-//   skills?: string;
-//   typeOfInvestment?: string;
-//   budget?: string;
-//   results?: string;
-//   user_id: number;
-// }
-
 interface CreateProjectRequest {
   title: string;
-  team?: string;
-  mentorExperience?: string;
   description: string;
-  links?: string;
-  mentorSkills?: string;
-  tagline: string;
-  revenue?: string;
-  mentorWorkFormat?: string;
-  category: string;
-  goals?: string;
-  mentorCollaborationGoals?: string;
-  stage: string;
-  problem?: string;
-  mentorCollaborationTerms?: string;
-  user_id: number;
-  investment: string;
-  solution?: string;
+  tagline?: string;
+  category?: string;
+  stage?: string;
+  investment?: string;
   equity?: string;
-  targetAudience?: string;
   investmentType?: string;
+  team?: string;
+  links?: string;
+  revenue?: string;
+  goals?: string;
+  problem?: string;
+  solution?: string;
+  targetAudience?: string;
   risks?: string;
+  mentorExperience?: string;
+  mentorSkills?: string;
+  mentorWorkFormat?: string;
+  mentorCollaborationGoals?: string;
+  mentorCollaborationTerms?: string;
+  typeOfMentoring?: string;
+  experience?: string;
+  role?: string;
+  achievements?: string;
+  skills?: string;
+  typeOfInvestment?: string;
+  budget?: string;
+  results?: string;
+  user_id: number;
 }
 
 export function CreateProject() {
@@ -81,6 +56,7 @@ export function CreateProject() {
 
   const postProject = async () => {
     const jwt = Cookies.get("jwt");
+    const role = Cookies.get("role");
     if (!jwt) {
       console.error("JWT-токен отсутствует");
       return;
@@ -90,7 +66,7 @@ export function CreateProject() {
     const user_id = decoded.sub;
     const responce = await axios.post<CreateProjectRequest>(
       "http://127.0.0.1:8000/projects/create-project",
-      { ...projectData, user_id }
+      { ...projectData, user_id, role }
     );
     setProjectData((prev) => ({
       ...prev,
@@ -161,7 +137,6 @@ export function CreateProject() {
                     placeholder="Краткое описание (до 200 символов)"
                     value={projectData.tagline}
                     onChange={handleInputChange}
-                    maxLength={200}
                   />
                   <div className={styles.inputs}>
                     <input
@@ -298,7 +273,7 @@ export function CreateProject() {
               </>
             )}
 
-            {/* {role === "mentor" && (
+            {role === "mentor" && (
               <>
                 <p>Информация о наставнике в проекте</p>
                 <div className={styles.inputs}>
@@ -373,7 +348,7 @@ export function CreateProject() {
                   onChange={handleInputChange}
                 />
               </>
-            )} */}
+            )}
             <Button
               type="submit"
               appearence="small"

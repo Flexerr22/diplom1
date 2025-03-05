@@ -5,7 +5,7 @@ import { ModalType } from "../Header/Header";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
-interface ProfileInfo {
+export interface ProfileInfo {
   email: string;
   name: string;
   avatar: string;
@@ -13,11 +13,11 @@ interface ProfileInfo {
   contact?: string;
   specialization?: string;
   experience?: string;
-  pastProjects?: string[];
-  skills?: string[];
+  skills?: string;
   budget?: string;
   investmentFocus?: string;
   portfolio?: string[];
+  role?: string;
 }
 
 interface LoginComponentProps {
@@ -34,6 +34,7 @@ export function Profile({
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userData, setUserData] = useState<ProfileInfo | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
   const [userEditData, setUserEditData] = useState<ProfileInfo>({
     email: "",
     name: "",
@@ -42,8 +43,7 @@ export function Profile({
     contact: "",
     specialization: "",
     experience: "",
-    pastProjects: [],
-    skills: [],
+    skills: "",
     budget: "",
     investmentFocus: "",
     portfolio: [],
@@ -63,6 +63,16 @@ export function Profile({
     }
   };
 
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = event.target;
+
+    if (name === "photo_url" && files && files[0]) {
+      setFile(files[0]);
+    } else {
+      setUserEditData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
   const handleClickOutside = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       setActiveModal(null);
@@ -78,10 +88,10 @@ export function Profile({
 
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
-      const userId = decoded.sub;
+      const user_id = decoded.sub;
 
       const response = await axios.get<ProfileInfo>(
-        `http://127.0.0.1:8000/users/${userId}`
+        `http://127.0.0.1:8000/users/${user_id}`
       );
       setUserData(response.data);
       setUserEditData(response.data);
@@ -99,17 +109,42 @@ export function Profile({
 
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
-      const userId = decoded.sub;
+      const user_id = decoded.sub;
 
-      // Логируем данные перед отправкой
-      console.log("Отправляемые данные на сервер:", userEditData);
+      const formData = new FormData();
+
+      // Добавляем файл, если он есть
+      if (file) {
+        formData.append("avatar", file);
+      }
+
+      // Явно добавляем все поля, заменяя undefined на пустую строку
+      formData.append("name", userEditData.name || "");
+      formData.append("email", userEditData.email || "");
+      formData.append("description", userEditData.description || "");
+      formData.append("contact", userEditData.contact || "");
+      formData.append("specialization", userEditData.specialization || "");
+      formData.append("experience", userEditData.experience || "");
+      formData.append("skills", userEditData.skills || "");
+      formData.append("budget", userEditData.budget || "");
+      formData.append("investmentFocus", userEditData.investmentFocus || "");
+
+      // Обрабатываем массив portfolio
+      if (userEditData.portfolio) {
+        userEditData.portfolio.forEach((item) => {
+          formData.append("portfolio", item);
+        });
+      }
 
       const response = await axios.patch<ProfileInfo>(
-        `http://127.0.0.1:8000/users/update-user/${userId}`,
-        userEditData
+        `http://127.0.0.1:8000/users/update-user/${user_id}`,
+        formData
       );
 
-      setUserData(response.data);
+      setUserData((prev) => ({
+        ...prev,
+        ...response.data,
+      }));
       setIsEditing(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -153,15 +188,20 @@ export function Profile({
       <div className={styles["modal_secondary"]}>
         <div className={styles.profile}>
           <div className={styles.profile_info}>
-            <label>Аватар:</label>
             {isEditing ? (
-              <input type="file" accept="image/*" />
+              <input
+                name="avatar"
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
+                className={styles["input"]}
+              />
             ) : (
               <img
+                src="/team.avif"
                 width={100}
                 height={100}
-                src={userData.avatar || "/team.avif"}
-                alt="Иконка профиля"
+                alt="Фото пользователя"
               />
             )}
           </div>
@@ -236,44 +276,16 @@ export function Profile({
                 )}
               </div>
               <div className={styles.profile_info}>
-                <label>Прошлые проекты:</label>
-                {isEditing ? (
-                  <textarea
-                    name="pastProjects"
-                    value={userEditData.pastProjects?.join(", ") || ""}
-                    onChange={(e) =>
-                      setUserEditData((prevData) => ({
-                        ...prevData,
-                        pastProjects: e.target.value.split(", "),
-                      }))
-                    }
-                  />
-                ) : (
-                  <ul>
-                    {userData.pastProjects?.map((project, index) => (
-                      <li key={index}>{project}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className={styles.profile_info}>
                 <label>Навыки:</label>
                 {isEditing ? (
                   <textarea
                     name="skills"
-                    value={userEditData.skills?.join(", ") || ""}
-                    onChange={(e) =>
-                      setUserEditData((prevData) => ({
-                        ...prevData,
-                        skills: e.target.value.split(", "),
-                      }))
-                    }
+                    value={userEditData.skills}
+                    onChange={handleInputChange}
                   />
                 ) : (
                   <ul>
-                    {userData.skills?.map((skill, index) => (
-                      <li key={index}>{skill}</li>
-                    ))}
+                    <li>{userData.skills}</li>
                   </ul>
                 )}
               </div>
@@ -306,27 +318,6 @@ export function Profile({
                   />
                 ) : (
                   <p>{userData.investmentFocus}</p>
-                )}
-              </div>
-              <div className={styles.profile_info}>
-                <label>Портфолио:</label>
-                {isEditing ? (
-                  <textarea
-                    name="portfolio"
-                    value={userEditData.portfolio?.join(", ") || ""}
-                    onChange={(e) =>
-                      setUserEditData((prevData) => ({
-                        ...prevData,
-                        portfolio: e.target.value.split(", "),
-                      }))
-                    }
-                  />
-                ) : (
-                  <ul>
-                    {userData.portfolio?.map((project, index) => (
-                      <li key={index}>{project}</li>
-                    ))}
-                  </ul>
                 )}
               </div>
             </>

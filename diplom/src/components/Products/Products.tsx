@@ -12,6 +12,8 @@ export function Products() {
       .then((responce) => setProjects(responce.data));
   };
 
+  const filterProject = projects.filter((prev) => prev.role === "entrepreneur");
+
   useEffect(() => {
     getAll();
   });
@@ -19,15 +21,14 @@ export function Products() {
     <div className={styles["main"]}>
       <Search isValid={false} />
       <div className={styles["products"]}>
-        {projects.map((item, index) => (
+        {filterProject.map((item, index) => (
           <Product
             key={index}
             id={item.id}
             title={item.title}
             tagline={item.tagline}
-            category={item.category}
             investment={item.investment}
-            stage={item.stage}
+            category={item.category}
           />
         ))}
       </div>

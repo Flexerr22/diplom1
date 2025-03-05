@@ -1,4 +1,3 @@
-import { Star } from "lucide-react";
 import Button from "../Button/Button";
 import styles from "./Product.module.css";
 import { Link } from "react-router-dom";
@@ -7,34 +6,32 @@ export interface ProductProps {
   id: number;
   title: string;
   tagline: string;
-  category: string;
   investment: string;
-  stage: string;
+  role?: string;
+  category: string;
 }
 
 export function Product({
   id,
   title,
   tagline,
-  category,
   investment,
-  stage,
+  category,
 }: ProductProps) {
   return (
     <div>
       <div className={styles["product"]}>
         <b className={styles["title"]}>"{title}" </b>
-        <textarea className={styles["description"]}>{tagline}</textarea>
-        <p className={styles["valueDescription"]}>
-          Специальность: {category}:{" "}
-        </p>
-        <div>
-          <b>Требуемые инвестиции</b>
+        <textarea className={styles["description"]} disabled>
+          {tagline}
+        </textarea>
+        <div className={styles["price"]}>
+          <b>Требуемые вложения:</b>
           <p>{investment}</p>
         </div>
-        <div>
-          <b>Стадия проекта</b>
-          <p>{stage}</p>
+        <div className={styles["reit"]}>
+          <b>Специальность: </b>
+          <p>{category}</p>
         </div>
         <div className={styles["product-bottom"]}>
           <Link to={`/project/${id}`}>
