@@ -44,6 +44,7 @@ interface CreateProjectRequest {
 export function CreateProject() {
   // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [role, setRole] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [projectData, setProjectData] = useState<CreateProjectRequest>({
     title: "",
     description: "",
@@ -53,6 +54,26 @@ export function CreateProject() {
     category: "",
     tagline: "",
   });
+
+  const validateInput = (value: string): boolean => {
+    // Проверка на специальные символы
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
+    if (!regex.test(value)) {
+      setError(
+        "Недопустимые символы. Разрешены только буквы, цифры, пробелы и @_."
+      );
+      return false;
+    }
+
+    // Проверка на несколько пробелов подряд
+    if (/\s{2,}/.test(value)) {
+      setError("Нельзя вводить более одного пробела подряд.");
+      return false;
+    }
+
+    setError(null); // Очищаем ошибку, если ввод корректен
+    return true;
+  };
 
   const postProject = async () => {
     const jwt = Cookies.get("jwt");
@@ -88,27 +109,24 @@ export function CreateProject() {
     >
   ) => {
     const { name, value } = e.target;
-    setProjectData((prevState) => ({ ...prevState, [name]: value }));
+
+    if (!validateInput(value)) {
+      return;
+    }
+
+    const trimmedValue = value.replace(/\s+/g, " ");
+
+    setProjectData((prevState) => ({ ...prevState, [name]: trimmedValue }));
   };
-
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     setSelectedFiles(Array.from(e.target.files));
-  //   }
-  // };
-
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   postProject();
-  // };
 
   return (
     <>
       <Header />
       <Container>
         <div className={styles.main}>
-          <h2>Создание проекта</h2>
+          {error && <div className={styles.error}>{error}</div>}
           <form className={styles.form} onSubmit={postProject}>
+            <h2>Создание проекта</h2>
             <div className={styles.main_info}>
               <p>Основная информация</p>
               <input
@@ -121,10 +139,11 @@ export function CreateProject() {
               />
               <textarea
                 name="description"
-                placeholder="Описание"
+                placeholder="Описание (максимум 255 символов)"
                 value={projectData.description}
                 onChange={handleInputChange}
                 required
+                maxLength={255}
               />
             </div>
 
@@ -134,9 +153,11 @@ export function CreateProject() {
                   <p>Основные детали проекта</p>
                   <textarea
                     name="tagline"
-                    placeholder="Краткое описание (до 200 символов)"
+                    placeholder="Краткое описание (до 255 символов)"
                     value={projectData.tagline}
                     onChange={handleInputChange}
+                    maxLength={255}
+                    required
                   />
                   <div className={styles.inputs}>
                     <input
@@ -145,6 +166,7 @@ export function CreateProject() {
                       placeholder="Категория/Специализация"
                       value={projectData.category}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -152,6 +174,7 @@ export function CreateProject() {
                       placeholder="Стадия проекта"
                       value={projectData.stage}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -159,6 +182,7 @@ export function CreateProject() {
                       placeholder="Ссылки"
                       value={projectData.links}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -166,6 +190,7 @@ export function CreateProject() {
                       placeholder="Выручка"
                       value={projectData.revenue}
                       onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
@@ -178,6 +203,7 @@ export function CreateProject() {
                       placeholder="Требуемые инвестиции"
                       value={projectData.investment}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -185,6 +211,7 @@ export function CreateProject() {
                       placeholder="Доля в проекте"
                       value={projectData.equity}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -192,6 +219,7 @@ export function CreateProject() {
                       placeholder="Тип инвестиций"
                       value={projectData.investmentType}
                       onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
@@ -204,6 +232,7 @@ export function CreateProject() {
                       placeholder="Опыт работы наставника"
                       value={projectData.mentorExperience}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -211,6 +240,7 @@ export function CreateProject() {
                       placeholder="Навыки наставника"
                       value={projectData.mentorSkills}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -218,6 +248,7 @@ export function CreateProject() {
                       placeholder="Формат работы с наставником"
                       value={projectData.mentorWorkFormat}
                       onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
@@ -227,49 +258,48 @@ export function CreateProject() {
                   <div className={styles.textareas}>
                     <textarea
                       name="team"
-                      placeholder="Команда"
+                      placeholder="Команда (максимум 255 символов)"
                       value={projectData.team}
                       onChange={handleInputChange}
+                      maxLength={255}
                     />
                     <textarea
                       name="goals"
-                      placeholder="Цели"
+                      placeholder="Цели (максимум 255 символов)"
                       value={projectData.goals}
                       onChange={handleInputChange}
+                      maxLength={255}
                     />
                     <textarea
                       name="problem"
-                      placeholder="Проблема"
+                      placeholder="Проблема (максимум 255 символов)"
                       value={projectData.problem}
                       onChange={handleInputChange}
+                      maxLength={255}
                     />
                     <textarea
                       name="solution"
-                      placeholder="Решение"
+                      placeholder="Решение (максимум 255 символов)"
                       value={projectData.solution}
                       onChange={handleInputChange}
+                      maxLength={255}
                     />
                     <textarea
                       name="targetAudience"
-                      placeholder="Целевая аудитория"
+                      placeholder="Целевая аудитория (максимум 255 символов)"
                       value={projectData.targetAudience}
                       onChange={handleInputChange}
+                      maxLength={255}
                     />
                     <textarea
                       name="risks"
-                      placeholder="Риски"
+                      placeholder="Риски (максимум 255 символов)"
                       value={projectData.risks}
                       onChange={handleInputChange}
+                      maxLength={255}
                     />
                   </div>
                 </div>
-                {/* <div className={styles.uploadSection}>
-                  <label>Прикрепить файлы</label>
-                  <input type="file" multiple onChange={handleImageChange} />
-                  {selectedFiles.map((file) => (
-                    <p key={file.name}>{file.name}</p>
-                  ))}
-                </div> */}
               </>
             )}
 
@@ -283,6 +313,7 @@ export function CreateProject() {
                     placeholder="Вид наставничества"
                     value={projectData.typeOfMentoring}
                     onChange={handleInputChange}
+                    required
                   />
                   <input
                     type="text"
@@ -290,6 +321,7 @@ export function CreateProject() {
                     placeholder="Опыт работы"
                     value={projectData.experience}
                     onChange={handleInputChange}
+                    required
                   />
                   <input
                     type="text"
@@ -297,6 +329,7 @@ export function CreateProject() {
                     placeholder="Роль в проекте"
                     value={projectData.role}
                     onChange={handleInputChange}
+                    required
                   />
                   <input
                     type="text"
@@ -304,13 +337,16 @@ export function CreateProject() {
                     placeholder="Навыки"
                     value={projectData.skills}
                     onChange={handleInputChange}
+                    required
                   />
                 </div>
                 <textarea
                   name="achievements"
-                  placeholder="Достижения"
+                  placeholder="Достижения (максимум 255 символов)"
                   value={projectData.achievements}
                   onChange={handleInputChange}
+                  maxLength={255}
+                  required
                 />
               </>
             )}
@@ -324,6 +360,7 @@ export function CreateProject() {
                     placeholder="Тип инвестиций"
                     value={projectData.typeOfInvestment}
                     onChange={handleInputChange}
+                    required
                   />
 
                   <input
@@ -332,6 +369,7 @@ export function CreateProject() {
                     placeholder="Бюджет"
                     value={projectData.budget}
                     onChange={handleInputChange}
+                    required
                   />
                   <input
                     type="text"
@@ -339,13 +377,16 @@ export function CreateProject() {
                     placeholder="Роль в проекте"
                     value={projectData.role}
                     onChange={handleInputChange}
+                    required
                   />
                 </div>
                 <textarea
                   name="results"
-                  placeholder="Результаты"
+                  placeholder="Результаты (максимум 255 символов)"
                   value={projectData.results}
                   onChange={handleInputChange}
+                  maxLength={255}
+                  required
                 />
               </>
             )}

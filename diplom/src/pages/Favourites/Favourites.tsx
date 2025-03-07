@@ -2,51 +2,52 @@ import { useEffect, useState } from "react";
 import Header from "../../components/Header/Header";
 import axios from "axios";
 import { Container } from "../../components/Container/Container";
-import { useParams } from "react-router-dom";
-import styles from "./MyProjects.module.css";
+import styles from "./Favourites.module.css";
 import { ProductProps } from "../../components/Product/Product";
+import { Project } from "../../components/Project/Project";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
-import Button from "../../components/Button/Button";
-import { MyProject } from "../../components/MyProject/MyProject";
-
-function MyProjects() {
-  const { user_id } = useParams<{ user_id: string }>();
+function Favourites() {
   const [projects, setProjects] = useState<ProductProps[]>([]);
 
-  useEffect(() => {
-    const getMyProject = async () => {
-      try {
-        const response = await axios.get<ProductProps[]>(
-          `http://127.0.0.1:8000/projects/my-projects/${user_id}`
-        );
-        setProjects(response.data);
-      } catch (error) {
-        console.error("Ошибка при загрузке проекта:", error);
-      }
-    };
+  const getMyProject = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      console.error("JWT-токен отсутствует");
+      return;
+    }
 
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const user_id = parseInt(decoded.sub, 10);
+    try {
+      const response = await axios.get<ProductProps[]>(
+        `http://127.0.0.1:8000/users/favorites/${user_id}`
+      );
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Ошибка при загрузке проекта:", error);
+    }
+  };
+
+  useEffect(() => {
     getMyProject();
-  }, [user_id]);
+  });
 
   return (
     <>
       <Header />
       <Container>
         {projects.length === 0 ? (
-          <div className={styles.button}>
-            <p>Создайте ваш первый проект</p>
-            <a href="/add" className="button_project">
-              <Button appearence="small" className="button_project">
-                Добавить проект
-              </Button>
-            </a>
+          <div className={styles.error}>
+            Добавьте проекты которые вам понравились
           </div>
         ) : (
           <div className={styles.main}>
-            <b className={styles.title}>Мои проекты</b>
+            <b className={styles.title}>Избранное</b>
             <div className={styles["products"]}>
               {projects.map((item, index) => (
-                <MyProject
+                <Project
                   key={index}
                   id={item.id}
                   title={item.title}
@@ -67,4 +68,4 @@ function MyProjects() {
     </>
   );
 }
-export default MyProjects;
+export default Favourites;

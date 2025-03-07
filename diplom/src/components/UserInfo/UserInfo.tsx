@@ -5,12 +5,25 @@ import axios from "axios";
 import { Container } from "../Container/Container";
 import styles from "./UserInfo.module.css"; // Создайте файл стилей UserInfo.module.css
 import Header from "../Header/Header";
+import { Product, ProductProps } from "../Product/Product";
 
 export function UserInfo() {
   const { user_id } = useParams<{ user_id: string }>();
   const [user, setUser] = useState<ProfileInfo | null>(null);
+  const [projects, setProjects] = useState<ProductProps[]>([]); // Используем массив
 
   useEffect(() => {
+    const getMyProject = async () => {
+      try {
+        const response = await axios.get<ProductProps[]>(
+          `http://127.0.0.1:8000/projects/my-projects/${user_id}`
+        );
+        console.log("Данные получены:", response.data); // Отладочный вывод
+        setProjects(response.data);
+      } catch (error) {
+        console.error("Ошибка при загрузке проекта:", error);
+      }
+    };
     const getUserById = async () => {
       try {
         const response = await axios.get<ProfileInfo>(
@@ -21,7 +34,7 @@ export function UserInfo() {
         console.error("Ошибка при загрузке пользователя:", error);
       }
     };
-
+    getMyProject();
     getUserById();
   }, [user_id]);
 
@@ -34,8 +47,8 @@ export function UserInfo() {
       <Header />
       <Container>
         <div className={styles.main}>
-          <h2>{user.name}</h2>
           <div className={styles.form}>
+            <h2>{user.name}</h2>
             <div className={styles.main_info}>
               <p>Основная информация</p>
               <div className={styles.field}>
@@ -126,25 +139,24 @@ export function UserInfo() {
                 )}
               </div>
             </div>
-
-            {user.portfolio && user.portfolio.length > 0 && (
-              <div>
-                <p>Портфолио</p>
-                <div className={styles.textareas}>
-                  {user.portfolio.map((item, index) => (
-                    <div key={index} className={styles.field}>
-                      <label>Проект {index + 1}:</label>
-                      <textarea
-                        value={item}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Проект"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          </div>
+          <b className={styles.title}>Последние успешные проекты</b>
+          <div className={styles["products"]}>
+            {projects.map((item, index) => (
+              <Product
+                key={index}
+                id={item.id}
+                title={item.title}
+                tagline={item.tagline}
+                investment={item.investment}
+                category={item.category}
+                budget={item.budget}
+                experience={item.experience}
+                role={item.role}
+                description={item.description}
+                skills={item.skills}
+              />
+            ))}
           </div>
         </div>
       </Container>

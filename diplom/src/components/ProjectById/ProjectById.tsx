@@ -66,8 +66,8 @@ export function ProjectById() {
       <Header />
       <Container>
         <div className={styles.main}>
-          <h2>{project.title}</h2>
           <div className={styles.form}>
+            <h2>{project.title}</h2>
             <div className={styles.main_info}>
               <p>Основная информация</p>
               <div className={styles.field}>

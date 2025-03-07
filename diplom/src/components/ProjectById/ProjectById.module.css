@@ -1,5 +1,5 @@
 .main {
-  margin-top: 90px;
+  margin-top: 50px;
   display: flex;
   flex-direction: column;
 }
@@ -13,6 +13,8 @@
   flex-direction: column;
   padding: 65px 60px 60px 65px;
   margin-top: 50px;
+  border-radius: 15px;
+  margin-bottom: 50px;
 }
 .form p {
   font-size: 20px;

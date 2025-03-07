@@ -50,8 +50,8 @@
 .product-bottom {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   padding: 0 36px 32px 45px;
+  gap: 20px;
 }
 
 .reit {

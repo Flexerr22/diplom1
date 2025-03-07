@@ -35,6 +35,7 @@ export function Profile({
   const [userData, setUserData] = useState<ProfileInfo | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [userEditData, setUserEditData] = useState<ProfileInfo>({
     email: "",
     name: "",
@@ -61,6 +62,11 @@ export function Profile({
         console.log("Ошибка");
       }
     }
+  };
+
+  const validateInput = (value: string): boolean => {
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,!?()@_-]*$/; // Разрешенные символы, включая @ и _
+    return regex.test(value);
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +113,34 @@ export function Profile({
       return;
     }
 
+    // Объект с обязательными полями для каждой роли
+    const requiredFields: { [key: string]: (keyof ProfileInfo)[] } = {
+      mentor: [
+        "name",
+        "email",
+        "description",
+        "specialization",
+        "experience",
+        "skills",
+      ],
+      investor: ["name", "email", "description", "budget", "investmentFocus"],
+      entrepreneur: ["name", "email", "description", "specialization"],
+    };
+
+    // Получаем текущую роль
+    const role = Cookies.get("role") || "";
+
+    // Получаем обязательные поля для текущей роли
+    const fieldsToCheck = requiredFields[role] || [];
+
+    // Проверяем, что все обязательные поля заполнены
+    const isFormValid = fieldsToCheck.every((field) => userEditData[field]);
+
+    if (!isFormValid) {
+      alert("Пожалуйста, заполните все обязательные поля.");
+      return;
+    }
+
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = decoded.sub;
@@ -118,7 +152,7 @@ export function Profile({
         formData.append("avatar", file);
       }
 
-      // Явно добавляем все поля, заменяя undefined на пустую строку
+      // Явно добавляем все поля
       formData.append("name", userEditData.name || "");
       formData.append("email", userEditData.email || "");
       formData.append("description", userEditData.description || "");
@@ -160,10 +194,21 @@ export function Profile({
   ) => {
     const { name, value } = e.target;
 
-    // Если поле пустое, ставим null
+    // Проверка на специальные символы
+    if (!validateInput(value)) {
+      setError(
+        "Недопустимые символы. Разрешены только буквы, цифры и пробелы."
+      );
+      return;
+    }
+
+    // Убираем лишние пробелы и сохраняем как строку
+    const trimmedValue = value.replace(/\s+/g, " ");
+
+    setError(null);
     setUserEditData((prev) => ({
       ...prev,
-      [name]: value === "" ? null : value,
+      [name]: trimmedValue, // Всегда сохраняем строку, даже пустую
     }));
   };
 
@@ -187,6 +232,7 @@ export function Profile({
     <div className={styles["modal_main"]} onClick={handleClickOutside}>
       <div className={styles["modal_secondary"]}>
         <div className={styles.profile}>
+          {error && <div className={styles.error}>{error}</div>}
           <div className={styles.profile_info}>
             {isEditing ? (
               <input
@@ -214,6 +260,7 @@ export function Profile({
                   name="email"
                   value={userEditData.email || ""}
                   onChange={handleInputChange}
+                  maxLength={50}
                 />
               ) : (
                 <p>{userData.email}</p>
@@ -227,6 +274,7 @@ export function Profile({
                   name="name"
                   value={userEditData.name || ""}
                   onChange={handleInputChange}
+                  maxLength={15}
                 />
               ) : (
                 <p>{userData.name}</p>
@@ -241,9 +289,11 @@ export function Profile({
                 name="description"
                 value={userEditData.description || ""}
                 onChange={handleInputChange}
+                maxLength={255}
+                required
               />
             ) : (
-              <p>{userData.description}</p>
+              <textarea>{userData.description}</textarea>
             )}
           </div>
           <div className={styles.profile_info}>
@@ -254,6 +304,8 @@ export function Profile({
                 name="specialization"
                 value={userEditData.specialization || ""}
                 onChange={handleInputChange}
+                maxLength={50}
+                required
               />
             ) : (
               <p>{userData.specialization}</p>
@@ -270,6 +322,8 @@ export function Profile({
                     name="experience"
                     value={userEditData.experience || ""}
                     onChange={handleInputChange}
+                    maxLength={30}
+                    required
                   />
                 ) : (
                   <p>{userData.experience}</p>
@@ -282,6 +336,8 @@ export function Profile({
                     name="skills"
                     value={userEditData.skills}
                     onChange={handleInputChange}
+                    maxLength={50}
+                    required
                   />
                 ) : (
                   <ul>
@@ -302,6 +358,8 @@ export function Profile({
                     name="budget"
                     value={userEditData.budget || ""}
                     onChange={handleInputChange}
+                    maxLength={15}
+                    required
                   />
                 ) : (
                   <p>{userData.budget}</p>
@@ -315,6 +373,8 @@ export function Profile({
                     name="investmentFocus"
                     value={userEditData.investmentFocus || ""}
                     onChange={handleInputChange}
+                    maxLength={20}
+                    required
                   />
                 ) : (
                   <p>{userData.investmentFocus}</p>

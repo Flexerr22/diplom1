@@ -99,8 +99,13 @@ function Header() {
               {activeModal === "messages" && (
                 <Messages setActiveModal={setActiveModal} />
               )}
-
-              <img src="/like.svg" alt="Избранное" />
+              {userRole === "mentor" || userRole === "investor" ? (
+                <a href="/favourites">
+                  <img src="/like.svg" alt="Избранное" />
+                </a>
+              ) : (
+                ""
+              )}
             </nav>
             {!isAuth ? (
               <Button

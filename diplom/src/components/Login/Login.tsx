@@ -48,6 +48,7 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
       });
       setIsAuth(true);
       closeModal();
+      window.location.reload();
     } catch (e) {
       if (e instanceof AxiosError) {
         if (e.response?.status === 401) {

@@ -19,17 +19,9 @@
   gap: 44px;
   margin-top: 40px;
 }
-.button {
+
+.error {
   margin-top: 100px;
-}
-.button p {
   font-size: 24px;
-  font-weight: 500;
-}
-.button button {
-  background-color: black;
-  color: white;
-  font-size: 16px;
-  padding: 10px 30px;
-  width: 250px;
+  font-weight: 600;
 }
