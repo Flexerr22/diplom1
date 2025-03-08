@@ -6,6 +6,7 @@ import { RolesData, RolesGroupProps } from "../RolesData/RolesData";
 
 export function RolesGroupMentor() {
   const [users, setUsers] = useState<RolesGroupProps[]>([]);
+  const [search, setSearch] = useState("");
 
   const getAll = async () => {
     await axios
@@ -14,14 +15,22 @@ export function RolesGroupMentor() {
   };
   const mentorData = users.filter((prev) => prev.role === "mentor");
 
+  const mentorDataSearch = mentorData.filter((user) =>
+    user.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
+
   useEffect(() => {
     getAll();
   });
   return (
     <div className={styles["main"]}>
-      <Search isValid={false} />
+      <Search isValid={false} onChange={handleSearch} />
       <div className={styles["products"]}>
-        {mentorData.map((item, index) => (
+        {mentorDataSearch.map((item, index) => (
           <RolesData
             key={index}
             id={item.id}

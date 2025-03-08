@@ -15,29 +15,13 @@ export function Products() {
       .then((response) => setProjects(response.data));
   };
 
-  // Поля для поиска
-  const searchFields: (keyof ProductProps)[] = [
-    "title",
-    "category",
-    "description",
-  ];
-
   // Фильтрация проектов по роли "entrepreneur"
   const filterProject = projects.filter((prev) => prev.role === "entrepreneur");
 
-  // Фильтрация проектов по поисковому запросу
   const filteredProjects = filterProject.filter((project) =>
-    searchFields.some((field) => {
-      const fieldValue = project[field];
-      // Проверяем, что поле существует и является строкой
-      return (
-        typeof fieldValue === "string" &&
-        fieldValue.toLowerCase().includes(search.toLowerCase())
-      );
-    })
+    project.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Загрузка проектов при монтировании компонента
   useEffect(() => {
     getAll();
   }, []); // Пустой массив зависимостей, чтобы useEffect сработал только один раз
