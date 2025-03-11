@@ -50,6 +50,33 @@ export function Profile({
     portfolio: [],
   });
 
+  // Списки для выпадающих списков
+  const specializations = [
+    "Программирование",
+    "Дизайн",
+    "Маркетинг",
+    "Финансы",
+    "Образование",
+    "Медицина",
+    "Искусство",
+    "Строительство",
+    "Наука",
+    "Спорт",
+  ];
+
+  const investmentFocuses = [
+    "Технологии",
+    "Недвижимость",
+    "Здравоохранение",
+    "Образование",
+    "Энергетика",
+    "Транспорт",
+    "Сельское хозяйство",
+    "Финансовые услуги",
+    "Розничная торговля",
+    "Искусство и культура",
+  ];
+
   const deleteProfile = async () => {
     try {
       await axios.post("http://127.0.0.1:8000/users/logout");
@@ -65,14 +92,14 @@ export function Profile({
   };
 
   const validateInput = (value: string): boolean => {
-    const regex = /^[a-zA-Zа-яА-Я0-9\s.,!?()@_-]*$/; // Разрешенные символы, включая @ и _
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,!?()@_-]*$/;
     return regex.test(value);
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
 
-    if (name === "photo_url" && files && files[0]) {
+    if (name === "avatar" && files && files[0]) {
       setFile(files[0]);
     } else {
       setUserEditData((prev) => ({ ...prev, [name]: value }));
@@ -113,7 +140,7 @@ export function Profile({
       return;
     }
 
-    // Объект с обязательными полями для каждой роли
+    // Проверка обязательных полей
     const requiredFields: { [key: string]: (keyof ProfileInfo)[] } = {
       mentor: [
         "name",
@@ -127,17 +154,12 @@ export function Profile({
       entrepreneur: ["name", "email", "description", "specialization"],
     };
 
-    // Получаем текущую роль
     const role = Cookies.get("role") || "";
-
-    // Получаем обязательные поля для текущей роли
     const fieldsToCheck = requiredFields[role] || [];
-
-    // Проверяем, что все обязательные поля заполнены
     const isFormValid = fieldsToCheck.every((field) => userEditData[field]);
 
     if (!isFormValid) {
-      alert("Пожалуйста, заполните все обязательные поля.");
+      alert("Пожалуйста, заполните все поля");
       return;
     }
 
@@ -150,9 +172,12 @@ export function Profile({
       // Добавляем файл, если он есть
       if (file) {
         formData.append("avatar", file);
+        console.log("Файл добавлен в FormData");
+      } else {
+        console.log("Файл отсутствует");
       }
 
-      // Явно добавляем все поля
+      // Добавляем остальные поля
       formData.append("name", userEditData.name || "");
       formData.append("email", userEditData.email || "");
       formData.append("description", userEditData.description || "");
@@ -163,18 +188,26 @@ export function Profile({
       formData.append("budget", userEditData.budget || "");
       formData.append("investmentFocus", userEditData.investmentFocus || "");
 
-      // Обрабатываем массив portfolio
       if (userEditData.portfolio) {
         userEditData.portfolio.forEach((item) => {
           formData.append("portfolio", item);
         });
       }
 
+      // Отправляем данные на сервер
       const response = await axios.patch<ProfileInfo>(
         `http://127.0.0.1:8000/users/update-user/${user_id}`,
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
+      console.log("Обновленные данные:", response.data);
+
+      // Обновляем состояние
       setUserData((prev) => ({
         ...prev,
         ...response.data,
@@ -190,7 +223,9 @@ export function Profile({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
 
@@ -208,7 +243,7 @@ export function Profile({
     setError(null);
     setUserEditData((prev) => ({
       ...prev,
-      [name]: trimmedValue, // Всегда сохраняем строку, даже пустую
+      [name]: trimmedValue,
     }));
   };
 
@@ -244,7 +279,7 @@ export function Profile({
               />
             ) : (
               <img
-                src="/team.avif"
+                src={`http://127.0.0.1:8000/${userData.avatar}`}
                 width={100}
                 height={100}
                 alt="Фото пользователя"
@@ -260,7 +295,7 @@ export function Profile({
                   name="email"
                   value={userEditData.email || ""}
                   onChange={handleInputChange}
-                  maxLength={50}
+                  maxLength={30}
                 />
               ) : (
                 <p>{userData.email}</p>
@@ -299,14 +334,21 @@ export function Profile({
           <div className={styles.profile_info}>
             <label>Специализация:</label>
             {isEditing ? (
-              <input
-                type="text"
+              <select
                 name="specialization"
                 value={userEditData.specialization || ""}
                 onChange={handleInputChange}
-                maxLength={50}
                 required
-              />
+              >
+                <option value="" disabled>
+                  Выберите специализацию
+                </option>
+                {specializations.map((specialization, index) => (
+                  <option key={index} value={specialization}>
+                    {specialization}
+                  </option>
+                ))}
+              </select>
             ) : (
               <p>{userData.specialization}</p>
             )}
@@ -368,14 +410,21 @@ export function Profile({
               <div className={styles.profile_info}>
                 <label>Направление инвестиций:</label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <select
                     name="investmentFocus"
                     value={userEditData.investmentFocus || ""}
                     onChange={handleInputChange}
-                    maxLength={20}
                     required
-                  />
+                  >
+                    <option value="" disabled>
+                      Выберите направление
+                    </option>
+                    {investmentFocuses.map((focus, index) => (
+                      <option key={index} value={focus}>
+                        {focus}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <p>{userData.investmentFocus}</p>
                 )}

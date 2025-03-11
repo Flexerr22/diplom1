@@ -42,12 +42,11 @@ export function Project({
     const project_id = id;
 
     try {
-      const response = await axios.delete(
+      await axios.delete(
         `http://127.0.0.1:8000/users/favorites/delete-from-favorites/${user_id}/${project_id}`
       );
       localStorage.removeItem("favorites");
-      console.log("Ответ сервера:", response.data); // Отладочный вывод
-      alert("Проект успешно удален из избранного");
+      window.location.reload();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Ошибка сервера:", error.response?.data); // Вывод данных ошибки

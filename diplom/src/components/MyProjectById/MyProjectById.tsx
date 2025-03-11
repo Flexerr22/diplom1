@@ -74,7 +74,70 @@ export function MyProjectById() {
     results: "",
     user_id: 0,
   });
-  const [isEditing, setIsEditing] = useState(false); // Состояние для режима редактирования
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Списки для выпадающих списков
+  const categories = [
+    "Программирование",
+    "Дизайн",
+    "Маркетинг",
+    "Финансы",
+    "Образование",
+    "Медицина",
+    "Искусство",
+    "Строительство",
+    "Наука",
+    "Спорт",
+  ];
+
+  const stages = [
+    "Идея",
+    "Прототип",
+    "Разработка",
+    "Тестирование",
+    "Запуск",
+    "Масштабирование",
+    "Поддержка",
+    "Завершен",
+  ];
+
+  const investmentTypes = [
+    "Ангельские инвестиции",
+    "Венчурные инвестиции",
+    "Краудфандинг",
+    "Гранты",
+    "Кредиты",
+  ];
+
+  const mentorWorkFormats = ["Онлайн", "Оффлайн", "Гибридный"];
+
+  const mentoringTypes = [
+    "Карьерное консультирование",
+    "Техническое наставничество",
+    "Бизнес-менторство",
+    "Коучинг",
+  ];
+
+  const roles = [
+    "Основатель",
+    "Инвестор",
+    "Наставник",
+    "Разработчик",
+    "Маркетолог",
+  ];
+
+  const skillsList = [
+    "Программирование",
+    "Дизайн",
+    "Аналитика данных",
+    "Управление проектами",
+    "Маркетинг",
+  ];
+
+  // Функция для валидации пробелов
+  const validateSpaces = (value: string): string => {
+    return value.replace(/\s{2,}/g, " ");
+  };
 
   useEffect(() => {
     const getProjectById = async () => {
@@ -83,7 +146,7 @@ export function MyProjectById() {
           `http://127.0.0.1:8000/projects/${project_id}`
         );
         setProject(response.data);
-        setEditData(response.data); // Инициализируем editData данными проекта
+        setEditData(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке проекта:", error);
       }
@@ -93,12 +156,18 @@ export function MyProjectById() {
   }, [project_id]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
+
+    // Валидация: убираем лишние пробелы
+    const validatedValue = validateSpaces(value);
+
     setEditData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: validatedValue,
     }));
   };
 
@@ -108,8 +177,8 @@ export function MyProjectById() {
         `http://127.0.0.1:8000/projects/update-project/${project_id}`,
         editData
       );
-      setProject(response.data); // Обновляем данные проекта
-      setIsEditing(false); // Выходим из режима редактирования
+      setProject(response.data);
+      setIsEditing(false);
       alert("Проект успешно обновлен!");
     } catch (error) {
       console.error("Ошибка при обновлении проекта:", error);
@@ -200,14 +269,22 @@ export function MyProjectById() {
                   <div className={styles.field}>
                     <label>Категория:</label>
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <select
                         name="category"
                         value={editData.category}
                         onChange={handleInputChange}
                         className={styles.input}
-                        placeholder="Категория"
-                      />
+                        required
+                      >
+                        <option value="" disabled>
+                          Выберите категорию
+                        </option>
+                        {categories.map((category, index) => (
+                          <option key={index} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type="text"
@@ -223,14 +300,22 @@ export function MyProjectById() {
                   <div className={styles.field}>
                     <label>Стадия:</label>
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <select
                         name="stage"
                         value={editData.stage}
                         onChange={handleInputChange}
                         className={styles.input}
-                        placeholder="Стадия"
-                      />
+                        required
+                      >
+                        <option value="" disabled>
+                          Выберите стадию
+                        </option>
+                        {stages.map((stage, index) => (
+                          <option key={index} value={stage}>
+                            {stage}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type="text"
@@ -342,14 +427,22 @@ export function MyProjectById() {
                   <div className={styles.field}>
                     <label>Тип инвестиций:</label>
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <select
                         name="investmentType"
                         value={editData.investmentType}
                         onChange={handleInputChange}
                         className={styles.input}
-                        placeholder="Тип инвестиций"
-                      />
+                        required
+                      >
+                        <option value="" disabled>
+                          Выберите тип инвестиций
+                        </option>
+                        {investmentTypes.map((type, index) => (
+                          <option key={index} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type="text"
@@ -417,14 +510,22 @@ export function MyProjectById() {
                   <div className={styles.field}>
                     <label>Формат работы:</label>
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <select
                         name="mentorWorkFormat"
                         value={editData.mentorWorkFormat}
                         onChange={handleInputChange}
                         className={styles.input}
-                        placeholder="Формат работы"
-                      />
+                        required
+                      >
+                        <option value="" disabled>
+                          Выберите формат работы
+                        </option>
+                        {mentorWorkFormats.map((format, index) => (
+                          <option key={index} value={format}>
+                            {format}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type="text"
@@ -578,14 +679,22 @@ export function MyProjectById() {
                   <div className={styles.field}>
                     <label>Тип менторства:</label>
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <select
                         name="typeOfMentoring"
                         value={editData.typeOfMentoring}
                         onChange={handleInputChange}
                         className={styles.input}
-                        placeholder="Тип менторства"
-                      />
+                        required
+                      >
+                        <option value="" disabled>
+                          Выберите тип менторства
+                        </option>
+                        {mentoringTypes.map((type, index) => (
+                          <option key={index} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type="text"
@@ -623,14 +732,22 @@ export function MyProjectById() {
                     <div className={styles.field}>
                       <label>Навыки:</label>
                       {isEditing ? (
-                        <input
-                          type="text"
+                        <select
                           name="skills"
                           value={editData.skills}
                           onChange={handleInputChange}
                           className={styles.input}
-                          placeholder="Навыки"
-                        />
+                          required
+                        >
+                          <option value="" disabled>
+                            Выберите навыки
+                          </option>
+                          {skillsList.map((skill, index) => (
+                            <option key={index} value={skill}>
+                              {skill}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
                         <input
                           type="text"
@@ -674,14 +791,22 @@ export function MyProjectById() {
                   <div className={styles.field}>
                     <label>Тип инвестиций:</label>
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <select
                         name="typeOfInvestment"
                         value={editData.typeOfInvestment}
                         onChange={handleInputChange}
                         className={styles.input}
-                        placeholder="Тип инвестиций"
-                      />
+                        required
+                      >
+                        <option value="" disabled>
+                          Выберите тип инвестиций
+                        </option>
+                        {investmentTypes.map((type, index) => (
+                          <option key={index} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type="text"
@@ -719,14 +844,22 @@ export function MyProjectById() {
                     <div className={styles.field}>
                       <label>Роль:</label>
                       {isEditing ? (
-                        <input
-                          type="text"
+                        <select
                           name="role"
                           value={editData.role}
                           onChange={handleInputChange}
                           className={styles.input}
-                          placeholder="Роль"
-                        />
+                          required
+                        >
+                          <option value="" disabled>
+                            Выберите роль
+                          </option>
+                          {roles.map((role, index) => (
+                            <option key={index} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
                         <input
                           type="text"

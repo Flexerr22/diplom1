@@ -25,6 +25,17 @@
   font-family: var(--secondary-font);
   font-weight: 500;
 }
+.profile select {
+  box-sizing: border-box;
+  border: 1px solid #dbdbdb;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
+  outline: none;
+  width: 250px;
+  font-family: var(--secondary-font);
+  font-weight: 500;
+}
 .profile textarea {
   border: 1px solid #dbdbdb;
   padding: 0.5rem 1rem;

@@ -16,7 +16,7 @@ export function RolesGroupMentor() {
   const mentorData = users.filter((prev) => prev.role === "mentor");
 
   const mentorDataSearch = mentorData.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase())
+    user.specialization.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

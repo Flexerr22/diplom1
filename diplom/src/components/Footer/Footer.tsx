@@ -10,27 +10,27 @@ export function Footer() {
           <div className={styles["title"]}>
             <p>Инвесторам</p>
             <div className={styles["footer_text"]}>
-              <p>Как начать?</p>
-              <p>Проекты</p>
-              <p>О нас</p>
+              <a href="/">Как начать?</a>
+              <a href="/projects">Проекты</a>
+              <a href="/">О нас</a>
             </div>
           </div>
 
           <div className={styles["title"]}>
             <p>Предпринимателям</p>
             <div className={styles["footer_text"]}>
-              <p>Как начать?</p>
-              <p>Проекты</p>
-              <p>О нас</p>
+              <a href="/">Как начать?</a>
+              <a href="/projects">Проекты</a>
+              <a href="/">О нас</a>
             </div>
           </div>
 
           <div className={styles["title"]}>
             <p>Наставникам</p>
             <div className={styles["footer_text"]}>
-              <p>Как начать?</p>
-              <p>Проекты</p>
-              <p>О нас</p>
+              <a href="/">Как начать?</a>
+              <a href="/projects">Проекты</a>
+              <a href="/">О нас</a>
             </div>
           </div>
         </div>

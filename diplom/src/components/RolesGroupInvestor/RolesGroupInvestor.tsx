@@ -16,7 +16,7 @@ export function RolesGroupInvestor() {
   const investorData = users.filter((prev) => prev.role === "investor");
 
   const investorDataSearch = investorData.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase())
+    user.specialization.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

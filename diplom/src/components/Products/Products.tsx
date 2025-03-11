@@ -19,7 +19,7 @@ export function Products() {
   const filterProject = projects.filter((prev) => prev.role === "entrepreneur");
 
   const filteredProjects = filterProject.filter((project) =>
-    project.title.toLowerCase().includes(search.toLowerCase())
+    project.category.toLowerCase().includes(search.toLowerCase())
   );
 
   useEffect(() => {
