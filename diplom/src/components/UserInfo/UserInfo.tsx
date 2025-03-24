@@ -5,7 +5,8 @@ import axios from "axios";
 import { Container } from "../Container/Container";
 import styles from "./UserInfo.module.css"; // Создайте файл стилей UserInfo.module.css
 import Header from "../Header/Header";
-import { Product, ProductProps } from "../Product/Product";
+import { ProjectLast } from "../ProjectLast/ProjectLast";
+import { ProductProps } from "../../helpers/projects.props";
 
 export function UserInfo() {
   const { user_id } = useParams<{ user_id: string }>();
@@ -143,7 +144,7 @@ export function UserInfo() {
           <b className={styles.title}>Последние успешные проекты</b>
           <div className={styles["products"]}>
             {projects.map((item, index) => (
-              <Product
+              <ProjectLast
                 key={index}
                 id={item.id}
                 title={item.title}

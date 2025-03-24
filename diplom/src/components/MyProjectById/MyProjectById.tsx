@@ -5,39 +5,8 @@ import { useParams } from "react-router-dom";
 import Header from "../Header/Header";
 import { Container } from "../Container/Container";
 import Button from "../Button/Button";
-
-export interface ProductByIdProps {
-  title: string;
-  description: string;
-  tagline?: string;
-  category?: string;
-  stage?: string;
-  investment?: string;
-  equity?: string;
-  investmentType?: string;
-  team?: string;
-  links?: string;
-  revenue?: string;
-  goals?: string;
-  problem?: string;
-  solution?: string;
-  targetAudience?: string;
-  risks?: string;
-  mentorExperience?: string;
-  mentorSkills?: string;
-  mentorWorkFormat?: string;
-  mentorCollaborationGoals?: string;
-  mentorCollaborationTerms?: string;
-  typeOfMentoring?: string;
-  experience?: string;
-  role?: string;
-  achievements?: string;
-  skills?: string;
-  typeOfInvestment?: string;
-  budget?: string;
-  results?: string;
-  user_id?: number;
-}
+import Cookies from "js-cookie";
+import { ProductByIdProps } from "../../helpers/projects.props";
 
 export function MyProjectById() {
   const { project_id } = useParams<{ project_id: string }>();
@@ -75,6 +44,7 @@ export function MyProjectById() {
     user_id: 0,
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
 
   // Списки для выпадающих списков
   const categories = [
@@ -118,14 +88,6 @@ export function MyProjectById() {
     "Коучинг",
   ];
 
-  const roles = [
-    "Основатель",
-    "Инвестор",
-    "Наставник",
-    "Разработчик",
-    "Маркетолог",
-  ];
-
   const skillsList = [
     "Программирование",
     "Дизайн",
@@ -133,6 +95,14 @@ export function MyProjectById() {
     "Управление проектами",
     "Маркетинг",
   ];
+
+  useEffect(() => {
+    const role = Cookies.get("role");
+
+    if (role) {
+      setCurrentUserRole(role);
+    }
+  }, []);
 
   // Функция для валидации пробелов
   const validateSpaces = (value: string): string => {
@@ -161,10 +131,7 @@ export function MyProjectById() {
     >
   ) => {
     const { name, value } = e.target;
-
-    // Валидация: убираем лишние пробелы
     const validatedValue = validateSpaces(value);
-
     setEditData((prev) => ({
       ...prev,
       [name]: validatedValue,
@@ -196,12 +163,13 @@ export function MyProjectById() {
       <Container>
         <div className={styles.main}>
           <div className={styles.form}>
+            {/* Основная информация (отображается для всех ролей) */}
             <div className={styles.main_info}>
               <h2>{project.title}</h2>
               <p>Основная информация</p>
               <div className={styles.field}>
                 <label>Название:</label>
-                {isEditing ? (
+                {isEditing && currentUserRole === "entrepreneur" ? (
                   <input
                     type="text"
                     name="title"
@@ -222,7 +190,7 @@ export function MyProjectById() {
               </div>
               <div className={styles.field}>
                 <label>Описание:</label>
-                {isEditing ? (
+                {isEditing && currentUserRole === "entrepreneur" ? (
                   <textarea
                     name="description"
                     value={editData.description}
@@ -241,473 +209,481 @@ export function MyProjectById() {
               </div>
             </div>
 
-            <div className={styles.main_details}>
-              <p>Основные детали проекта</p>
-              {project.tagline && (
-                <div className={styles.field}>
-                  <label>Краткое описание:</label>
-                  {isEditing ? (
-                    <textarea
-                      name="tagline"
-                      value={editData.tagline}
-                      onChange={handleInputChange}
-                      className={styles.textarea}
-                      placeholder="Краткое описание"
-                    />
-                  ) : (
-                    <textarea
-                      value={project.tagline}
-                      readOnly
-                      className={styles.textarea}
-                      placeholder="Краткое описание"
-                    />
+            {/* Секции для предпринимателя */}
+            {currentUserRole === "entrepreneur" && (
+              <>
+                <div className={styles.main_details}>
+                  <p>Основные детали проекта</p>
+                  {project.tagline && (
+                    <div className={styles.field}>
+                      <label>Краткое описание:</label>
+                      {isEditing ? (
+                        <textarea
+                          name="tagline"
+                          value={editData.tagline}
+                          onChange={handleInputChange}
+                          className={styles.textarea}
+                          placeholder="Краткое описание"
+                        />
+                      ) : (
+                        <textarea
+                          value={project.tagline}
+                          readOnly
+                          className={styles.textarea}
+                          placeholder="Краткое описание"
+                        />
+                      )}
+                    </div>
                   )}
+                  <div className={styles.inputs}>
+                    {project.category && (
+                      <div className={styles.field}>
+                        <label>Категория:</label>
+                        {isEditing ? (
+                          <select
+                            name="category"
+                            value={editData.category}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            required
+                          >
+                            <option value="" disabled>
+                              Выберите категорию
+                            </option>
+                            {categories.map((category, index) => (
+                              <option key={index} value={category}>
+                                {category}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.category}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Категория"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.stage && (
+                      <div className={styles.field}>
+                        <label>Стадия:</label>
+                        {isEditing ? (
+                          <select
+                            name="stage"
+                            value={editData.stage}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            required
+                          >
+                            <option value="" disabled>
+                              Выберите стадию
+                            </option>
+                            {stages.map((stage, index) => (
+                              <option key={index} value={stage}>
+                                {stage}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.stage}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Стадия"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.links && (
+                      <div className={styles.field}>
+                        <label>Ссылки:</label>
+                        {isEditing ? (
+                          <input
+                            name="links"
+                            value={editData.links}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Ссылки"
+                          />
+                        ) : (
+                          <input
+                            value={project.links}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Ссылки"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.revenue && (
+                      <div className={styles.field}>
+                        <label>Выручка:</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="revenue"
+                            value={editData.revenue}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Выручка"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.revenue}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Выручка"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              <div className={styles.inputs}>
-                {project.category && (
-                  <div className={styles.field}>
-                    <label>Категория:</label>
-                    {isEditing ? (
-                      <select
-                        name="category"
-                        value={editData.category}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        required
-                      >
-                        <option value="" disabled>
-                          Выберите категорию
-                        </option>
-                        {categories.map((category, index) => (
-                          <option key={index} value={category}>
-                            {category}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.category}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Категория"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.stage && (
-                  <div className={styles.field}>
-                    <label>Стадия:</label>
-                    {isEditing ? (
-                      <select
-                        name="stage"
-                        value={editData.stage}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        required
-                      >
-                        <option value="" disabled>
-                          Выберите стадию
-                        </option>
-                        {stages.map((stage, index) => (
-                          <option key={index} value={stage}>
-                            {stage}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.stage}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Стадия"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.links && (
-                  <div className={styles.field}>
-                    <label>Ссылки:</label>
-                    {isEditing ? (
-                      <input
-                        name="links"
-                        value={editData.links}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Ссылки"
-                      />
-                    ) : (
-                      <input
-                        value={project.links}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Ссылки"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.revenue && (
-                  <div className={styles.field}>
-                    <label>Выручка:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="revenue"
-                        value={editData.revenue}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        placeholder="Выручка"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.revenue}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Выручка"
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div>
-              <p>Для инвесторов</p>
-              <div className={styles.inputs}>
-                {project.investment && (
-                  <div className={styles.field}>
-                    <label>Инвестиции:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="investment"
-                        value={editData.investment}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        placeholder="Инвестиции"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.investment}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Инвестиции"
-                      />
+                <div>
+                  <p>Для инвесторов</p>
+                  <div className={styles.inputs}>
+                    {project.investment && (
+                      <div className={styles.field}>
+                        <label>Инвестиции:</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="investment"
+                            value={editData.investment}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Инвестиции"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.investment}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Инвестиции"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.equity && (
+                      <div className={styles.field}>
+                        <label>Доля:</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="equity"
+                            value={editData.equity}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Доля"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.equity}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Доля"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.investmentType && (
+                      <div className={styles.field}>
+                        <label>Тип инвестиций:</label>
+                        {isEditing ? (
+                          <select
+                            name="investmentType"
+                            value={editData.investmentType}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            required
+                          >
+                            <option value="" disabled>
+                              Выберите тип инвестиций
+                            </option>
+                            {investmentTypes.map((type, index) => (
+                              <option key={index} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.investmentType}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Тип инвестиций"
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-                {project.equity && (
-                  <div className={styles.field}>
-                    <label>Доля:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="equity"
-                        value={editData.equity}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        placeholder="Доля"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.equity}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Доля"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.investmentType && (
-                  <div className={styles.field}>
-                    <label>Тип инвестиций:</label>
-                    {isEditing ? (
-                      <select
-                        name="investmentType"
-                        value={editData.investmentType}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        required
-                      >
-                        <option value="" disabled>
-                          Выберите тип инвестиций
-                        </option>
-                        {investmentTypes.map((type, index) => (
-                          <option key={index} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.investmentType}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Тип инвестиций"
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            <div>
-              <p>Ожидания от наставника</p>
-              <div className={styles.inputs}>
-                {project.mentorExperience && (
-                  <div className={styles.field}>
-                    <label>Опыт ментора:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="mentorExperience"
-                        value={editData.mentorExperience}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        placeholder="Опыт ментора"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.mentorExperience}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Опыт ментора"
-                      />
+                <div>
+                  <p>Ожидания от наставника</p>
+                  <div className={styles.inputs}>
+                    {project.mentorExperience && (
+                      <div className={styles.field}>
+                        <label>Опыт ментора:</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="mentorExperience"
+                            value={editData.mentorExperience}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Опыт ментора"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.mentorExperience}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Опыт ментора"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.mentorSkills && (
+                      <div className={styles.field}>
+                        <label>Навыки ментора:</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            name="mentorSkills"
+                            value={editData.mentorSkills}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Навыки ментора"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.mentorSkills}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Навыки ментора"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.mentorWorkFormat && (
+                      <div className={styles.field}>
+                        <label>Формат работы:</label>
+                        {isEditing ? (
+                          <select
+                            name="mentorWorkFormat"
+                            value={editData.mentorWorkFormat}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            required
+                          >
+                            <option value="" disabled>
+                              Выберите формат работы
+                            </option>
+                            {mentorWorkFormats.map((format, index) => (
+                              <option key={index} value={format}>
+                                {format}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={project.mentorWorkFormat}
+                            readOnly
+                            className={styles.input}
+                            placeholder="Формат работы"
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-                {project.mentorSkills && (
-                  <div className={styles.field}>
-                    <label>Навыки ментора:</label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="mentorSkills"
-                        value={editData.mentorSkills}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        placeholder="Навыки ментора"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.mentorSkills}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Навыки ментора"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.mentorWorkFormat && (
-                  <div className={styles.field}>
-                    <label>Формат работы:</label>
-                    {isEditing ? (
-                      <select
-                        name="mentorWorkFormat"
-                        value={editData.mentorWorkFormat}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        required
-                      >
-                        <option value="" disabled>
-                          Выберите формат работы
-                        </option>
-                        {mentorWorkFormats.map((format, index) => (
-                          <option key={index} value={format}>
-                            {format}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.mentorWorkFormat}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Формат работы"
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            <div>
-              <p>Дополнительные детали проекта</p>
-              <div className={styles.textareas}>
-                {project.team && (
-                  <div className={styles.field}>
-                    <label>Команда:</label>
-                    {isEditing ? (
-                      <textarea
-                        name="team"
-                        value={editData.team}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Команда"
-                      />
-                    ) : (
-                      <textarea
-                        value={project.team}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Команда"
-                      />
+                <div>
+                  <p>Дополнительные детали проекта</p>
+                  <div className={styles.textareas}>
+                    {project.team && (
+                      <div className={styles.field}>
+                        <label>Команда:</label>
+                        {isEditing ? (
+                          <textarea
+                            name="team"
+                            value={editData.team}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Команда"
+                          />
+                        ) : (
+                          <textarea
+                            value={project.team}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Команда"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.goals && (
+                      <div className={styles.field}>
+                        <label>Цели:</label>
+                        {isEditing ? (
+                          <textarea
+                            name="goals"
+                            value={editData.goals}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Цели"
+                          />
+                        ) : (
+                          <textarea
+                            value={project.goals}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Цели"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.problem && (
+                      <div className={styles.field}>
+                        <label>Проблема:</label>
+                        {isEditing ? (
+                          <textarea
+                            name="problem"
+                            value={editData.problem}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Проблема"
+                          />
+                        ) : (
+                          <textarea
+                            value={project.problem}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Проблема"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.solution && (
+                      <div className={styles.field}>
+                        <label>Решение:</label>
+                        {isEditing ? (
+                          <textarea
+                            name="solution"
+                            value={editData.solution}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Решение"
+                          />
+                        ) : (
+                          <textarea
+                            value={project.solution}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Решение"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.targetAudience && (
+                      <div className={styles.field}>
+                        <label>Целевая аудитория:</label>
+                        {isEditing ? (
+                          <textarea
+                            name="targetAudience"
+                            value={editData.targetAudience}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Целевая аудитория"
+                          />
+                        ) : (
+                          <textarea
+                            value={project.targetAudience}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Целевая аудитория"
+                          />
+                        )}
+                      </div>
+                    )}
+                    {project.risks && (
+                      <div className={styles.field}>
+                        <label>Риски:</label>
+                        {isEditing ? (
+                          <textarea
+                            name="risks"
+                            value={editData.risks}
+                            onChange={handleInputChange}
+                            className={styles.textarea}
+                            placeholder="Риски"
+                          />
+                        ) : (
+                          <textarea
+                            value={project.risks}
+                            readOnly
+                            className={styles.textarea}
+                            placeholder="Риски"
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-                {project.goals && (
-                  <div className={styles.field}>
-                    <label>Цели:</label>
-                    {isEditing ? (
-                      <textarea
-                        name="goals"
-                        value={editData.goals}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Цели"
-                      />
-                    ) : (
-                      <textarea
-                        value={project.goals}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Цели"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.problem && (
-                  <div className={styles.field}>
-                    <label>Проблема:</label>
-                    {isEditing ? (
-                      <textarea
-                        name="problem"
-                        value={editData.problem}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Проблема"
-                      />
-                    ) : (
-                      <textarea
-                        value={project.problem}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Проблема"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.solution && (
-                  <div className={styles.field}>
-                    <label>Решение:</label>
-                    {isEditing ? (
-                      <textarea
-                        name="solution"
-                        value={editData.solution}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Решение"
-                      />
-                    ) : (
-                      <textarea
-                        value={project.solution}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Решение"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.targetAudience && (
-                  <div className={styles.field}>
-                    <label>Целевая аудитория:</label>
-                    {isEditing ? (
-                      <textarea
-                        name="targetAudience"
-                        value={editData.targetAudience}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Целевая аудитория"
-                      />
-                    ) : (
-                      <textarea
-                        value={project.targetAudience}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Целевая аудитория"
-                      />
-                    )}
-                  </div>
-                )}
-                {project.risks && (
-                  <div className={styles.field}>
-                    <label>Риски:</label>
-                    {isEditing ? (
-                      <textarea
-                        name="risks"
-                        value={editData.risks}
-                        onChange={handleInputChange}
-                        className={styles.textarea}
-                        placeholder="Риски"
-                      />
-                    ) : (
-                      <textarea
-                        value={project.risks}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Риски"
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
 
-            {project.typeOfMentoring && (
+            {/* Секция для наставника */}
+            {currentUserRole === "mentor" && (
               <div>
                 <p>Информация о наставнике</p>
                 <div className={styles.inputs}>
-                  <div className={styles.field}>
-                    <label>Тип менторства:</label>
-                    {isEditing ? (
-                      <select
-                        name="typeOfMentoring"
-                        value={editData.typeOfMentoring}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        required
-                      >
-                        <option value="" disabled>
-                          Выберите тип менторства
-                        </option>
-                        {mentoringTypes.map((type, index) => (
-                          <option key={index} value={type}>
-                            {type}
+                  {project.typeOfMentoring && (
+                    <div className={styles.field}>
+                      <label>Тип менторства:</label>
+                      {isEditing ? (
+                        <select
+                          name="typeOfMentoring"
+                          value={editData.typeOfMentoring}
+                          onChange={handleInputChange}
+                          className={styles.input}
+                          required
+                        >
+                          <option value="" disabled>
+                            Выберите тип менторства
                           </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.typeOfMentoring}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Тип менторства"
-                      />
-                    )}
-                  </div>
+                          {mentoringTypes.map((type, index) => (
+                            <option key={index} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          value={project.typeOfMentoring}
+                          readOnly
+                          className={styles.input}
+                          placeholder="Тип менторства"
+                        />
+                      )}
+                    </div>
+                  )}
                   {project.experience && (
                     <div className={styles.field}>
-                      <label>Опыт:</label>
+                      <label>Стаж работы в проекте:</label>
                       {isEditing ? (
                         <input
                           type="text"
@@ -715,7 +691,8 @@ export function MyProjectById() {
                           value={editData.experience}
                           onChange={handleInputChange}
                           className={styles.input}
-                          placeholder="Опыт"
+                          placeholder="Опыт работы"
+                          required
                         />
                       ) : (
                         <input
@@ -770,6 +747,7 @@ export function MyProjectById() {
                         onChange={handleInputChange}
                         className={styles.textarea}
                         placeholder="Достижения"
+                        required
                       />
                     ) : (
                       <textarea
@@ -784,42 +762,14 @@ export function MyProjectById() {
               </div>
             )}
 
-            {project.typeOfInvestment && (
+            {/* Секция для инвестора */}
+            {currentUserRole === "investor" && (
               <div>
                 <p>Информация об инвесторе</p>
                 <div className={styles.inputs}>
-                  <div className={styles.field}>
-                    <label>Тип инвестиций:</label>
-                    {isEditing ? (
-                      <select
-                        name="typeOfInvestment"
-                        value={editData.typeOfInvestment}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        required
-                      >
-                        <option value="" disabled>
-                          Выберите тип инвестиций
-                        </option>
-                        {investmentTypes.map((type, index) => (
-                          <option key={index} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={project.typeOfInvestment}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Тип инвестиций"
-                      />
-                    )}
-                  </div>
                   {project.budget && (
                     <div className={styles.field}>
-                      <label>Бюджет:</label>
+                      <label>Выделенный бюджет:</label>
                       {isEditing ? (
                         <input
                           type="text"
@@ -836,37 +786,6 @@ export function MyProjectById() {
                           readOnly
                           className={styles.input}
                           placeholder="Бюджет"
-                        />
-                      )}
-                    </div>
-                  )}
-                  {project.role && (
-                    <div className={styles.field}>
-                      <label>Роль:</label>
-                      {isEditing ? (
-                        <select
-                          name="role"
-                          value={editData.role}
-                          onChange={handleInputChange}
-                          className={styles.input}
-                          required
-                        >
-                          <option value="" disabled>
-                            Выберите роль
-                          </option>
-                          {roles.map((role, index) => (
-                            <option key={index} value={role}>
-                              {role}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          value={project.role}
-                          readOnly
-                          className={styles.input}
-                          placeholder="Роль"
                         />
                       )}
                     </div>
@@ -896,6 +815,7 @@ export function MyProjectById() {
               </div>
             )}
 
+            {/* Кнопки редактирования */}
             {isEditing ? (
               <div className={styles.edit_buttons}>
                 <Button
@@ -916,7 +836,11 @@ export function MyProjectById() {
                 className={styles["button_product"]}
                 onClick={() => setIsEditing(true)}
               >
-                Редактировать проект
+                {currentUserRole === "entrepreneur"
+                  ? "Редактировать проект"
+                  : currentUserRole === "investor"
+                  ? "Редактировать информацию инвестора"
+                  : "Редактировать информацию наставника"}
               </Button>
             )}
           </div>

@@ -1,8 +1,9 @@
 import axios from "axios";
-import { Product, ProductProps } from "../Product/Product";
+import { Product } from "../Product/Product";
 import Search from "../Search/Search";
 import styles from "./Products.module.css";
 import { useEffect, useState } from "react";
+import { ProductProps } from "../../helpers/projects.props";
 
 export function Products() {
   const [projects, setProjects] = useState<ProductProps[]>([]);

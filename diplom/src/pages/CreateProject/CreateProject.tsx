@@ -39,6 +39,7 @@ interface CreateProjectRequest {
   budget?: string;
   results?: string;
   user_id: number;
+  role_project?: string;
 }
 
 export function CreateProject() {
@@ -96,21 +97,13 @@ export function CreateProject() {
     "Коучинг",
   ];
 
-  const roles = [
-    "Основатель",
-    "Инвестор",
-    "Наставник",
-    "Разработчик",
-    "Маркетолог",
-  ];
-
-  const skillsList = [
-    "Программирование",
-    "Дизайн",
-    "Аналитика данных",
-    "Управление проектами",
-    "Маркетинг",
-  ];
+  // const roles = [
+  //   "Основатель",
+  //   "Инвестор",
+  //   "Наставник",
+  //   "Разработчик",
+  //   "Маркетолог",
+  // ];
 
   const validateInput = (value: string): boolean => {
     const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
@@ -144,6 +137,7 @@ export function CreateProject() {
       "http://127.0.0.1:8000/projects/create-project",
       { ...projectData, user_id, role }
     );
+    console.log("Ответ сервера:", response.data);
     setProjectData((prev) => ({
       ...prev,
       ...response.data,
@@ -371,13 +365,13 @@ export function CreateProject() {
                   <input
                     type="text"
                     name="experience"
-                    placeholder="Опыт работы"
+                    placeholder="Стаж работы в проекте"
                     value={projectData.experience}
                     onChange={handleInputChange}
                     required
                   />
 
-                  <select
+                  {/* <select
                     name="role"
                     value={projectData.role}
                     onChange={handleInputChange}
@@ -391,23 +385,16 @@ export function CreateProject() {
                         {role}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
 
-                  <select
+                  <input
+                    type="text"
                     name="skills"
+                    placeholder="Навыки"
                     value={projectData.skills}
                     onChange={handleInputChange}
                     required
-                  >
-                    <option value="" disabled>
-                      Выберите навыки
-                    </option>
-                    {skillsList.map((skill, index) => (
-                      <option key={index} value={skill}>
-                        {skill}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <textarea
                   name="achievements"
@@ -424,7 +411,7 @@ export function CreateProject() {
               <>
                 <p>Информация об инвесторе в проекте</p>
                 <div className={styles.inputs}>
-                  <select
+                  {/* <select
                     name="typeOfInvestment"
                     value={projectData.typeOfInvestment}
                     onChange={handleInputChange}
@@ -438,20 +425,20 @@ export function CreateProject() {
                         {type}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
 
                   <input
                     type="text"
                     name="budget"
-                    placeholder="Бюджет"
+                    placeholder="Размер инвестиций"
                     value={projectData.budget}
                     onChange={handleInputChange}
                     required
                   />
 
-                  <select
-                    name="role"
-                    value={projectData.role}
+                  {/* <select
+                    name="role_project"
+                    value={projectData.role_project}
                     onChange={handleInputChange}
                     required
                   >
@@ -463,7 +450,7 @@ export function CreateProject() {
                         {role}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
                 </div>
                 <textarea
                   name="results"

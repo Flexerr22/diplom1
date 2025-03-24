@@ -70,3 +70,12 @@
   gap: 30px;
   margin-top: 30px;
 }
+.errorInput {
+  border: 1px solid red;
+}
+
+.errorMessage {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}

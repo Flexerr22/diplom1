@@ -6,16 +6,7 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Cookies from "js-cookie";
-
-export interface RolesGroupProps {
-  id: number;
-  name: string;
-  description: string;
-  specialization: string;
-  role?: string;
-  budget?: string;
-  experience?: string;
-}
+import { RolesGroupProps } from "../../helpers/projects.props";
 
 export function RolesData({
   id,

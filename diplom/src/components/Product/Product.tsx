@@ -6,19 +6,7 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react"; // Добавлен useEffect
 import { CircleCheckBig } from "lucide-react";
-
-export interface ProductProps {
-  id: number;
-  title: string;
-  tagline: string;
-  investment: string;
-  role?: string;
-  category: string;
-  budget?: string;
-  experience?: string;
-  description?: string;
-  skills?: string;
-}
+import { ProductProps } from "../../helpers/projects.props";
 
 export function Product({
   id,

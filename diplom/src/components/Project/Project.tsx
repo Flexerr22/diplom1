@@ -4,19 +4,7 @@ import styles from "./Project.module.css";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import axios from "axios";
-
-export interface ProductProps {
-  id: number;
-  title: string;
-  tagline: string;
-  investment: string;
-  role?: string;
-  category: string;
-  budget?: string;
-  experience?: string;
-  description?: string;
-  skills?: string;
-}
+import { ProductProps } from "../../helpers/projects.props";
 
 export function Project({
   id,
@@ -91,14 +79,14 @@ export function Project({
           {role === "mentor" ? (
             <b>Навыки:</b>
           ) : role === "investor" ? (
-            <b>Бюджет:</b>
+            ""
           ) : (
             <b>Специальность: </b>
           )}
           {role === "mentor" ? (
             <p>{skills}</p>
           ) : role === "investor" ? (
-            <p>{budget}</p>
+            ""
           ) : (
             <p>{category}</p>
           )}
@@ -110,7 +98,7 @@ export function Project({
           >
             Удалить проект
           </Button>
-          <Link to={`/my-project/${id}`}>
+          <Link to={`/project/${id}`}>
             <Button className={styles["button_product"]}>Подробнее</Button>
           </Link>
         </div>

@@ -2,7 +2,8 @@ import axios from "axios";
 import Search from "../Search/Search";
 import styles from "./RolesGroupMentor.module.css";
 import { useEffect, useState } from "react";
-import { RolesData, RolesGroupProps } from "../RolesData/RolesData";
+import { RolesData } from "../RolesData/RolesData";
+import { RolesGroupProps } from "../../helpers/projects.props";
 
 export function RolesGroupMentor() {
   const [users, setUsers] = useState<RolesGroupProps[]>([]);
