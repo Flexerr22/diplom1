@@ -1,0 +1,21 @@
+.main {
+  width: 100%;
+  background-color: white;
+  box-sizing: border-box;
+  margin-top: 50px;
+  border-radius: 15px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 44px;
+  margin-top: 40px;
+}

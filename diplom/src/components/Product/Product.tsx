@@ -1,4 +1,3 @@
-import { Star } from "lucide-react";
 import Button from "../Button/Button";
 import styles from "./Product.module.css";
 import { Link } from "react-router-dom";
@@ -7,34 +6,71 @@ export interface ProductProps {
   id: number;
   title: string;
   tagline: string;
-  category: string;
   investment: string;
-  stage: string;
+  role?: string;
+  category: string;
+  budget?: string;
+  experience?: string;
+  description?: string;
+  skills?: string;
 }
 
 export function Product({
   id,
   title,
   tagline,
-  category,
   investment,
-  stage,
+  role,
+  category,
+  budget,
+  experience,
+  description,
+  skills,
 }: ProductProps) {
   return (
     <div>
       <div className={styles["product"]}>
         <b className={styles["title"]}>"{title}" </b>
-        <textarea className={styles["description"]}>{tagline}</textarea>
-        <p className={styles["valueDescription"]}>
-          Специальность: {category}:{" "}
-        </p>
-        <div>
-          <b>Требуемые инвестиции</b>
-          <p>{investment}</p>
+        {role === "mentor" || role === "investor" ? (
+          <textarea className={styles["description"]} disabled>
+            {description}
+          </textarea>
+        ) : (
+          <textarea className={styles["description"]} disabled>
+            {tagline}
+          </textarea>
+        )}
+        <div className={styles["price"]}>
+          {role === "mentor" ? (
+            <b>Опыт работы:</b>
+          ) : role === "investor" ? (
+            <b>Бюджет:</b>
+          ) : (
+            <b>Требуемые вложения:</b>
+          )}
+          {role === "mentor" ? (
+            <p>{experience}</p>
+          ) : role === "investor" ? (
+            <p>{budget}</p>
+          ) : (
+            <p>{investment}</p>
+          )}
         </div>
-        <div>
-          <b>Стадия проекта</b>
-          <p>{stage}</p>
+        <div className={styles["reit"]}>
+          {role === "mentor" ? (
+            <b>Навыки:</b>
+          ) : role === "investor" ? (
+            <b>Бюджет:</b>
+          ) : (
+            <b>Специальность: </b>
+          )}
+          {role === "mentor" ? (
+            <p>{skills}</p>
+          ) : role === "investor" ? (
+            <p>{budget}</p>
+          ) : (
+            <p>{category}</p>
+          )}
         </div>
         <div className={styles["product-bottom"]}>
           <Link to={`/project/${id}`}>

@@ -10,6 +10,7 @@ interface ModalProps {
 
 export function Modal({ closeModal, setIsAuth }: ModalProps) {
   const [isButtonAuth, setIsButtonAuth] = useState(false);
+
   return (
     <div className={styles["authtorize"]}>
       <div className={styles["buttons"]}>
@@ -29,7 +30,7 @@ export function Modal({ closeModal, setIsAuth }: ModalProps) {
       {isButtonAuth ? (
         <Login closeModal={closeModal} setIsAuth={setIsAuth} />
       ) : (
-        <Register setIsAuth={setIsAuth} />
+        <Register setIsAuth={setIsAuth} setIsButtonAuth={setIsButtonAuth} />
       )}
     </div>
   );
