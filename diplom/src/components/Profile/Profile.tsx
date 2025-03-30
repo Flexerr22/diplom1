@@ -4,21 +4,7 @@ import Cookies from "js-cookie";
 import { ModalType } from "../Header/Header";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-
-export interface ProfileInfo {
-  email: string;
-  name: string;
-  avatar: string;
-  description: string;
-  contact?: string;
-  specialization?: string;
-  experience?: string;
-  skills?: string;
-  budget?: string;
-  investmentFocus?: string;
-  portfolio?: string[];
-  role?: string;
-}
+import { ProfileInfo } from "../../helpers/user.props";
 
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
@@ -41,13 +27,11 @@ export function Profile({
     name: "",
     avatar: "",
     description: "",
-    contact: "",
     specialization: "",
     experience: "",
     skills: "",
     budget: "",
     investmentFocus: "",
-    portfolio: [],
   });
 
   // Списки для выпадающих списков
@@ -181,20 +165,12 @@ export function Profile({
       formData.append("name", userEditData.name || "");
       formData.append("email", userEditData.email || "");
       formData.append("description", userEditData.description || "");
-      formData.append("contact", userEditData.contact || "");
       formData.append("specialization", userEditData.specialization || "");
       formData.append("experience", userEditData.experience || "");
       formData.append("skills", userEditData.skills || "");
       formData.append("budget", userEditData.budget || "");
       formData.append("investmentFocus", userEditData.investmentFocus || "");
 
-      if (userEditData.portfolio) {
-        userEditData.portfolio.forEach((item) => {
-          formData.append("portfolio", item);
-        });
-      }
-
-      // Отправляем данные на сервер
       const response = await axios.patch<ProfileInfo>(
         `http://127.0.0.1:8000/users/update-user/${user_id}`,
         formData,

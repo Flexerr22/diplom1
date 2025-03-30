@@ -17,6 +17,7 @@ export interface FiltersCheckboxGroupProps {
   limit?: number;
   defaultValue?: string[];
   searchInputPlaceholder?: string;
+  onChange?: (value: string[]) => void;
 }
 export function FiltersCheckboxGroup({
   title,
@@ -25,9 +26,12 @@ export function FiltersCheckboxGroup({
   onClickCheckbox,
   limit = 5,
   searchInputPlaceholder = "Поиск...",
+  onChange,
+  defaultValue = [],
 }: FiltersCheckboxGroupProps) {
   const [showAll, setShowAll] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [selectedValues, setSelectedValues] = useState<string[]>(defaultValue);
 
   const list = showAll
     ? items.filter((item) =>
@@ -38,6 +42,29 @@ export function FiltersCheckboxGroup({
   const onChangeSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
+
+  const handleCheckboxChange = (value: string) => {
+    let newSelectedValues;
+
+    if (selectedValues.includes(value)) {
+      newSelectedValues = selectedValues.filter((v) => v !== value);
+    } else {
+      newSelectedValues = [...selectedValues, value];
+    }
+
+    setSelectedValues(newSelectedValues);
+
+    // Вызываем внешний обработчик с новыми значениями
+    if (onChange) {
+      onChange(newSelectedValues);
+    }
+
+    // Вызываем onClickCheckbox если он передан
+    if (onClickCheckbox) {
+      onClickCheckbox(value);
+    }
+  };
+
   return (
     <div className={styles["main"]}>
       <p>{title}</p>
@@ -58,8 +85,8 @@ export function FiltersCheckboxGroup({
           text={item.text}
           value={item.value}
           endAdornment={item.endAdornment}
-          checked={item.checked}
-          onCheckedChange={() => onClickCheckbox?.(item.value)}
+          checked={selectedValues.includes(item.value)} // Управляем состоянием чекбокса
+          onCheckedChange={() => handleCheckboxChange(item.value)}
         />
       ))}
       {items.length > limit && (

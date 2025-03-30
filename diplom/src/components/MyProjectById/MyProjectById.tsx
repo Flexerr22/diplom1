@@ -6,12 +6,12 @@ import Header from "../Header/Header";
 import { Container } from "../Container/Container";
 import Button from "../Button/Button";
 import Cookies from "js-cookie";
-import { ProductByIdProps } from "../../helpers/projects.props";
+import { CreateProjectRequest } from "../../helpers/projects.props";
 
 export function MyProjectById() {
   const { project_id } = useParams<{ project_id: string }>();
-  const [project, setProject] = useState<ProductByIdProps | null>(null);
-  const [editData, setEditData] = useState<ProductByIdProps>({
+  const [project, setProject] = useState<CreateProjectRequest | null>(null);
+  const [editData, setEditData] = useState<CreateProjectRequest>({
     title: "",
     description: "",
     tagline: "",
@@ -20,25 +20,16 @@ export function MyProjectById() {
     investment: "",
     equity: "",
     investmentType: "",
-    team: "",
     links: "",
     revenue: "",
-    goals: "",
-    problem: "",
-    solution: "",
-    targetAudience: "",
-    risks: "",
     mentorExperience: "",
     mentorSkills: "",
     mentorWorkFormat: "",
-    mentorCollaborationGoals: "",
-    mentorCollaborationTerms: "",
     typeOfMentoring: "",
     experience: "",
     role: "",
     achievements: "",
     skills: "",
-    typeOfInvestment: "",
     budget: "",
     results: "",
     user_id: 0,
@@ -112,7 +103,7 @@ export function MyProjectById() {
   useEffect(() => {
     const getProjectById = async () => {
       try {
-        const response = await axios.get<ProductByIdProps>(
+        const response = await axios.get<CreateProjectRequest>(
           `http://127.0.0.1:8000/projects/${project_id}`
         );
         setProject(response.data);
@@ -140,7 +131,7 @@ export function MyProjectById() {
 
   const editProject = async () => {
     try {
-      const response = await axios.patch<ProductByIdProps>(
+      const response = await axios.patch<CreateProjectRequest>(
         `http://127.0.0.1:8000/projects/update-project/${project_id}`,
         editData
       );
@@ -504,138 +495,6 @@ export function MyProjectById() {
                             readOnly
                             className={styles.input}
                             placeholder="Формат работы"
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <p>Дополнительные детали проекта</p>
-                  <div className={styles.textareas}>
-                    {project.team && (
-                      <div className={styles.field}>
-                        <label>Команда:</label>
-                        {isEditing ? (
-                          <textarea
-                            name="team"
-                            value={editData.team}
-                            onChange={handleInputChange}
-                            className={styles.textarea}
-                            placeholder="Команда"
-                          />
-                        ) : (
-                          <textarea
-                            value={project.team}
-                            readOnly
-                            className={styles.textarea}
-                            placeholder="Команда"
-                          />
-                        )}
-                      </div>
-                    )}
-                    {project.goals && (
-                      <div className={styles.field}>
-                        <label>Цели:</label>
-                        {isEditing ? (
-                          <textarea
-                            name="goals"
-                            value={editData.goals}
-                            onChange={handleInputChange}
-                            className={styles.textarea}
-                            placeholder="Цели"
-                          />
-                        ) : (
-                          <textarea
-                            value={project.goals}
-                            readOnly
-                            className={styles.textarea}
-                            placeholder="Цели"
-                          />
-                        )}
-                      </div>
-                    )}
-                    {project.problem && (
-                      <div className={styles.field}>
-                        <label>Проблема:</label>
-                        {isEditing ? (
-                          <textarea
-                            name="problem"
-                            value={editData.problem}
-                            onChange={handleInputChange}
-                            className={styles.textarea}
-                            placeholder="Проблема"
-                          />
-                        ) : (
-                          <textarea
-                            value={project.problem}
-                            readOnly
-                            className={styles.textarea}
-                            placeholder="Проблема"
-                          />
-                        )}
-                      </div>
-                    )}
-                    {project.solution && (
-                      <div className={styles.field}>
-                        <label>Решение:</label>
-                        {isEditing ? (
-                          <textarea
-                            name="solution"
-                            value={editData.solution}
-                            onChange={handleInputChange}
-                            className={styles.textarea}
-                            placeholder="Решение"
-                          />
-                        ) : (
-                          <textarea
-                            value={project.solution}
-                            readOnly
-                            className={styles.textarea}
-                            placeholder="Решение"
-                          />
-                        )}
-                      </div>
-                    )}
-                    {project.targetAudience && (
-                      <div className={styles.field}>
-                        <label>Целевая аудитория:</label>
-                        {isEditing ? (
-                          <textarea
-                            name="targetAudience"
-                            value={editData.targetAudience}
-                            onChange={handleInputChange}
-                            className={styles.textarea}
-                            placeholder="Целевая аудитория"
-                          />
-                        ) : (
-                          <textarea
-                            value={project.targetAudience}
-                            readOnly
-                            className={styles.textarea}
-                            placeholder="Целевая аудитория"
-                          />
-                        )}
-                      </div>
-                    )}
-                    {project.risks && (
-                      <div className={styles.field}>
-                        <label>Риски:</label>
-                        {isEditing ? (
-                          <textarea
-                            name="risks"
-                            value={editData.risks}
-                            onChange={handleInputChange}
-                            className={styles.textarea}
-                            placeholder="Риски"
-                          />
-                        ) : (
-                          <textarea
-                            value={project.risks}
-                            readOnly
-                            className={styles.textarea}
-                            placeholder="Риски"
                           />
                         )}
                       </div>

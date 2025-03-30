@@ -7,40 +7,7 @@ import styles from "./CreateProject.module.css";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-
-interface CreateProjectRequest {
-  title: string;
-  description: string;
-  tagline?: string;
-  category?: string;
-  stage?: string;
-  investment?: string;
-  equity?: string;
-  investmentType?: string;
-  team?: string;
-  links?: string;
-  revenue?: string;
-  goals?: string;
-  problem?: string;
-  solution?: string;
-  targetAudience?: string;
-  risks?: string;
-  mentorExperience?: string;
-  mentorSkills?: string;
-  mentorWorkFormat?: string;
-  mentorCollaborationGoals?: string;
-  mentorCollaborationTerms?: string;
-  typeOfMentoring?: string;
-  experience?: string;
-  role?: string;
-  achievements?: string;
-  skills?: string;
-  typeOfInvestment?: string;
-  budget?: string;
-  results?: string;
-  user_id: number;
-  role_project?: string;
-}
+import { CreateProjectRequest } from "../../helpers/projects.props";
 
 export function CreateProject() {
   const [role, setRole] = useState<string | null>(null);
@@ -54,8 +21,6 @@ export function CreateProject() {
     category: "",
     tagline: "",
   });
-
-  // Списки для выпадающих списков
   const categories = [
     "Программирование",
     "Дизайн",
@@ -96,14 +61,6 @@ export function CreateProject() {
     "Бизнес-менторство",
     "Коучинг",
   ];
-
-  // const roles = [
-  //   "Основатель",
-  //   "Инвестор",
-  //   "Наставник",
-  //   "Разработчик",
-  //   "Маркетолог",
-  // ];
 
   const validateInput = (value: string): boolean => {
     const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
@@ -370,23 +327,6 @@ export function CreateProject() {
                     onChange={handleInputChange}
                     required
                   />
-
-                  {/* <select
-                    name="role"
-                    value={projectData.role}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="" disabled>
-                      Выберите роль
-                    </option>
-                    {roles.map((role, index) => (
-                      <option key={index} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select> */}
-
                   <input
                     type="text"
                     name="skills"
@@ -411,22 +351,6 @@ export function CreateProject() {
               <>
                 <p>Информация об инвесторе в проекте</p>
                 <div className={styles.inputs}>
-                  {/* <select
-                    name="typeOfInvestment"
-                    value={projectData.typeOfInvestment}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="" disabled>
-                      Выберите тип инвестиций
-                    </option>
-                    {investmentTypes.map((type, index) => (
-                      <option key={index} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select> */}
-
                   <input
                     type="text"
                     name="budget"
@@ -435,22 +359,6 @@ export function CreateProject() {
                     onChange={handleInputChange}
                     required
                   />
-
-                  {/* <select
-                    name="role_project"
-                    value={projectData.role_project}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="" disabled>
-                      Выберите роль
-                    </option>
-                    {roles.map((role, index) => (
-                      <option key={index} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select> */}
                 </div>
                 <textarea
                   name="results"
