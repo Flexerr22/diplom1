@@ -43,7 +43,19 @@ const investment = [
   "от 3 000 000 и выше",
 ];
 
-export function Filters() {
+interface FiltersProps {
+  onCategoryChange: (categories: string[]) => void;
+  onStageChange: (stages: string[]) => void;
+  onInvestChange: (invesment: string[]) => void;
+  onExperienceChange: (experience: string[]) => void;
+}
+
+export function Filters({
+  onCategoryChange,
+  onStageChange,
+  onExperienceChange,
+  onInvestChange,
+}: FiltersProps) {
   const [userRole, setUserRole] = useState("");
   useEffect(() => {
     const role = Cookies.get("role");
@@ -57,52 +69,6 @@ export function Filters() {
       <div className={styles["checkbox"]}>
         <p className={styles["title"]}>Фильтрация</p>
         <div className={styles["checkbox_group"]}>
-          {/* <FiltersCheckboxGroup
-            name="new"
-            className={styles["filter"]}
-            title="Рейтинг"
-            defaultItems={[
-              { text: "5", value: "5" },
-              { text: "4", value: "4" },
-              { text: "3", value: "3" },
-              { text: "2", value: "2" },
-              { text: "1", value: "1" },
-            ]}
-            items={[
-              { text: "5", value: "5" },
-              { text: "4", value: "4" },
-              { text: "3", value: "3" },
-              { text: "2", value: "2" },
-              { text: "1", value: "1" },
-            ]}
-          /> */}
-
-          <FiltersCheckboxGroup
-            name="new"
-            className={styles["filter"]}
-            title="Требуемые инвестиции"
-            defaultItems={investment.map((invest) => ({
-              text: invest,
-              value: invest.toLowerCase(),
-            }))}
-            items={investment.map((invest) => ({
-              text: invest,
-              value: invest.toLowerCase(),
-            }))}
-          />
-          <FiltersCheckboxGroup
-            name="new"
-            className={styles["filter"]}
-            title="Опыт наставника"
-            defaultItems={mentorExperience.map((exp) => ({
-              text: exp,
-              value: exp.toLowerCase(),
-            }))}
-            items={mentorExperience.map((exp) => ({
-              text: exp,
-              value: exp.toLowerCase(),
-            }))}
-          />
           {userRole !== "entrepreneur" && (
             <FiltersCheckboxGroup
               name="new"
@@ -116,6 +82,7 @@ export function Filters() {
                 text: stage,
                 value: stage.toLowerCase(),
               }))}
+              onChange={onStageChange}
             />
           )}
 
@@ -131,9 +98,41 @@ export function Filters() {
               text: category,
               value: category.toLowerCase(),
             }))}
+            onChange={onCategoryChange}
           />
+          {userRole === "entrepreneur" && (
+            <FiltersCheckboxGroup
+              name="new"
+              className={styles["filter"]}
+              title="Требуемые инвестиции"
+              defaultItems={investment.map((invest) => ({
+                text: invest,
+                value: invest,
+              }))}
+              items={investment.map((invest) => ({
+                text: invest,
+                value: invest,
+              }))}
+              onChange={onInvestChange}
+            />
+          )}
+          {userRole === "entrepreneur" && (
+            <FiltersCheckboxGroup
+              name="new"
+              className={styles["filter"]}
+              title="Опыт наставника"
+              defaultItems={mentorExperience.map((exp) => ({
+                text: exp,
+                value: exp,
+              }))}
+              items={mentorExperience.map((exp) => ({
+                text: exp,
+                value: exp,
+              }))}
+              onChange={onExperienceChange}
+            />
+          )}
         </div>
-        <button className={styles["filters_button"]}>Подобрать</button>
       </div>
     </div>
   );

@@ -1,9 +1,14 @@
-.main{
-    width: 100vw;
+.main {
+  width: 100vw;
 }
-.products{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 44px;
-    margin-top: 40px;
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 44px;
+  margin-top: 40px;
+}
+.error {
+  margin-top: 40px;
+  font-size: medium;
+  font-weight: 600;
 }

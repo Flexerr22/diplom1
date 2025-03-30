@@ -18,7 +18,7 @@ const Search = forwardRef<HTMLInputElement, SearchProps>(function Input(
           [styles["invalid"]]: isValid,
         })}
         {...props}
-        placeholder="Поиск по специализации"
+        placeholder="Поиск по названию"
       />
       <img className={styles["icon"]} src="/search.svg" alt="" />
     </div>
