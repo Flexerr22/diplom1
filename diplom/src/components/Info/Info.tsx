@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../Button/Button";
 import { Container } from "../Container/Container";
 import styles from "./Info.module.css";
 import { Modal } from "../Modal/Modal";
+import Cookies from "js-cookie";
 
 interface InfoProps {
   closeModal: () => void;
@@ -11,6 +12,15 @@ interface InfoProps {
 
 export function Info({ closeModal, setIsAuth }: InfoProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [isAuthtozise, setIsAuthtorize] = useState(false);
+
+  useEffect(() => {
+    const jwt = Cookies.get("jwt");
+
+    if (jwt) {
+      setIsAuthtorize(true);
+    }
+  }, []);
   return (
     <Container>
       <div className={styles["main"]}>
@@ -23,14 +33,16 @@ export function Info({ closeModal, setIsAuth }: InfoProps) {
             нашего проекта прямо сейчас !
           </p>
         </div>
-        
-        <Button
-          appearence="big"
-          className={styles["button_register_info"]}
-          onClick={() => setModalOpen(true)}
-        >
-          Зарегистрироваться
-        </Button>
+
+        {!isAuthtozise && (
+          <Button
+            appearence="big"
+            className={styles["button_register_info"]}
+            onClick={() => setModalOpen(true)}
+          >
+            Зарегистрироваться
+          </Button>
+        )}
         {modalOpen && (
           <div className={styles["modal_main"]}>
             <div className={styles["modal_secondary"]}>

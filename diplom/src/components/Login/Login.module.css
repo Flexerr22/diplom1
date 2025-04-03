@@ -105,3 +105,12 @@
     padding: 0;
   }
 }
+.password_container {
+  position: relative;
+}
+.password_toggle {
+  position: absolute;
+  top: 7px;
+  right: 15px;
+  cursor: pointer;
+}

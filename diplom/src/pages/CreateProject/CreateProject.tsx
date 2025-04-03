@@ -39,11 +39,12 @@ interface CreateProjectRequest {
   budget?: string;
   results?: string;
   user_id: number;
+  role_project?: string;
 }
 
 export function CreateProject() {
-  // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [role, setRole] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [projectData, setProjectData] = useState<CreateProjectRequest>({
     title: "",
     description: "",
@@ -53,6 +54,74 @@ export function CreateProject() {
     category: "",
     tagline: "",
   });
+
+  // Списки для выпадающих списков
+  const categories = [
+    "Программирование",
+    "Дизайн",
+    "Маркетинг",
+    "Финансы",
+    "Образование",
+    "Медицина",
+    "Искусство",
+    "Строительство",
+    "Наука",
+    "Спорт",
+  ];
+
+  const stages = [
+    "Идея",
+    "Прототип",
+    "Разработка",
+    "Тестирование",
+    "Запуск",
+    "Масштабирование",
+    "Поддержка",
+    "Завершен",
+  ];
+
+  const investmentTypes = [
+    "Ангельские инвестиции",
+    "Венчурные инвестиции",
+    "Краудфандинг",
+    "Гранты",
+    "Кредиты",
+  ];
+
+  const mentorWorkFormats = ["Онлайн", "Оффлайн", "Гибридный"];
+
+  const mentoringTypes = [
+    "Карьерное консультирование",
+    "Техническое наставничество",
+    "Бизнес-менторство",
+    "Коучинг",
+  ];
+
+  // const roles = [
+  //   "Основатель",
+  //   "Инвестор",
+  //   "Наставник",
+  //   "Разработчик",
+  //   "Маркетолог",
+  // ];
+
+  const validateInput = (value: string): boolean => {
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
+    if (!regex.test(value)) {
+      setError(
+        "Недопустимые символы. Разрешены только буквы, цифры, пробелы и @_."
+      );
+      return false;
+    }
+
+    if (/\s{2,}/.test(value)) {
+      setError("Нельзя вводить более одного пробела подряд.");
+      return false;
+    }
+
+    setError(null);
+    return true;
+  };
 
   const postProject = async () => {
     const jwt = Cookies.get("jwt");
@@ -64,13 +133,14 @@ export function CreateProject() {
 
     const decoded = jwtDecode<{ sub: string }>(jwt);
     const user_id = decoded.sub;
-    const responce = await axios.post<CreateProjectRequest>(
+    const response = await axios.post<CreateProjectRequest>(
       "http://127.0.0.1:8000/projects/create-project",
       { ...projectData, user_id, role }
     );
+    console.log("Ответ сервера:", response.data);
     setProjectData((prev) => ({
       ...prev,
-      ...responce.data,
+      ...response.data,
     }));
   };
 
@@ -88,27 +158,24 @@ export function CreateProject() {
     >
   ) => {
     const { name, value } = e.target;
-    setProjectData((prevState) => ({ ...prevState, [name]: value }));
+
+    if (!validateInput(value)) {
+      return;
+    }
+
+    const trimmedValue = value.replace(/\s+/g, " ");
+
+    setProjectData((prevState) => ({ ...prevState, [name]: trimmedValue }));
   };
-
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     setSelectedFiles(Array.from(e.target.files));
-  //   }
-  // };
-
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   postProject();
-  // };
 
   return (
     <>
       <Header />
       <Container>
         <div className={styles.main}>
-          <h2>Создание проекта</h2>
+          {error && <div className={styles.error}>{error}</div>}
           <form className={styles.form} onSubmit={postProject}>
+            <h2>Создание проекта</h2>
             <div className={styles.main_info}>
               <p>Основная информация</p>
               <input
@@ -118,13 +185,15 @@ export function CreateProject() {
                 value={projectData.title}
                 onChange={handleInputChange}
                 required
+                maxLength={30}
               />
               <textarea
                 name="description"
-                placeholder="Описание"
+                placeholder="Описание (максимум 255 символов)"
                 value={projectData.description}
                 onChange={handleInputChange}
                 required
+                maxLength={255}
               />
             </div>
 
@@ -134,31 +203,52 @@ export function CreateProject() {
                   <p>Основные детали проекта</p>
                   <textarea
                     name="tagline"
-                    placeholder="Краткое описание (до 200 символов)"
+                    placeholder="Краткое описание (до 255 символов)"
                     value={projectData.tagline}
                     onChange={handleInputChange}
+                    maxLength={255}
+                    required
                   />
                   <div className={styles.inputs}>
-                    <input
-                      type="text"
+                    <select
                       name="category"
-                      placeholder="Категория/Специализация"
                       value={projectData.category}
                       onChange={handleInputChange}
-                    />
-                    <input
-                      type="text"
+                      required
+                    >
+                      <option value="" disabled>
+                        Выберите категорию
+                      </option>
+                      {categories.map((category, index) => (
+                        <option key={index} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
                       name="stage"
-                      placeholder="Стадия проекта"
                       value={projectData.stage}
                       onChange={handleInputChange}
-                    />
+                      required
+                    >
+                      <option value="" disabled>
+                        Выберите стадию
+                      </option>
+                      {stages.map((stage, index) => (
+                        <option key={index} value={stage}>
+                          {stage}
+                        </option>
+                      ))}
+                    </select>
+
                     <input
                       type="text"
                       name="links"
                       placeholder="Ссылки"
                       value={projectData.links}
                       onChange={handleInputChange}
+                      required
                     />
                     <input
                       type="text"
@@ -166,9 +256,12 @@ export function CreateProject() {
                       placeholder="Выручка"
                       value={projectData.revenue}
                       onChange={handleInputChange}
+                      required
+                      maxLength={30}
                     />
                   </div>
                 </div>
+
                 <div>
                   <p>Для инвесторов</p>
                   <div className={styles.inputs}>
@@ -178,23 +271,36 @@ export function CreateProject() {
                       placeholder="Требуемые инвестиции"
                       value={projectData.investment}
                       onChange={handleInputChange}
+                      required
+                      maxLength={30}
                     />
                     <input
                       type="text"
                       name="equity"
-                      placeholder="Доля в проекте"
+                      placeholder="Доля в проекте в %"
                       value={projectData.equity}
                       onChange={handleInputChange}
+                      required
+                      maxLength={15}
                     />
-                    <input
-                      type="text"
+                    <select
                       name="investmentType"
-                      placeholder="Тип инвестиций"
                       value={projectData.investmentType}
                       onChange={handleInputChange}
-                    />
+                      required
+                    >
+                      <option value="" disabled>
+                        Выберите тип инвестиций
+                      </option>
+                      {investmentTypes.map((type, index) => (
+                        <option key={index} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
+
                 <div>
                   <p>Ожидания от наставника</p>
                   <div className={styles.inputs}>
@@ -204,6 +310,8 @@ export function CreateProject() {
                       placeholder="Опыт работы наставника"
                       value={projectData.mentorExperience}
                       onChange={handleInputChange}
+                      required
+                      maxLength={25}
                     />
                     <input
                       type="text"
@@ -211,65 +319,26 @@ export function CreateProject() {
                       placeholder="Навыки наставника"
                       value={projectData.mentorSkills}
                       onChange={handleInputChange}
+                      required
+                      maxLength={30}
                     />
-                    <input
-                      type="text"
+                    <select
                       name="mentorWorkFormat"
-                      placeholder="Формат работы с наставником"
                       value={projectData.mentorWorkFormat}
                       onChange={handleInputChange}
-                    />
+                      required
+                    >
+                      <option value="" disabled>
+                        Выберите формат работы
+                      </option>
+                      {mentorWorkFormats.map((format, index) => (
+                        <option key={index} value={format}>
+                          {format}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-
-                <div className="">
-                  <p>Допольнительные детали проекта</p>
-                  <div className={styles.textareas}>
-                    <textarea
-                      name="team"
-                      placeholder="Команда"
-                      value={projectData.team}
-                      onChange={handleInputChange}
-                    />
-                    <textarea
-                      name="goals"
-                      placeholder="Цели"
-                      value={projectData.goals}
-                      onChange={handleInputChange}
-                    />
-                    <textarea
-                      name="problem"
-                      placeholder="Проблема"
-                      value={projectData.problem}
-                      onChange={handleInputChange}
-                    />
-                    <textarea
-                      name="solution"
-                      placeholder="Решение"
-                      value={projectData.solution}
-                      onChange={handleInputChange}
-                    />
-                    <textarea
-                      name="targetAudience"
-                      placeholder="Целевая аудитория"
-                      value={projectData.targetAudience}
-                      onChange={handleInputChange}
-                    />
-                    <textarea
-                      name="risks"
-                      placeholder="Риски"
-                      value={projectData.risks}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-                {/* <div className={styles.uploadSection}>
-                  <label>Прикрепить файлы</label>
-                  <input type="file" multiple onChange={handleImageChange} />
-                  {selectedFiles.map((file) => (
-                    <p key={file.name}>{file.name}</p>
-                  ))}
-                </div> */}
               </>
             )}
 
@@ -277,78 +346,123 @@ export function CreateProject() {
               <>
                 <p>Информация о наставнике в проекте</p>
                 <div className={styles.inputs}>
-                  <input
-                    type="text"
+                  <select
                     name="typeOfMentoring"
-                    placeholder="Вид наставничества"
                     value={projectData.typeOfMentoring}
                     onChange={handleInputChange}
-                  />
+                    required
+                  >
+                    <option value="" disabled>
+                      Выберите вид наставничества
+                    </option>
+                    {mentoringTypes.map((type, index) => (
+                      <option key={index} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+
                   <input
                     type="text"
                     name="experience"
-                    placeholder="Опыт работы"
+                    placeholder="Стаж работы в проекте"
                     value={projectData.experience}
                     onChange={handleInputChange}
+                    required
                   />
-                  <input
-                    type="text"
+
+                  {/* <select
                     name="role"
-                    placeholder="Роль в проекте"
                     value={projectData.role}
                     onChange={handleInputChange}
-                  />
+                    required
+                  >
+                    <option value="" disabled>
+                      Выберите роль
+                    </option>
+                    {roles.map((role, index) => (
+                      <option key={index} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select> */}
+
                   <input
                     type="text"
                     name="skills"
                     placeholder="Навыки"
                     value={projectData.skills}
                     onChange={handleInputChange}
+                    required
                   />
                 </div>
                 <textarea
                   name="achievements"
-                  placeholder="Достижения"
+                  placeholder="Достижения (максимум 255 символов)"
                   value={projectData.achievements}
                   onChange={handleInputChange}
+                  maxLength={255}
+                  required
                 />
               </>
             )}
+
             {role === "investor" && (
               <>
                 <p>Информация об инвесторе в проекте</p>
                 <div className={styles.inputs}>
-                  <input
-                    type="text"
+                  {/* <select
                     name="typeOfInvestment"
-                    placeholder="Тип инвестиций"
                     value={projectData.typeOfInvestment}
                     onChange={handleInputChange}
-                  />
+                    required
+                  >
+                    <option value="" disabled>
+                      Выберите тип инвестиций
+                    </option>
+                    {investmentTypes.map((type, index) => (
+                      <option key={index} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select> */}
 
                   <input
                     type="text"
                     name="budget"
-                    placeholder="Бюджет"
+                    placeholder="Размер инвестиций"
                     value={projectData.budget}
                     onChange={handleInputChange}
+                    required
                   />
-                  <input
-                    type="text"
-                    name="role"
-                    placeholder="Роль в проекте"
-                    value={projectData.role}
+
+                  {/* <select
+                    name="role_project"
+                    value={projectData.role_project}
                     onChange={handleInputChange}
-                  />
+                    required
+                  >
+                    <option value="" disabled>
+                      Выберите роль
+                    </option>
+                    {roles.map((role, index) => (
+                      <option key={index} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select> */}
                 </div>
                 <textarea
                   name="results"
-                  placeholder="Результаты"
+                  placeholder="Результаты (максимум 255 символов)"
                   value={projectData.results}
                   onChange={handleInputChange}
+                  maxLength={255}
+                  required
                 />
               </>
             )}
+
             <Button
               type="submit"
               appearence="small"

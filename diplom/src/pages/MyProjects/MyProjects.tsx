@@ -4,11 +4,14 @@ import axios from "axios";
 import { Container } from "../../components/Container/Container";
 import { useParams } from "react-router-dom";
 import styles from "./MyProjects.module.css";
-import { Product, ProductProps } from "../../components/Product/Product";
+import { ProductProps } from "../../components/Product/Product";
 
-export function MyProjects() {
+import Button from "../../components/Button/Button";
+import { MyProject } from "../../components/MyProject/MyProject";
+
+function MyProjects() {
   const { user_id } = useParams<{ user_id: string }>();
-  const [projects, setProjects] = useState<ProductProps[]>([]); // Используем массив
+  const [projects, setProjects] = useState<ProductProps[]>([]);
 
   useEffect(() => {
     const getMyProject = async () => {
@@ -16,7 +19,6 @@ export function MyProjects() {
         const response = await axios.get<ProductProps[]>(
           `http://127.0.0.1:8000/projects/my-projects/${user_id}`
         );
-        console.log("Данные получены:", response.data); // Отладочный вывод
         setProjects(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке проекта:", error);
@@ -26,35 +28,43 @@ export function MyProjects() {
     getMyProject();
   }, [user_id]);
 
-  if (projects.length === 0) {
-    return <div>Загрузка...</div>;
-  }
-
   return (
     <>
       <Header />
       <Container>
-        <div className={styles.main}>
-          <b className={styles.title}>Мои проекты</b>
-          <div className={styles["products"]}>
-            {projects.map((item, index) => (
-              <Product
-                key={index}
-                id={item.id}
-                title={item.title}
-                tagline={item.tagline}
-                investment={item.investment}
-                category={item.category}
-                budget={item.budget}
-                experience={item.experience}
-                role={item.role}
-                description={item.description}
-                skills={item.skills}
-              />
-            ))}
+        {projects.length === 0 ? (
+          <div className={styles.button}>
+            <p>Создайте ваш первый проект</p>
+            <a href="/add" className="button_project">
+              <Button appearence="small" className="button_project">
+                Добавить проект
+              </Button>
+            </a>
           </div>
-        </div>
+        ) : (
+          <div className={styles.main}>
+            <b className={styles.title}>Мои проекты</b>
+            <div className={styles["products"]}>
+              {projects.map((item, index) => (
+                <MyProject
+                  key={index}
+                  id={item.id}
+                  title={item.title}
+                  tagline={item.tagline}
+                  investment={item.investment}
+                  category={item.category}
+                  budget={item.budget}
+                  experience={item.experience}
+                  role={item.role}
+                  description={item.description}
+                  skills={item.skills}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </Container>
     </>
   );
 }
+export default MyProjects;

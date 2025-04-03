@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { Modal } from "../Modal/Modal";
 import { Messages } from "../Messages/Messages";
 import Cookies from "js-cookie";
-import { Profile } from "../Profile/Profile";
+import { Profile, ProfileInfo } from "../Profile/Profile";
 import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 export type ModalType = "login" | "messages" | "profile" | null;
 
@@ -15,6 +16,7 @@ function Header() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [user_id, setUserId] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null); // Состояние для аватара
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
@@ -22,9 +24,22 @@ function Header() {
 
     if (jwt) {
       setIsAuth(true);
-      // Декодируем JWT, чтобы извлечь user_id
-      const decoded = jwtDecode<{ sub: string }>(jwt); // sub обычно содержит user_id
-      setUserId(decoded.sub); // Устанавливаем user_id
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      setUserId(decoded.sub);
+
+      // Получаем данные пользователя, включая аватар
+      const getUserProfile = async () => {
+        try {
+          const response = await axios.get<ProfileInfo>(
+            `http://127.0.0.1:8000/users/${decoded.sub}`
+          );
+          setUserAvatar(response.data.avatar); // Устанавливаем URL аватара
+        } catch (error) {
+          console.error("Ошибка при получении данных профиля:", error);
+        }
+      };
+
+      getUserProfile();
     }
     if (role) {
       setUserRole(role);
@@ -99,8 +114,9 @@ function Header() {
               {activeModal === "messages" && (
                 <Messages setActiveModal={setActiveModal} />
               )}
-
-              <img src="/like.svg" alt="Избранное" />
+              <a href="/favourites">
+                <img src="/like.svg" alt="Избранное" />
+              </a>
             </nav>
             {!isAuth ? (
               <Button
@@ -114,7 +130,11 @@ function Header() {
               <img
                 width={35}
                 height={35}
-                src="/team.avif"
+                src={
+                  userAvatar
+                    ? `http://127.0.0.1:8000/${userAvatar}`
+                    : "/team.avif"
+                }
                 alt="Иконка профиля"
                 className={styles.icon_profile}
                 onClick={() =>

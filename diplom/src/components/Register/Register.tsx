@@ -2,6 +2,7 @@ import styles from "./Register.module.css";
 import { ChangeEvent, FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import { Eye } from "lucide-react";
 
 export type Register = {
   name: {
@@ -44,6 +45,7 @@ export function Register({
     password_hash: "",
     role: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const sendRegister = async (
     name: string,
@@ -52,7 +54,7 @@ export function Register({
     role: string
   ) => {
     try {
-      const responce = await axios.post<RegisterProps>(
+      const response = await axios.post<RegisterProps>(
         "http://127.0.0.1:8000/users/register",
         {
           name,
@@ -63,7 +65,7 @@ export function Register({
       );
       setIsAuth(false);
       setIsButtonAuth(true);
-      Cookies.set("role", responce.data.role, {
+      Cookies.set("role", response.data.role, {
         expires: 7,
         secure: true,
         sameSite: "Strict",
@@ -74,9 +76,48 @@ export function Register({
           setError("Неправильный пароль или email");
           setEmailError(true);
           setPasswordError(true);
+        } else if (e.response?.status === 409) {
+          setError("Почта уже зарегистрирована");
+          setEmailError(true);
+        } else {
+          setError("Произошла ошибка при регистрации");
         }
       }
     }
+  };
+
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    const trimmedValue = value.replace(/\s+/g, ""); // Убираем все пробелы
+
+    // Обновляем значение в поле ввода
+    e.target.value = trimmedValue;
+
+    if (name === "email") {
+      setEmailError(false);
+      if (!trimmedValue) setError("Пожалуйста, заполните email");
+    } else if (name === "password_hash") {
+      setPasswordError(false);
+      if (!trimmedValue) setError("Пожалуйста, заполните пароль");
+    } else if (name === "name") {
+      setNameError(false);
+      if (!trimmedValue) setError("Пожалуйста, заполните имя");
+    }
+
+    // Обновляем состояние
+    setData({ ...data, [name]: trimmedValue });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " ") {
+      e.preventDefault(); // Предотвращаем ввод пробела
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const submit = (e: FormEvent) => {
@@ -103,24 +144,14 @@ export function Register({
       return;
     }
 
-    sendRegister(name.value, email.value, password_hash.value, role.value);
-  };
-
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    if (name === "email") {
-      setEmailError(false); // Убираем ошибку email
-      if (!value) setError("Пожалуйста, заполните email");
-    } else if (name === "password_hash") {
-      setPasswordError(false); // Убираем ошибку password
-      if (!value) setError("Пожалуйста, заполните пароль");
-    } else if (name === "name") {
-      setNameError(false); // Убираем ошибку password
-      if (!value) setError("Пожалуйста, заполните имя");
+    // Проверка минимальной длины пароля
+    if (password_hash.value.length < 6) {
+      setError("Пароль должен содержать минимум 6 символов");
+      setPasswordError(true);
+      return;
     }
-    setData({ ...data, [name]: value });
+
+    sendRegister(name.value, email.value, password_hash.value, role.value);
   };
 
   return (
@@ -153,8 +184,11 @@ export function Register({
             value={data.name}
             name="name"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             type="text"
             placeholder="Username"
+            minLength={6}
+            maxLength={15}
           />
         </div>
         <div className={styles["input"]}>
@@ -163,19 +197,37 @@ export function Register({
             value={data.email}
             name="email"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             type="email"
             placeholder="Email"
+            maxLength={30}
           />
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Password</label>
-          <input
-            type="password"
-            value={data.password_hash}
-            onChange={handleInputChange}
-            placeholder="Password"
-            name="password_hash"
-          />
+          <div className={styles["password_container"]}>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={data.password_hash}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Password"
+              name="password_hash"
+              minLength={6}
+              maxLength={15}
+            />
+            <Eye
+              type="button"
+              onClick={togglePasswordVisibility}
+              className={styles["password_toggle"]}
+            >
+              {showPassword ? (
+                <img src="/eye-off.svg" alt="Скрыть пароль" />
+              ) : (
+                <img src="/eye.svg" alt="Показать пароль" />
+              )}
+            </Eye>
+          </div>
         </div>
         <button type="submit" className={styles["login_button"]}>
           Регистрация

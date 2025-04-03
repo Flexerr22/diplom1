@@ -1,5 +1,5 @@
 .main {
-  margin-top: 50px;
+  margin-top: 90px;
   display: flex;
   flex-direction: column;
 }
@@ -95,4 +95,15 @@
 .field textarea {
   min-height: 100px;
   resize: vertical;
+}
+.button_product {
+  background-color: black;
+  color: white;
+  font-size: 16px;
+  width: 250px;
+  padding: 10px 30px;
+}
+.edit_buttons {
+  display: flex;
+  gap: 20px;
 }

@@ -2,6 +2,7 @@ import styles from "./Login.module.css";
 import { ChangeEvent, FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import { Eye } from "lucide-react";
 
 export interface LoginProps {
   token: string;
@@ -24,8 +25,13 @@ interface LoginComponentProps {
 
 export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
   const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
+  const [, setPasswordError] = useState(false);
   const [error, setError] = useState<string | null>();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const sendLogin = async (email: string, password: string) => {
     try {
@@ -48,12 +54,15 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
       });
       setIsAuth(true);
       closeModal();
+      window.location.reload();
     } catch (e) {
       if (e instanceof AxiosError) {
         if (e.response?.status === 401) {
-          setError("Неправильный пароль или email");
+          setError("Неправильный email или пароль");
           setEmailError(true);
           setPasswordError(true);
+        } else {
+          setError("Произошла ошибка при входе");
         }
       }
     }
@@ -61,12 +70,23 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const trimmedValue = value.replace(/\s+/g, ""); // Убираем все пробелы
+
+    // Обновляем значение в поле ввода
+    e.target.value = trimmedValue;
+
     if (name === "email") {
       setEmailError(false);
-      if (!value) setError("Пожалуйста, заполните email");
+      if (!trimmedValue) setError("Пожалуйста, заполните email");
     } else if (name === "password") {
       setPasswordError(false);
-      if (!value) setError("Пожалуйста, заполните пароль");
+      if (!trimmedValue) setError("Пожалуйста, заполните пароль");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " ") {
+      e.preventDefault(); // Предотвращаем ввод пробела
     }
   };
 
@@ -75,18 +95,30 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
     setError(null);
     setEmailError(false);
     setPasswordError(false);
+
     const target = e.target as typeof e.target & Login;
     const { email, password } = target;
-    if (email.value === "" && password.value === "") {
-      setError("Пожалуйста заполните все поля");
+
+    if (!email.value || !password.value) {
+      setError("Пожалуйста, заполните все поля");
       if (!email.value) setEmailError(true);
       if (!password.value) setPasswordError(true);
+      return;
     }
+
     if (!/\S+@\S+\.\S+/.test(email.value)) {
       setError("Некорректный формат email.");
       setEmailError(true);
       return;
     }
+
+    // Проверка минимальной длины пароля
+    if (password.value.length < 6) {
+      setError("Пароль должен содержать минимум 6 символов");
+      setPasswordError(true);
+      return;
+    }
+
     sendLogin(email.value, password.value);
   };
 
@@ -111,6 +143,7 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
             placeholder="Email"
             name="email"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className={`${styles["input"]} ${
               emailError ? styles["error"] : ""
             }`}
@@ -118,15 +151,22 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Password</label>
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            onChange={handleInputChange}
-            className={`${styles["input"]} ${
-              passwordError ? styles["error"] : ""
-            }`}
-          />
+          <div className={styles["password_container"]}>
+            <input
+              type={showPassword ? "text" : "password"}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Password"
+              name="password"
+              minLength={6}
+              maxLength={15}
+            />
+            <Eye
+              type="button"
+              onClick={togglePasswordVisibility}
+              className={styles["password_toggle"]}
+            />
+          </div>
         </div>
         <button type="submit" className={styles["login_button"]}>
           Войти

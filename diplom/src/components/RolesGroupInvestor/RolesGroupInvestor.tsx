@@ -2,10 +2,12 @@ import axios from "axios";
 import Search from "../Search/Search";
 import styles from "./RolesGroupInvestor.module.css";
 import { useEffect, useState } from "react";
-import { RolesData, RolesGroupProps } from "../RolesData/RolesData";
+import { RolesData } from "../RolesData/RolesData";
+import { RolesGroupProps } from "../../helpers/projects.props";
 
 export function RolesGroupInvestor() {
   const [users, setUsers] = useState<RolesGroupProps[]>([]);
+  const [search, setSearch] = useState("");
 
   const getAll = async () => {
     await axios
@@ -14,14 +16,22 @@ export function RolesGroupInvestor() {
   };
   const investorData = users.filter((prev) => prev.role === "investor");
 
+  const investorDataSearch = investorData.filter((user) =>
+    user.specialization.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
+
   useEffect(() => {
     getAll();
   });
   return (
     <div className={styles["main"]}>
-      <Search isValid={false} />
+      <Search isValid={false} onChange={handleChange} />
       <div className={styles["products"]}>
-        {investorData.map((item, index) => (
+        {investorDataSearch.map((item, index) => (
           <RolesData
             key={index}
             id={item.id}

@@ -1,14 +1,12 @@
-import { CircleCheckBig } from "lucide-react";
 import Button from "../Button/Button";
-import styles from "./RolesData.module.css";
+import styles from "./MyProjectUser.module.css";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { RolesGroupProps } from "../../helpers/projects.props";
 
-export function RolesData({
+export function MyProjectUser({
   id,
   name,
   description,
@@ -17,18 +15,7 @@ export function RolesData({
   experience,
   role,
 }: RolesGroupProps) {
-  const [isAdd, setIsAdd] = useState(false);
-
-  useEffect(() => {
-    const favorites = JSON.parse(
-      localStorage.getItem("favorites_user") || "[]"
-    );
-    if (favorites.includes(id)) {
-      setIsAdd(true);
-    }
-  }, [id]);
-
-  const addFavourites = async () => {
+  const deleteFavourites = async (id: number) => {
     const jwt = Cookies.get("jwt");
     if (!jwt) {
       console.error("JWT-токен отсутствует");
@@ -40,21 +27,16 @@ export function RolesData({
     const favorite_id = id;
 
     try {
-      await axios.post(
-        `http://127.0.0.1:8000/mentors-investors/favorites/add-to-favorites/${user_id}/${favorite_id}?favorite_user_id=${favorite_id}`
+      await axios.delete(
+        `http://127.0.0.1:8000/mentors-investors/favorites/delete-from-favorites/${user_id}/${favorite_id}?favorite_user_id=${favorite_id}`
       );
-      setIsAdd(true);
-
-      const favorites = JSON.parse(
-        localStorage.getItem("favorites_user") || "[]"
-      );
-      if (!favorites.includes(id)) {
-        favorites.push(id);
-        localStorage.setItem("favorites_user", JSON.stringify(favorites));
-      }
+      localStorage.removeItem("favorites_user");
+      window.location.reload();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Ошибка сервера:", error.response?.data); // Вывод данных ошибки
+        console.error("Статус ошибки:", error.response?.status); // Вывод статуса ошибки
+        console.error("URL запроса:", error.config?.url); // Вывод URL запроса
       } else {
         console.error("Неизвестная ошибка:", error);
       }
@@ -88,16 +70,12 @@ export function RolesData({
           <p>{specialization}</p>
         </div>
         <div className={styles["product-bottom"]}>
-          {isAdd ? (
-            <CircleCheckBig />
-          ) : (
-            <Button
-              className={styles["button_product"]}
-              onClick={addFavourites}
-            >
-              Добавить в избранное
-            </Button>
-          )}
+          <Button
+            className={styles["button_product"]}
+            onClick={() => deleteFavourites(id)}
+          >
+            Удалить проект
+          </Button>
           <Link to={`/user/${id}`}>
             <Button className={styles["button_product"]}>Подробнее</Button>
           </Link>
