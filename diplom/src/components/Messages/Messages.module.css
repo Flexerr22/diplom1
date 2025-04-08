@@ -1,5 +1,5 @@
 .modal_main {
-  position: fixed;
+  position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
@@ -7,40 +7,87 @@
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 50;
 }
+
 .modal_secondary {
   background-color: white;
   padding: 24px;
   border-radius: 10px;
   position: relative;
   width: 250px;
-  padding: 0.5rem 2rem 4rem 2rem;
   display: flex;
   flex-direction: column;
-  left: 30%;
-  bottom: 5%;
-  gap: 30px;
+  gap: 20px; /* Общий отступ между элементами */
 }
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0; /* Убираем внутренние отступы */
+  margin: 0; /* Убираем внешние отступы */
 }
+
 .header p {
   font-size: 18px;
   font-weight: 500;
+  margin: 0; /* Убираем отступы у текста */
 }
+
 .messages_block {
   display: flex;
   flex-direction: column;
   gap: 15px;
   justify-content: center;
   align-items: center;
+  padding: 0; /* Убираем внутренние отступы */
+  margin: 0; /* Убираем внешние отступы */
 }
+
 .icon {
   margin: 0 auto;
 }
+
 .messages_block p {
   font-size: 14px;
   color: gray;
   text-align: center;
+  margin: 0; /* Убираем отступы у текста */
+}
+
+.message_buttons {
+  display: flex;
+  gap: 1rem; /* Уменьшаем отступ между кнопками */
+  justify-content: center; /* Центрируем кнопки */
+  padding-top: 1rem; /* Добавляем отступ сверху */
+}
+
+/* Стили для кнопок остаются без изменений */
+.button_add {
+  background: black;
+  padding: 0.5rem 1rem;
+  border: none;
+  color: white;
+  border-radius: 20px;
+  font-weight: 700;
+  font-family: var(--font);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.button_close {
+  background: rgb(211, 211, 211);
+  padding: 0.5rem 1rem;
+  border: none;
+  color: black;
+  border-radius: 20px;
+  font-weight: 700;
+  font-family: var(--font);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.button_add:hover,
+.button_close:hover {
+  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.4);
+  transform: scale(1.05);
 }

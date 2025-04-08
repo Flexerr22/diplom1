@@ -20,13 +20,17 @@ export function Messages({ setActiveModal }: MessagesProps) {
           <p>Уведомления</p>
           <Ellipsis size={20} />
         </div>
-        <div className={styles.messages_block}>
+        {/* <div className={styles.messages_block}>
           <Bell size={75} className={styles.icon} />
           <b>Ещё нет уведомлений</b>
           <p>
             Здесь будут уведомления об изменении цены и новых объявлениях по
             вашему поиску
           </p>
+        </div> */}
+        <div className={styles.message_buttons}>
+            <button className={styles.button_add}>Принять</button>
+            <button className={styles.button_close}>Отклонить</button>
         </div>
       </div>
     </div>

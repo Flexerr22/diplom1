@@ -101,6 +101,7 @@ export function RolesData({
           <Link to={`/user/${id}`}>
             <Button className={styles["button_product"]}>Подробнее</Button>
           </Link>
+          <Button className={styles["button_product"]}>Сотрудничать</Button>
         </div>
       </div>
     </div>

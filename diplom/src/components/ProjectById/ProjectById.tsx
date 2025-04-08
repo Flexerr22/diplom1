@@ -4,16 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../Header/Header";
 import { Container } from "../Container/Container";
-import { ProductByIdProps } from "../../helpers/projects.props";
+import { CreateProjectRequest } from "../../helpers/projects.props";
 
 export function ProjectById() {
   const { project_id } = useParams<{ project_id: string }>();
-  const [project, setProject] = useState<ProductByIdProps | null>(null);
+  const [project, setProject] = useState<CreateProjectRequest | null>(null);
 
   useEffect(() => {
     const getProjectById = async () => {
       try {
-        const response = await axios.get<ProductByIdProps>(
+        const response = await axios.get<CreateProjectRequest>(
           `http://127.0.0.1:8000/projects/${project_id}`
         );
         setProject(response.data);
@@ -202,80 +202,6 @@ export function ProjectById() {
                 </div>
               </>
             )}
-            {project.team && (
-              <>
-                <div>
-                  <p>Дополнительные детали проекта</p>
-                  <div className={styles.textareas}>
-                    <div className={styles.field}>
-                      <label>Команда:</label>
-                      <textarea
-                        value={project.team}
-                        readOnly
-                        className={styles.textarea}
-                        placeholder="Команда"
-                      />
-                    </div>
-
-                    {project.goals && (
-                      <div className={styles.field}>
-                        <label>Цели:</label>
-                        <textarea
-                          value={project.goals}
-                          readOnly
-                          className={styles.textarea}
-                          placeholder="Цели"
-                        />
-                      </div>
-                    )}
-                    {project.problem && (
-                      <div className={styles.field}>
-                        <label>Проблема:</label>
-                        <textarea
-                          value={project.problem}
-                          readOnly
-                          className={styles.textarea}
-                          placeholder="Проблема"
-                        />
-                      </div>
-                    )}
-                    {project.solution && (
-                      <div className={styles.field}>
-                        <label>Решение:</label>
-                        <textarea
-                          value={project.solution}
-                          readOnly
-                          className={styles.textarea}
-                          placeholder="Решение"
-                        />
-                      </div>
-                    )}
-                    {project.targetAudience && (
-                      <div className={styles.field}>
-                        <label>Целевая аудитория:</label>
-                        <textarea
-                          value={project.targetAudience}
-                          readOnly
-                          className={styles.textarea}
-                          placeholder="Целевая аудитория"
-                        />
-                      </div>
-                    )}
-                    {project.risks && (
-                      <div className={styles.field}>
-                        <label>Риски:</label>
-                        <textarea
-                          value={project.risks}
-                          readOnly
-                          className={styles.textarea}
-                          placeholder="Риски"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
 
             {project.typeOfMentoring && (
               <div>
@@ -303,18 +229,6 @@ export function ProjectById() {
                       />
                     </div>
                   )}
-                  {/* {project.role && (
-                    <div className={styles.field}>
-                      <label>Роль:</label>
-                      <input
-                        type="text"
-                        value={project.role}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Роль"
-                      />
-                    </div>
-                  )} */}
                   {project.skills && (
                     <div className={styles.field}>
                       <label>Навыки:</label>
@@ -346,16 +260,6 @@ export function ProjectById() {
                 <div>
                   <p>Информация об инвесторе</p>
                   <div className={styles.inputs}>
-                    {/* <div className={styles.field}>
-                  <label>Тип инвестиций:</label>
-                  <input
-                    type="text"
-                    value={project.typeOfInvestment}
-                    readOnly
-                    className={styles.input}
-                    placeholder="Тип инвестиций"
-                  />
-                </div> */}
                     <div className={styles.field}>
                       <label>Выделенный бюджет:</label>
                       <input
@@ -366,19 +270,6 @@ export function ProjectById() {
                         placeholder="Бюджет"
                       />
                     </div>
-
-                    {/* {project.role && (
-                    <div className={styles.field}>
-                      <label>Роль:</label>
-                      <input
-                        type="text"
-                        value={project.role}
-                        readOnly
-                        className={styles.input}
-                        placeholder="Роль"
-                      />
-                    </div>
-                  )} */}
                   </div>
                   {project.results && (
                     <div className={styles.field}>

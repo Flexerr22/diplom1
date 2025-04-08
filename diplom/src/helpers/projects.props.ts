@@ -18,8 +18,10 @@ export interface ProductProps {
   experience?: string;
   description?: string;
   skills?: string;
+  mentorExperience?: string;
+  stage?: string;
 }
-export interface ProductByIdProps {
+export interface CreateProjectRequest {
   title: string;
   description: string;
   tagline?: string;
@@ -28,26 +30,17 @@ export interface ProductByIdProps {
   investment?: string;
   equity?: string;
   investmentType?: string;
-  team?: string;
   links?: string;
   revenue?: string;
-  goals?: string;
-  problem?: string;
-  solution?: string;
-  targetAudience?: string;
-  risks?: string;
   mentorExperience?: string;
   mentorSkills?: string;
   mentorWorkFormat?: string;
-  mentorCollaborationGoals?: string;
-  mentorCollaborationTerms?: string;
   typeOfMentoring?: string;
   experience?: string;
   role?: string;
   achievements?: string;
   skills?: string;
-  typeOfInvestment?: string;
   budget?: string;
   results?: string;
-  user_id?: number;
+  user_id: number;
 }

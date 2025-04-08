@@ -2,7 +2,6 @@ import styles from "./Register.module.css";
 import { ChangeEvent, FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
-import { Eye } from "lucide-react";
 
 export type Register = {
   name: {
@@ -45,7 +44,6 @@ export function Register({
     password_hash: "",
     role: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
 
   const sendRegister = async (
     name: string,
@@ -114,10 +112,6 @@ export function Register({
     if (e.key === " ") {
       e.preventDefault(); // Предотвращаем ввод пробела
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   const submit = (e: FormEvent) => {
@@ -205,9 +199,7 @@ export function Register({
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Password</label>
-          <div className={styles["password_container"]}>
             <input
-              type={showPassword ? "text" : "password"}
               value={data.password_hash}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -215,19 +207,8 @@ export function Register({
               name="password_hash"
               minLength={6}
               maxLength={15}
+              type="password"
             />
-            <Eye
-              type="button"
-              onClick={togglePasswordVisibility}
-              className={styles["password_toggle"]}
-            >
-              {showPassword ? (
-                <img src="/eye-off.svg" alt="Скрыть пароль" />
-              ) : (
-                <img src="/eye.svg" alt="Показать пароль" />
-              )}
-            </Eye>
-          </div>
         </div>
         <button type="submit" className={styles["login_button"]}>
           Регистрация

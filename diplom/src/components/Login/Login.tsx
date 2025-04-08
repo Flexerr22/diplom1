@@ -2,7 +2,6 @@ import styles from "./Login.module.css";
 import { ChangeEvent, FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
-import { Eye } from "lucide-react";
 
 export interface LoginProps {
   token: string;
@@ -27,11 +26,7 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
   const [emailError, setEmailError] = useState(false);
   const [, setPasswordError] = useState(false);
   const [error, setError] = useState<string | null>();
-  const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   const sendLogin = async (email: string, password: string) => {
     try {
@@ -151,22 +146,15 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Password</label>
-          <div className={styles["password_container"]}>
             <input
-              type={showPassword ? "text" : "password"}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Password"
               name="password"
               minLength={6}
               maxLength={15}
+              type="password"
             />
-            <Eye
-              type="button"
-              onClick={togglePasswordVisibility}
-              className={styles["password_toggle"]}
-            />
-          </div>
         </div>
         <button type="submit" className={styles["login_button"]}>
           Войти

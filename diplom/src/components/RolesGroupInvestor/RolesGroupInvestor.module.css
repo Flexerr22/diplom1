@@ -7,3 +7,8 @@
   gap: 44px;
   margin-top: 40px;
 }
+.error {
+  margin-top: 40px;
+  font-size: medium;
+  font-weight: 600;
+}

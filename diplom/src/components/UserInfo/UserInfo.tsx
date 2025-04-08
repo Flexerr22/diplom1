@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ProfileInfo } from "../Profile/Profile";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Container } from "../Container/Container";
@@ -7,6 +6,7 @@ import styles from "./UserInfo.module.css"; // Создайте файл сти�
 import Header from "../Header/Header";
 import { ProjectLast } from "../ProjectLast/ProjectLast";
 import { ProductProps } from "../../helpers/projects.props";
+import { ProfileInfo } from "../../helpers/user.props";
 
 export function UserInfo() {
   const { user_id } = useParams<{ user_id: string }>();
@@ -61,18 +61,6 @@ export function UserInfo() {
                   placeholder="Описание"
                 />
               </div>
-              {user.contact && (
-                <div className={styles.field}>
-                  <label>Контактная информация:</label>
-                  <input
-                    type="text"
-                    value={user.contact}
-                    readOnly
-                    className={styles.input}
-                    placeholder="Контактная информация"
-                  />
-                </div>
-              )}
             </div>
 
             <div className={styles.main_details}>
