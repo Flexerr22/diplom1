@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 import { Modal } from "../Modal/Modal";
 import { Messages } from "../Messages/Messages";
 import Cookies from "js-cookie";
-import { Profile, ProfileInfo } from "../Profile/Profile";
+import { Profile } from "../Profile/Profile";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import { MessageProps } from "../../helpers/message.props";
+import { ProfileInfo } from "../../helpers/user.props";
 
 export type ModalType = "login" | "messages" | "profile" | null;
 
@@ -16,7 +18,8 @@ function Header() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [user_id, setUserId] = useState<string | null>(null);
-  const [userAvatar, setUserAvatar] = useState<string | null>(null); // Состояние для аватара
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [message, setMessage] = useState<MessageProps[]>([]);
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
@@ -44,7 +47,25 @@ function Header() {
     if (role) {
       setUserRole(role);
     }
+    getMessage();
   }, []);
+
+  const getMessage = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+
+      const responce = await axios.get<MessageProps[]>(
+        `http://127.0.0.1:8000/notifications/${user_id}`
+      );
+      setMessage(responce.data);
+    } catch (error) {
+      console.error("Произошла ошибка", error);
+    }
+  };
 
   const handleClickOutside = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -101,15 +122,21 @@ function Header() {
               <a href="/chats">
                 <img src="/chat.svg" alt="Чаты" />
               </a>
-              <img
-                src="/messages.svg"
-                alt="Уведомления"
-                onClick={() =>
-                  setActiveModal((prev) =>
-                    prev === "messages" ? null : "messages"
-                  )
-                }
-              />
+              <div className={styles.message}>
+                {message.length > 0 && (
+                  <div className={styles.count}>{message.length}</div>
+                )}
+
+                <img
+                  src="/messages.svg"
+                  alt="Уведомления"
+                  onClick={() =>
+                    setActiveModal((prev) =>
+                      prev === "messages" ? null : "messages"
+                    )
+                  }
+                />
+              </div>
 
               {activeModal === "messages" && (
                 <Messages setActiveModal={setActiveModal} />

@@ -20,6 +20,7 @@ export interface ProductProps {
   skills?: string;
   mentorExperience?: string;
   stage?: string;
+  user_id: number;
 }
 export interface CreateProjectRequest {
   title: string;

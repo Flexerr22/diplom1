@@ -144,6 +144,7 @@ export function UserInfo() {
                 role={item.role}
                 description={item.description}
                 skills={item.skills}
+                user_id={item.user_id}
               />
             ))}
           </div>

@@ -15,11 +15,25 @@ export function CreateProject() {
   const [projectData, setProjectData] = useState<CreateProjectRequest>({
     title: "",
     description: "",
-    user_id: 0,
-    investment: "",
-    stage: "",
-    category: "",
     tagline: "",
+    category: "",
+    stage: "",
+    investment: "",
+    equity: "",
+    investmentType: "",
+    links: "",
+    revenue: "",
+    mentorExperience: "",
+    mentorSkills: "",
+    mentorWorkFormat: "",
+    typeOfMentoring: "",
+    experience: "",
+    role: "",
+    achievements: "",
+    skills: "",
+    budget: "",
+    results: "",
+    user_id: 0,
   });
   const categories = [
     "Программирование",
@@ -208,7 +222,7 @@ export function CreateProject() {
                       required
                     />
                     <input
-                      type="text"
+                      type="number"
                       name="revenue"
                       placeholder="Выручка"
                       value={projectData.revenue}
@@ -223,7 +237,7 @@ export function CreateProject() {
                   <p>Для инвесторов</p>
                   <div className={styles.inputs}>
                     <input
-                      type="text"
+                      type="number"
                       name="investment"
                       placeholder="Требуемые инвестиции"
                       value={projectData.investment}
@@ -232,7 +246,7 @@ export function CreateProject() {
                       maxLength={30}
                     />
                     <input
-                      type="text"
+                      type="number"
                       name="equity"
                       placeholder="Доля в проекте в %"
                       value={projectData.equity}
@@ -262,7 +276,7 @@ export function CreateProject() {
                   <p>Ожидания от наставника</p>
                   <div className={styles.inputs}>
                     <input
-                      type="text"
+                      type="number"
                       name="mentorExperience"
                       placeholder="Опыт работы наставника"
                       value={projectData.mentorExperience}
@@ -320,7 +334,7 @@ export function CreateProject() {
                   </select>
 
                   <input
-                    type="text"
+                    type="number"
                     name="experience"
                     placeholder="Стаж работы в проекте"
                     value={projectData.experience}
@@ -352,7 +366,7 @@ export function CreateProject() {
                 <p>Информация об инвесторе в проекте</p>
                 <div className={styles.inputs}>
                   <input
-                    type="text"
+                    type="number"
                     name="budget"
                     placeholder="Размер инвестиций"
                     value={projectData.budget}

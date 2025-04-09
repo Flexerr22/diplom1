@@ -63,7 +63,7 @@ export function Profile({
 
   const deleteProfile = async () => {
     try {
-      await axios.post("http://127.0.0.1:8001/users/logout");
+      await axios.post("http://127.0.0.1:8000/users/logout");
       Cookies.remove("jwt");
       Cookies.remove("role");
       setIsAuth(false);
@@ -336,7 +336,7 @@ export function Profile({
                 <label>Опыт работы:</label>
                 {isEditing ? (
                   <input
-                    type="text"
+                    type="number"
                     name="experience"
                     value={userEditData.experience || ""}
                     onChange={handleInputChange}
@@ -372,7 +372,7 @@ export function Profile({
                 <label>Бюджет:</label>
                 {isEditing ? (
                   <input
-                    type="text"
+                    type="number"
                     name="budget"
                     value={userEditData.budget || ""}
                     onChange={handleInputChange}
