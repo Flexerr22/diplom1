@@ -139,7 +139,10 @@ function Header() {
               </div>
 
               {activeModal === "messages" && (
-                <Messages setActiveModal={setActiveModal} />
+                <Messages
+                  setActiveModal={setActiveModal}
+                  getNotifications={getMessage}
+                />
               )}
               <a href="/favourites">
                 <img src="/like.svg" alt="Избранное" />

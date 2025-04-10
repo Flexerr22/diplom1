@@ -74,3 +74,27 @@
   padding: 10px 30px;
   width: 250px;
 }
+/* RolesData.module.css */
+.project-selector {
+  margin: 10px 0;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+}
+
+.project-selector label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.project-selector select {
+  padding: 5px;
+  border: 1px solid #ccc;
+  width: 200px;
+  outline: none;
+  padding: 0.5rem;
+  border-radius: 20px;
+  font-family: var(--font);
+  font-size: medium;
+  font-weight: 600;
+}

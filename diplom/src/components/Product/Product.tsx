@@ -121,6 +121,7 @@ export function Product({
         status: "pending",
         text: `Пользователь хочет сотрудничать по проекту "${title}"`,
       };
+      console.log(notificationData);
       const response = await axios.post<MessageProps>(
         `http://127.0.0.1:8000/notifications/send-notification/${recipient_id}`,
         notificationData

@@ -9,9 +9,10 @@ import { MessageProps } from "../../helpers/message.props";
 
 interface MessagesProps {
   setActiveModal: (value: ModalType) => void;
+  getNotifications?: () => Promise<void>;
 }
 
-export function Messages({ setActiveModal }: MessagesProps) {
+export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
   const [message, setMessage] = useState<MessageProps[]>([]);
   const [notificationId, setNotificationId] = useState<number | null>(null);
   const [deleteNotificationId, setDeleteNotificationId] = useState<
@@ -78,6 +79,10 @@ export function Messages({ setActiveModal }: MessagesProps) {
     await axios.post<MessageProps>(
       `http://127.0.0.1:8000/notifications/reject-notification/${notificationId}`
     );
+
+    if (getNotifications) {
+      await getNotifications();
+    }
     localStorage.removeItem("notification");
     setNotificationId(null);
   };
@@ -88,6 +93,10 @@ export function Messages({ setActiveModal }: MessagesProps) {
     await axios.delete(
       `http://127.0.0.1:8000/notifications/delete-notification/${deleteNotificationId}`
     );
+
+    if (getNotifications) {
+      await getNotifications();
+    }
     setDeleteNotificationId(null);
     await getMessage();
   };

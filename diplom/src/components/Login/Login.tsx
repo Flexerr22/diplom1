@@ -2,6 +2,7 @@ import styles from "./Login.module.css";
 import { ChangeEvent, FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 export interface LoginProps {
   token: string;
@@ -26,7 +27,7 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
   const [emailError, setEmailError] = useState(false);
   const [, setPasswordError] = useState(false);
   const [error, setError] = useState<string | null>();
-
+  const navigate = useNavigate();
 
   const sendLogin = async (email: string, password: string) => {
     try {
@@ -49,7 +50,7 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
       });
       setIsAuth(true);
       closeModal();
-      window.location.reload();
+      navigate("/");
     } catch (e) {
       if (e instanceof AxiosError) {
         if (e.response?.status === 401) {
@@ -146,15 +147,15 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Password</label>
-            <input
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Password"
-              name="password"
-              minLength={6}
-              maxLength={15}
-              type="password"
-            />
+          <input
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Password"
+            name="password"
+            minLength={6}
+            maxLength={15}
+            type="password"
+          />
         </div>
         <button type="submit" className={styles["login_button"]}>
           Войти

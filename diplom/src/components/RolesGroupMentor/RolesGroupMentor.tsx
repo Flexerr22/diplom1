@@ -78,6 +78,7 @@ export function RolesGroupMentor({
               specialization={item.specialization}
               role={item.role}
               budget={item.budget}
+              currentProjectId={item.currentProjectId}
             />
           ))}
         </div>

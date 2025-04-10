@@ -4,10 +4,9 @@ import axios from "axios";
 import { Container } from "../../components/Container/Container";
 import { useParams } from "react-router-dom";
 import styles from "./MyProjects.module.css";
-import { ProductProps } from "../../components/Product/Product";
-
 import Button from "../../components/Button/Button";
 import { MyProject } from "../../components/MyProject/MyProject";
+import { ProductProps } from "../../helpers/projects.props";
 
 function MyProjects() {
   const { user_id } = useParams<{ user_id: string }>();
