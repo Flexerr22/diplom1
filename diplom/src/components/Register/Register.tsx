@@ -199,16 +199,16 @@ export function Register({
         </div>
         <div className={styles["input"]}>
           <label className={styles["label"]}>Password</label>
-            <input
-              value={data.password_hash}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Password"
-              name="password_hash"
-              minLength={6}
-              maxLength={15}
-              type="password"
-            />
+          <input
+            value={data.password_hash}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Password"
+            name="password_hash"
+            minLength={6}
+            maxLength={15}
+            type="password"
+          />
         </div>
         <button type="submit" className={styles["login_button"]}>
           Регистрация

@@ -128,7 +128,7 @@ export function Product({
       );
 
       localStorage.setItem(
-        "notification",
+        `notification_${response.data.id}`,
         JSON.stringify({
           status: "pending",
           notificationId: response.data.id,

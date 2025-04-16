@@ -1,0 +1,221 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  margin-top: 50px;
+  background-color: white;
+}
+
+.progress {
+  padding: 65px 60px 60px 65px;
+}
+.stadies {
+  display: flex;
+  justify-content: space-between;
+}
+.progress_title {
+  font-size: 23px;
+  font-weight: bold;
+  font-family: var(--secondary-font);
+}
+.stadies p {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: var(--secondary-font);
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  padding: 65px 60px 60px 65px;
+  margin-top: 50px;
+  border-radius: 15px;
+  margin-bottom: 50px;
+}
+.form p {
+  font-size: 20px;
+  font-weight: 600;
+}
+.form input,
+.form select {
+  box-sizing: border-box;
+  border: 1px solid #dbdbdb;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
+  outline: none;
+  width: 250px;
+  font-family: var(--secondary-font);
+  font-weight: 500;
+}
+.form textarea {
+  border: 1px solid #dbdbdb;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
+  outline: none;
+  height: 150px;
+  font-family: var(--secondary-font);
+  font-weight: 500;
+  width: 100%;
+}
+.button_form {
+  background-color: black;
+  color: white;
+  font-size: 16px;
+  width: 240px;
+  margin-top: 50px;
+}
+
+.main_info {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-bottom: 20px;
+}
+.inputs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+.textareas {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 30px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-weight: bold;
+  color: #333;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.field textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.stadies {
+  display: flex;
+  align-items: start;
+}
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.step span {
+  flex: 1;
+  font-size: 18px;
+  font-family: var(--secondary-font);
+  color: #333;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.step button {
+  margin-left: 10px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: var(--secondary-font);
+}
+
+.step button:hover {
+  background-color: #444;
+}
+
+.newStep {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.newStep input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: var(--secondary-font);
+}
+
+.newStep button {
+  background-color: #007aff;
+  color: white;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--secondary-font);
+  transition: background-color 0.2s ease;
+}
+
+.newStep button:hover {
+  background-color: #005ecb;
+}
+.button_complite {
+  background-color: #000;
+  color: white;
+  width: 20vw;
+}
+.projectSelect {
+  display: flex;
+  gap: 1rem;
+  padding: 65px 60px 60px 65px;
+  align-items: center;
+}
+.projectSelect label {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: larger;
+}
+.projectSelect select {
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  border: 1px solid #dbdbdb;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
+  outline: none;
+  width: 250px;
+  font-family: var(--secondary-font);
+  font-weight: 500;
+}

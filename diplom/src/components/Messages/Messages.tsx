@@ -19,15 +19,10 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
     number | null
   >(null);
   const [isLoading, setIsLoading] = useState(false);
-  const handleClickOutside = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setActiveModal(null);
-    }
-  };
 
   useEffect(() => {
     getMessage();
-  });
+  }, []);
 
   const getMessage = async () => {
     const jwt = Cookies.get("jwt");
@@ -73,6 +68,12 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
     }
   };
 
+  const handleClickOutside = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setActiveModal(null);
+    }
+  };
+
   const rejectMessage = async () => {
     if (!notificationId) return;
 
@@ -85,6 +86,20 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
     }
     localStorage.removeItem("notification");
     setNotificationId(null);
+    await getMessage();
+  };
+
+  const acceptMessage = async () => {
+    if (!notificationId) return;
+    await axios.post<MessageProps>(
+      `http://127.0.0.1:8000/notifications/accept-notification/${notificationId}`
+    );
+
+    if (getNotifications) {
+      await getNotifications();
+    }
+    setNotificationId(null);
+    await getMessage();
   };
 
   const deleteMessage = async () => {
@@ -99,6 +114,10 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
     }
     setDeleteNotificationId(null);
     await getMessage();
+  };
+
+  const hideMessage = (id: number) => {
+    setMessage((prev) => prev.filter((m) => m.id !== id));
   };
 
   if (isLoading) {
@@ -147,13 +166,21 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
           <div key={mes.id} className={styles.main}>
             <div className={styles.new_message}>
               <p>{mes.text}</p>
-              {mes.status !== "pending" && (
+              {mes.status === "rejected" && (
                 <CircleX className={styles.icon} onClick={deleteMessage} />
+              )}
+              {mes.status === "accepted" && (
+                <CircleX
+                  className={styles.icon}
+                  onClick={() => hideMessage(mes.id)}
+                />
               )}
             </div>
             {mes.status === "pending" && (
               <div className={styles.message_buttons}>
-                <button className={styles.button_add}>Принять</button>
+                <button className={styles.button_add} onClick={acceptMessage}>
+                  Принять
+                </button>
                 <button className={styles.button_close} onClick={rejectMessage}>
                   Отклонить
                 </button>

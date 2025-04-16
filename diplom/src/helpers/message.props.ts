@@ -5,4 +5,5 @@ export interface MessageProps {
   status: string;
   text: string;
   id: number;
+  hidden?: boolean;
 }

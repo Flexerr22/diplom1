@@ -3,12 +3,11 @@ import Header from "../../components/Header/Header";
 import axios from "axios";
 import { Container } from "../../components/Container/Container";
 import styles from "./Favourites.module.css";
-import { ProductProps } from "../../components/Product/Product";
 import { Project } from "../../components/Project/Project";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
-import { RolesGroupProps } from "../../components/RolesData/RolesData";
 import { MyProjectUser } from "../../components/MyProjectUser/MyProjectUser";
+import { ProductProps, RolesGroupProps } from "../../helpers/projects.props";
 
 function Favourites() {
   const [projects, setProjects] = useState<ProductProps[]>([]);
