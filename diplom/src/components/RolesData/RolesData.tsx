@@ -8,6 +8,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { ProductProps, RolesGroupProps } from "../../helpers/projects.props";
 import { MessageProps } from "../../helpers/message.props";
+import { RatingProps } from "../../helpers/rating.props";
 
 export function RolesData({
   id,
@@ -25,8 +26,10 @@ export function RolesData({
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
     null
   );
+  const [rating, setRating] = useState<RatingProps | null>(null);
 
   useEffect(() => {
+    getRating();
     const favorites = JSON.parse(
       localStorage.getItem("favorites_user") || "[]"
     );
@@ -194,6 +197,14 @@ export function RolesData({
     }
   };
 
+  const getRating = async () => {
+    const responce = await axios.get<RatingProps>(
+      `http://127.0.0.1:8000/ratings/get-avg-rating/${id}`
+    );
+    setRating(responce.data);
+    console.log(responce.data);
+  };
+
   const deleteMessage = async () => {
     if (!notificationId) return;
 
@@ -219,6 +230,14 @@ export function RolesData({
   return (
     <div>
       <div className={styles["product"]}>
+        {rating?.average_rating ? (
+          <div className={styles.rating}>
+            <p>{rating.average_rating}</p>
+            <span>★</span>
+          </div>
+        ) : (
+          ""
+        )}
         <b className={styles["title"]}>"{name}"</b>
         <textarea className={styles["description"]} disabled>
           {description}

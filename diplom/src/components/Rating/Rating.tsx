@@ -18,6 +18,7 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState<string>("");
   const [notificationId, setNotificationId] = useState<number | null>(null);
+  const [sender, setSender] = useState<number | null>();
   const navigate = useNavigate();
 
   const handleClickOutside = (e: React.MouseEvent) => {
@@ -47,8 +48,8 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
           notification.recipient_id === user_id &&
           notification.status === "accepted"
       );
+      setSender(extMessage?.sender_id);
       if (extMessage) {
-        console.log(extMessage.id);
         setNotificationId(extMessage.id);
       } else {
         setNotificationId(null);
@@ -58,18 +59,44 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const reviewData = {
-      rating,
-      text: reviewText,
-      data: new Date().toISOString(),
-    };
-    setActiveModal(null);
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   const reviewData = {
+  //     rating,
+  //     text: reviewText,
+  //     data: new Date().toISOString(),
+  //   };
+  //   setActiveModal(null);
 
-    localStorage.setItem("user_rating", JSON.stringify(reviewData));
-    deleteMessage();
-    navigate("/");
+  //   localStorage.setItem("user_rating", JSON.stringify(reviewData));
+  //   deleteMessage();
+  //   navigate("/");
+  // };
+
+  const postRating = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+
+      const reviewData = {
+        user_id: sender,
+        sender_id: user_id,
+        amount: rating,
+        review: reviewText,
+      };
+
+      await axios.post(
+        `http://127.0.0.1:8000/ratings/create-rating/${sender}`,
+        reviewData
+      );
+      deleteMessage();
+      navigate("/");
+    } catch (error) {
+      console.error("Произошла ошибка", error);
+    }
   };
 
   const deleteMessage = async () => {
@@ -92,7 +119,7 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
           <p>Оцените сотрудничество</p>
         </div>
         <ThumbsUp size={50} />
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={postRating} className={styles.form}>
           <div className={styles.block}>
             <p>Оставьте отзыв</p>
             <textarea
