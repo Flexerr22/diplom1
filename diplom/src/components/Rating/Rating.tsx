@@ -59,20 +59,6 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
     }
   };
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   const reviewData = {
-  //     rating,
-  //     text: reviewText,
-  //     data: new Date().toISOString(),
-  //   };
-  //   setActiveModal(null);
-
-  //   localStorage.setItem("user_rating", JSON.stringify(reviewData));
-  //   deleteMessage();
-  //   navigate("/");
-  // };
-
   const postRating = async () => {
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
