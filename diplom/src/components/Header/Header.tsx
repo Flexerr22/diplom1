@@ -106,13 +106,17 @@ function Header() {
                   </li>
                 </>
               )}
-              <li>
-                <a href={`/my-projects/${user_id}`}>Мои проекты</a>
-              </li>
-              <div className={styles["border"]}></div>
-              <li>
-                <a href={"/our_projects"}>Общие проекты</a>
-              </li>
+              {isAuth && (
+                <>
+                  <li>
+                    <a href={`/my-projects/${user_id}`}>Мои проекты</a>
+                  </li>
+                  <div className={styles["border"]}></div>
+                  <li>
+                    <a href={"/our_projects"}>Общие проекты</a>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
 
