@@ -94,7 +94,6 @@ export function CreateProject() {
       "http://127.0.0.1:8000/projects/create-project",
       { ...projectData, user_id, role }
     );
-    console.log("Ответ сервера:", response.data);
     setProjectData((prev) => ({
       ...prev,
       ...response.data,
@@ -208,7 +207,7 @@ export function CreateProject() {
                       required
                     />
                     <input
-                      type="text"
+                      type="number"
                       name="revenue"
                       placeholder="Выручка"
                       value={projectData.revenue}
@@ -223,7 +222,7 @@ export function CreateProject() {
                   <p>Для инвесторов</p>
                   <div className={styles.inputs}>
                     <input
-                      type="text"
+                      type="number"
                       name="investment"
                       placeholder="Требуемые инвестиции"
                       value={projectData.investment}
@@ -232,7 +231,7 @@ export function CreateProject() {
                       maxLength={30}
                     />
                     <input
-                      type="text"
+                      type="number"
                       name="equity"
                       placeholder="Доля в проекте в %"
                       value={projectData.equity}
@@ -262,7 +261,7 @@ export function CreateProject() {
                   <p>Ожидания от наставника</p>
                   <div className={styles.inputs}>
                     <input
-                      type="text"
+                      type="number"
                       name="mentorExperience"
                       placeholder="Опыт работы наставника"
                       value={projectData.mentorExperience}
@@ -320,7 +319,7 @@ export function CreateProject() {
                   </select>
 
                   <input
-                    type="text"
+                    type="number"
                     name="experience"
                     placeholder="Стаж работы в проекте"
                     value={projectData.experience}
@@ -352,7 +351,7 @@ export function CreateProject() {
                 <p>Информация об инвесторе в проекте</p>
                 <div className={styles.inputs}>
                   <input
-                    type="text"
+                    type="number"
                     name="budget"
                     placeholder="Размер инвестиций"
                     value={projectData.budget}
