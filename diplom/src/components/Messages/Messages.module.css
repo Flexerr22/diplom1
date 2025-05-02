@@ -1,5 +1,5 @@
 .modal_main {
-  position: absolute;
+  position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
@@ -15,6 +15,10 @@
   position: relative;
   width: 250px;
   display: flex;
+  height: 40vh;
+  overflow: auto;
+  scrollbar-width: thin; /* Для Firefox */
+  scrollbar-color: #6c757d #f1f1f1;
   flex-direction: column;
   gap: 20px; /* Общий отступ между элементами */
 }
@@ -90,4 +94,20 @@
 .button_close:hover {
   box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.4);
   transform: scale(1.05);
+}
+.new_message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.icon {
+  cursor: pointer;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(216, 216, 216);
+  padding: 0.5rem;
+  border-radius: 20px;
 }

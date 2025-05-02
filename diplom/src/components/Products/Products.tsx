@@ -113,6 +113,7 @@ export function Products({
               tagline={item.tagline}
               investment={item.investment}
               category={item.category}
+              user_id={item.user_id}
             />
           ))}
         </div>

@@ -109,3 +109,18 @@ a {
   border-radius: 100%;
   cursor: pointer;
 }
+.count {
+  background: red;
+  border-radius: 50%;
+  color: white;
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: medium;
+  position: absolute;
+  right: -10px;
+  top: -10px;
+}
+.message {
+  position: relative;
+}

@@ -8,6 +8,7 @@ import { UserInfo } from "./components/UserInfo/UserInfo";
 import { lazy, Suspense } from "react";
 import { MyProjectById } from "./components/MyProjectById/MyProjectById";
 import Favourites from "./pages/Favourites/Favourites";
+import AcceptProjectPage from "./pages/AcceptProjects/AcceptProjectsPage";
 
 function App() {
   const Project = lazy(() => import("./pages/ProjectPage/ProjectPage"));
@@ -24,6 +25,14 @@ function App() {
           element={
             <Suspense fallback={<>Загрузка...</>}>
               <Project />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/our_projects"
+          element={
+            <Suspense fallback={<>Загрузка...</>}>
+              <AcceptProjectPage />
             </Suspense>
           }
         />

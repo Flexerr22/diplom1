@@ -5,6 +5,7 @@ import { ModalType } from "../Header/Header";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { ProfileInfo } from "../../helpers/user.props";
+import { useNavigate } from "react-router-dom";
 
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
@@ -22,6 +23,7 @@ export function Profile({
   const [isEditing, setIsEditing] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [userEditData, setUserEditData] = useState<ProfileInfo>({
     email: "",
     name: "",
@@ -68,6 +70,7 @@ export function Profile({
       Cookies.remove("role");
       setIsAuth(false);
       closeModal();
+      navigate("/");
     } catch (e) {
       if (e instanceof AxiosError) {
         console.log("Ошибка");

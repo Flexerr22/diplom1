@@ -3,16 +3,29 @@ import Header from "../../components/Header/Header";
 import axios from "axios";
 import { Container } from "../../components/Container/Container";
 import styles from "./Favourites.module.css";
-import { ProductProps } from "../../components/Product/Product";
 import { Project } from "../../components/Project/Project";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
-import { RolesGroupProps } from "../../components/RolesData/RolesData";
 import { MyProjectUser } from "../../components/MyProjectUser/MyProjectUser";
+import { ProductProps, RolesGroupProps } from "../../helpers/projects.props";
+import Button from "../../components/Button/Button";
 
 function Favourites() {
   const [projects, setProjects] = useState<ProductProps[]>([]);
   const [projectsUser, setProjectsUser] = useState<RolesGroupProps[]>([]);
+  const [userRole, setUserRole] = useState("")
+
+  useEffect(() => {
+    const role = Cookies.get("role");
+    if(role){
+      setUserRole(role)
+    }
+  })
+
+  useEffect(() => {
+    getMyProject();
+    getMyProjectUser();
+  }, []); // Пустой массив зависимостей
 
   const getMyProject = async () => {
     const jwt = Cookies.get("jwt");
@@ -52,10 +65,22 @@ function Favourites() {
     }
   };
 
-  useEffect(() => {
-    getMyProject();
-    getMyProjectUser();
-  }, []); // Пустой массив зависимостей
+  if (projects.length === 0 && projectsUser.length === 0) {
+    const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects'
+    return (
+      <>
+      <Header />
+      <Container>
+        <div className={styles.project_no}>
+          <p>Добавьте проекты или пользователей, которые вам понравились</p>
+            <a href={searchLink}>
+              <Button appearence="small">Добавить</Button>
+            </a>
+        </div>
+      </Container>
+      </>
+    );
+  }
 
   return (
     <>

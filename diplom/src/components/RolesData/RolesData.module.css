@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: 17px;
+  position: relative;
 }
 .description {
   width: 319px;
@@ -73,4 +74,47 @@
   font-size: 16px;
   padding: 10px 30px;
   width: 250px;
+}
+/* RolesData.module.css */
+.project-selector {
+  margin: 10px 0;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+}
+
+.project-selector label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.project-selector select {
+  padding: 5px;
+  border: 1px solid #ccc;
+  width: 200px;
+  outline: none;
+  padding: 0.5rem;
+  border-radius: 20px;
+  font-family: var(--font);
+  font-size: medium;
+  font-weight: 600;
+}
+.rating {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  position: absolute;
+  right: 15px;
+  top: 0;
+}
+
+.rating p {
+  font-size: large;
+  font-weight: bold;
+  font-family: var(--font);
+}
+
+.rating span {
+  font-size: 25px;
+  color: rgb(227, 227, 4);
 }
