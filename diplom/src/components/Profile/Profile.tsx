@@ -79,8 +79,29 @@ export function Profile({
   };
 
   const validateInput = (value: string): boolean => {
-    const regex = /^[a-zA-Zа-яА-Я0-9\s.,!?()@_-]*$/;
-    return regex.test(value);
+    // Проверка на недопустимые символы
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
+    if (!regex.test(value)) {
+      setError(
+        "Недопустимые символы. Разрешены только буквы, цифры, пробелы и @_."
+      );
+      return false;
+    }
+
+    // Проверка на множественные пробелы
+    if (/\s{2,}/.test(value)) {
+      setError("Нельзя вводить более одного пробела подряд.");
+      return false;
+    }
+
+    // Проверка, что есть хотя бы один не-пробельный символ
+    if (/^\s*$/.test(value) && value !== "") {
+      setError("Введите хотя бы один символ (не пробел)");
+      return false;
+    }
+
+    setError(null);
+    return true;
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,10 +164,30 @@ export function Profile({
 
     const role = Cookies.get("role") || "";
     const fieldsToCheck = requiredFields[role] || [];
-    const isFormValid = fieldsToCheck.every((field) => userEditData[field]);
 
-    if (!isFormValid) {
-      alert("Пожалуйста, заполните все поля");
+    // Собираем список незаполненных полей
+    const emptyFields = fieldsToCheck.filter(
+      (field) => !userEditData[field] || userEditData[field]?.trim() === ""
+    );
+
+    if (emptyFields.length > 0) {
+      // Преобразуем названия полей в читаемый формат
+      const fieldNames: Record<string, string> = {
+        name: "Имя",
+        email: "Email",
+        description: "Описание",
+        specialization: "Специализация",
+        experience: "Опыт работы",
+        skills: "Навыки",
+        budget: "Бюджет",
+        investmentFocus: "Направление инвестиций",
+      };
+
+      const errorMessage = `Пожалуйста, заполните следующие обязательные поля:\n${emptyFields
+        .map((field) => `- ${fieldNames[field] || field}`)
+        .join("\n")}`;
+
+      alert(errorMessage);
       return;
     }
 

@@ -19,6 +19,7 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
   const [reviewText, setReviewText] = useState<string>("");
   const [notificationId, setNotificationId] = useState<number | null>(null);
   const [sender, setSender] = useState<number | null>();
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleClickOutside = (e: React.MouseEvent) => {
@@ -39,11 +40,11 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
 
-      const responce = await axios.get<MessageProps[]>(
+      const response = await axios.get<MessageProps[]>(
         `http://127.0.0.1:8000/notifications/${user_id}`
       );
 
-      const extMessage = responce.data.find(
+      const extMessage = response.data.find(
         (notification) =>
           notification.recipient_id === user_id &&
           notification.status === "accepted"
@@ -59,7 +60,24 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
     }
   };
 
-  const postRating = async () => {
+  const postRating = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!rating) {
+      setError("Пожалуйста, поставьте оценку");
+      return;
+    }
+
+    if (!reviewText.trim()) {
+      setError("Пожалуйста, напишите отзыв");
+      return;
+    }
+
+    if (!sender) {
+      setError("Не удалось определить получателя оценки");
+      return;
+    }
+
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
 
@@ -78,24 +96,48 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
         `http://127.0.0.1:8000/ratings/create-rating/${sender}`,
         reviewData
       );
-      deleteMessage();
+
+      // Удаляем уведомление только после успешной отправки оценки
+      if (notificationId) {
+        await axios.delete(
+          `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
+        );
+        setNotificationId(null);
+      }
+
       navigate("/");
     } catch (error) {
       console.error("Произошла ошибка", error);
+      setError("Не удалось отправить отзыв. Попробуйте позже.");
     }
   };
 
-  const deleteMessage = async () => {
-    if (!notificationId) return;
-
-    await axios.delete(
-      `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
-    );
-
-    if (getMessage) {
-      await getMessage();
+  const validateInput = (value: string): boolean => {
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
+    if (!regex.test(value)) {
+      setError(
+        "Недопустимые символы. Разрешены только буквы, цифры, пробелы и @_."
+      );
+      return false;
     }
-    setNotificationId(null);
+
+    if (/\s{2,}/.test(value)) {
+      setError("Нельзя вводить более одного пробела подряд.");
+      return false;
+    }
+
+    setError(null);
+    return true;
+  };
+
+  const handleReviewChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+
+    if (!validateInput(value)) {
+      return;
+    }
+
+    setReviewText(value.replace(/\s+/g, " "));
   };
 
   return (
@@ -106,11 +148,12 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
         </div>
         <ThumbsUp size={50} />
         <form onSubmit={postRating} className={styles.form}>
+          {error && <div className={styles.error}>{error}</div>}
           <div className={styles.block}>
             <p>Оставьте отзыв</p>
             <textarea
               value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
+              onChange={handleReviewChange}
               className={styles.textarea}
             />
           </div>
@@ -134,12 +177,7 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
               ))}
             </div>
           </div>
-          <Button
-            type="submit"
-            className={styles.submitBtn}
-            appearence="small"
-            onClick={deleteMessage}
-          >
+          <Button type="submit" className={styles.submitBtn} appearence="small">
             Отправить
           </Button>
         </form>

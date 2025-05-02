@@ -77,6 +77,7 @@ export function CreateProject() {
   ];
 
   const validateInput = (value: string): boolean => {
+    // Проверка на недопустимые символы
     const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
     if (!regex.test(value)) {
       setError(
@@ -85,8 +86,15 @@ export function CreateProject() {
       return false;
     }
 
+    // Проверка на множественные пробелы
     if (/\s{2,}/.test(value)) {
       setError("Нельзя вводить более одного пробела подряд.");
+      return false;
+    }
+
+    // Проверка, что есть хотя бы один не-пробельный символ
+    if (/^\s*$/.test(value) && value !== "") {
+      setError("Введите хотя бы один символ (не пробел)");
       return false;
     }
 
@@ -133,9 +141,10 @@ export function CreateProject() {
       return;
     }
 
-    const trimmedValue = value.replace(/\s+/g, " ");
+    // Заменяем множественные пробелы на один, но не триммируем края
+    const normalizedValue = value.replace(/\s+/g, " ");
 
-    setProjectData((prevState) => ({ ...prevState, [name]: trimmedValue }));
+    setProjectData((prevState) => ({ ...prevState, [name]: normalizedValue }));
   };
 
   return (
