@@ -1,4 +1,4 @@
-import { ArrowUpDown, CircleArrowUp } from "lucide-react";
+import {CircleArrowUp } from "lucide-react";
 import Header from "../../components/Header/Header";
 import styles from "./Chats.module.css";
 import { useEffect, useState } from "react";
@@ -166,13 +166,11 @@ function Chats() {
         <div className={styles.topbar}>
           <div className={styles.all_messages}>
             <p>Все сообщения</p>
-            <ArrowUpDown size={16} />
           </div>
           <div className={styles.messages}>
             <p className={styles.title_name}>
               {userProfiles[sender ?? -1]?.name || "Выберите чат"}
             </p>
-            <p className={styles.title_time}>в сети</p>
           </div>
         </div>
 

@@ -23,6 +23,8 @@ export function RolesData({
   const [isSending, setIsSending] = useState(false);
   const [notificationId, setNotificationId] = useState<number | null>(null);
   const [userProjects, setUserProjects] = useState<ProductProps[]>([]);
+  const [isAccept, setIsAccept] = useState(false);
+  const [isReject, setIsReject] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
     null
   );
@@ -35,6 +37,29 @@ export function RolesData({
     );
     if (favorites.includes(id)) {
       setIsAdd(true);
+    }
+
+    const notificationKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith("notification_")
+    );
+    
+    for (const key of notificationKeys) {
+      const notification = JSON.parse(localStorage.getItem(key) || "{}");
+      if (notification.notificationId && notification.status === "pending") {
+        setIsSending(true);
+        setNotificationId(notification.notificationId);
+        break;
+      }
+      if (notification.notificationId && notification.status === "accepted") {
+        setIsAccept(true);
+        setNotificationId(notification.notificationId);
+        break;
+      }
+      if (notification.notificationId && notification.status === "rejected") {
+        setIsReject(true);
+        setNotificationId(notification.notificationId);
+        break;
+      }
     }
 
     const getAll = async () => {
@@ -59,48 +84,51 @@ export function RolesData({
       }
     };
     checkExistingNotification();
-    checkLocalNotification();
     getAll();
   }, [id]);
 
-  const getLocalStorageKey = () => {
-    return role === "mentor" ? "notification_mentor" : "notification_investor";
-  };
-  const checkLocalNotification = () => {
-    const localNotification = localStorage.getItem(getLocalStorageKey());
-    if (localNotification) {
-      const { status, notificationId } = JSON.parse(localNotification);
-      if (status == "pending") {
-        setIsSending(true);
-        setNotificationId(notificationId);
-      }
-    }
-  };
 
   const checkExistingNotification = async () => {
     const jwt = Cookies.get("jwt");
     if (!jwt || !selectedProjectId) return;
-
+  
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
-
+  
       const response = await axios.get<MessageProps[]>(
         `http://127.0.0.1:8000/notifications/user-notifications/${user_id}`
       );
-
+  
       const existingNotification = response.data.find(
         (notif) =>
           notif.project_id === selectedProjectId &&
-          notif.recipient_id === id &&
-          notif.status === "pending"
+          notif.recipient_id === id
       );
-
+  
       if (existingNotification) {
         setNotificationId(existingNotification.id);
-        setIsSending(true);
+        setIsSending(existingNotification.status === "pending");
+        setIsAccept(existingNotification.status === "accepted");
+        setIsAccept(existingNotification.status === "rejected");
+        
+        localStorage.setItem(
+          `notification_${existingNotification.id}`,
+          JSON.stringify({
+            status: existingNotification.status,
+            notificationId: existingNotification.id,
+            project_id: selectedProjectId,
+            recipient_id: id,
+            timestamp: new Date().toISOString()
+          })
+        );
       } else {
+        if (notificationId) {
+          localStorage.removeItem(`notification_${notificationId}`);
+        }
         setIsSending(false);
+        setIsAccept(false);
+        setIsReject(false);
         setNotificationId(null);
       }
     } catch (error) {
@@ -177,13 +205,12 @@ export function RolesData({
       );
 
       localStorage.setItem(
-        getLocalStorageKey(),
+        `notification_${response.data.id}`,
         JSON.stringify({
           status: "pending",
           notificationId: response.data.id,
         })
       );
-
       setNotificationId(response.data.id);
       setIsSending(true);
       alert("Запрос отправлен!");
@@ -216,7 +243,7 @@ export function RolesData({
       setNotificationId(null);
       setIsSending(false);
 
-      localStorage.removeItem(getLocalStorageKey());
+      localStorage.removeItem(`notification_${notificationId}`);
       alert("Заявка отменена");
 
       // Проверяем сразу после удаления
@@ -291,18 +318,26 @@ export function RolesData({
               </select>
             </div>
           )}
-          {isSending ? (
-            <Button
-              className={styles["button_product"]}
-              onClick={deleteMessage}
-            >
-              Отменить заявку
-            </Button>
-          ) : (
-            <Button className={styles["button_product"]} onClick={postMessage}>
-              Сотрудничать
-            </Button>
-          )}
+          {isAccept ? (
+              <div className={styles.status_message}>
+                <b>Заявка принята</b>
+              </div>
+            ) : isReject ? (
+              <div className={styles.status_message}>
+                <b>Заявка отклонена</b>
+              </div>
+            ) : isSending ? (
+              <Button
+                className={styles["button_product"]}
+                onClick={deleteMessage}
+              >
+                Отменить заявку
+              </Button>
+            ) : (
+              <Button className={styles["button_product"]} onClick={postMessage}>
+                Сотрудничать
+              </Button>
+            )}
         </div>
       </div>
     </div>

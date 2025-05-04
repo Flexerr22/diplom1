@@ -95,7 +95,7 @@ export function AcceptProject() {
       const acceptedNotifications = allNotifications.filter(
         (notification) => notification.status === "accepted"
       );
-
+      
       console.log("Принятые уведомления:", acceptedNotifications);
 
       // 4. Получаем уникальные ID проектов из принятых уведомлений
@@ -152,19 +152,19 @@ export function AcceptProject() {
     ? Math.round((completedCount / steps.length) * 100)
     : 0;
 
-    if (projects.length === 0) {
-      const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects'
-      return (
-        <Container>
-          <div className={styles.project_no}>
-            <p>Отправьте заявку на сотрудничество для начала работы над совместным проектом</p>
-              <a href={searchLink}>
-                <Button appearence="small">Начать поиск</Button>
-              </a>
-          </div>
-        </Container>
-      );
-    }
+  if (projects.length === 0) {
+    const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects'
+    return (
+      <Container>
+        <div className={styles.project_no}>
+          <p>Отправьте заявку на сотрудничество для начала работы над совместным проектом</p>
+            <a href={searchLink}>
+              <Button appearence="small">Начать поиск</Button>
+            </a>
+        </div>
+      </Container>
+    );
+  }
     
   if (!project) {
     return <div>Загрузка...</div>;

@@ -45,9 +45,10 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
 
       const delMessage = responce.data.find(
         (notification) =>
-          notification.recipient_id === user_id &&
-          notification.status === "rejected"
+          (notification.recipient_id === user_id || notification.sender_id === user_id) &&
+          (notification.status === "rejected" || notification.status === "accepted")
       );
+      
 
       if (extMessage) {
         setNotificationId(extMessage.id);
@@ -81,10 +82,20 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
       `http://127.0.0.1:8000/notifications/reject-notification/${notificationId}`
     );
 
+    const localNotification = localStorage.getItem(`notification_${notificationId}`);
+    if (localNotification) {
+      const notificationData = JSON.parse(localNotification);
+      notificationData.status = "rejected";
+      localStorage.setItem(
+        `notification_${notificationId}`,
+        JSON.stringify(notificationData)
+      );
+    }
+
     if (getNotifications) {
       await getNotifications();
     }
-    localStorage.removeItem("notification");
+    // localStorage.removeItem(`notification_${notificationId}`);
     setNotificationId(null);
     await getMessage();
   };
@@ -95,9 +106,20 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
       `http://127.0.0.1:8000/notifications/accept-notification/${notificationId}`
     );
 
+    const localNotification = localStorage.getItem(`notification_${notificationId}`);
+    if (localNotification) {
+      const notificationData = JSON.parse(localNotification);
+      notificationData.status = "accepted";
+      localStorage.setItem(
+        `notification_${notificationId}`,
+        JSON.stringify(notificationData)
+      );
+    }
+
     if (getNotifications) {
       await getNotifications();
     }
+    // localStorage.removeItem(`notification_${notificationId}`);
     setNotificationId(null);
     await getMessage();
   };
@@ -116,9 +138,6 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
     await getMessage();
   };
 
-  const hideMessage = (id: number) => {
-    setMessage((prev) => prev.filter((m) => m.id !== id));
-  };
 
   if (isLoading) {
     return (
@@ -172,7 +191,7 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
               {mes.status === "accepted" && (
                 <CircleX
                   className={styles.icon}
-                  onClick={() => hideMessage(mes.id)}
+                  onClick={deleteMessage}
                 />
               )}
             </div>
