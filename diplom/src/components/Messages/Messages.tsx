@@ -5,7 +5,8 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { MessageProps } from "../../helpers/message.props";
+import { MessageProps } from "../../types/message.props";
+import { ProjectMembersProps } from "../../types/project-members.props";
 
 interface MessagesProps {
   setActiveModal: (value: ModalType) => void;
@@ -49,6 +50,7 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
           (notification.status === "rejected" || notification.status === "accepted")
       );
       
+      console.log(extMessage)
 
       if (extMessage) {
         setNotificationId(extMessage.id);
@@ -102,24 +104,46 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
 
   const acceptMessage = async () => {
     if (!notificationId) return;
+    
     await axios.post<MessageProps>(
       `http://127.0.0.1:8000/notifications/accept-notification/${notificationId}`
     );
-
+  
     const localNotification = localStorage.getItem(`notification_${notificationId}`);
-    if (localNotification) {
-      const notificationData = JSON.parse(localNotification);
-      notificationData.status = "accepted";
-      localStorage.setItem(
-        `notification_${notificationId}`,
-        JSON.stringify(notificationData)
-      );
+    if (!localNotification) {
+      console.error("Уведомление не найдено в localStorage");
+      return;
     }
+  
+    // Объявляем notificationData здесь, чтобы она была доступна во всей функции
+    const notificationData = JSON.parse(localNotification);
+    notificationData.status = "accepted";
+    localStorage.setItem(
+      `notification_${notificationId}`,
+      JSON.stringify(notificationData)
+    );
+  
+    // Теперь notificationData доступна для использования
+    const projectMembersData = {
+      project_id: notificationData.project_id,
+      recipient_id: notificationData.recipient_id,
+      sender_id: notificationData.sender_id,
+      notification_id: notificationData.notificationId
+    };
 
+    const chatData = {
+      recipient_id: notificationData.recipient_id,
+      sender_id: notificationData.sender_id,
+    };
+
+    await axios.post(`http://127.0.0.1:8000/chat/session`, null, {
+      params: chatData
+    });
+    
+    await axios.post<ProjectMembersProps>('http://127.0.0.1:8000/project-members/', projectMembersData)
     if (getNotifications) {
       await getNotifications();
     }
-    // localStorage.removeItem(`notification_${notificationId}`);
     setNotificationId(null);
     await getMessage();
   };
@@ -131,6 +155,7 @@ export function Messages({ setActiveModal, getNotifications }: MessagesProps) {
       `http://127.0.0.1:8000/notifications/delete-notification/${deleteNotificationId}`
     );
 
+    localStorage.removeItem(`notification_${deleteNotificationId}`)
     if (getNotifications) {
       await getNotifications();
     }

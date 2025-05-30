@@ -6,8 +6,8 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import { CircleCheckBig } from "lucide-react";
-import { ProductProps } from "../../helpers/projects.props";
-import { MessageProps } from "../../helpers/message.props";
+import { ProductProps } from "../../types/projects.props";
+import { MessageProps } from "../../types/message.props";
 
 export function Product({
   id,
@@ -166,6 +166,9 @@ export function Product({
         `notification_${response.data.id}`,
         JSON.stringify({
           status: "pending",
+          project_id: response.data.project_id,
+          recipient_id: response.data.recipient_id,
+          sender_id: response.data.sender_id,
           notificationId: response.data.id,
         })
       );

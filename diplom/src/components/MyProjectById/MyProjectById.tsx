@@ -6,7 +6,7 @@ import Header from "../Header/Header";
 import { Container } from "../Container/Container";
 import Button from "../Button/Button";
 import Cookies from "js-cookie";
-import { CreateProjectRequest } from "../../helpers/projects.props";
+import { CreateProjectRequest } from "../../types/projects.props";
 
 export function MyProjectById() {
   const { project_id } = useParams<{ project_id: string }>();

@@ -231,3 +231,7 @@
   padding: 10px 30px;
   width: 250px;
 }
+.user_project{
+  display: flex;
+  gap: 2rem;
+}

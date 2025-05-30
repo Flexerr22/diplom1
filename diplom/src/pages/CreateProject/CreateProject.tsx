@@ -7,7 +7,7 @@ import styles from "./CreateProject.module.css";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { CreateProjectRequest } from "../../helpers/projects.props";
+import { CreateProjectRequest } from "../../types/projects.props";
 
 export function CreateProject() {
   const [role, setRole] = useState<string | null>(null);

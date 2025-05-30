@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { RolesGroupProps } from "../../helpers/projects.props";
+import { RolesGroupProps } from "../../types/projects.props";
 
 export function MyProjectUser({
   id,

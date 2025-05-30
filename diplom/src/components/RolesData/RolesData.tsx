@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { ProductProps, RolesGroupProps } from "../../helpers/projects.props";
-import { MessageProps } from "../../helpers/message.props";
-import { RatingProps } from "../../helpers/rating.props";
+import { ProductProps, RolesGroupProps } from "../../types/projects.props";
+import { MessageProps } from "../../types/message.props";
+import { RatingProps } from "../../types/rating.props";
 
 export function RolesData({
   id,
@@ -208,6 +208,9 @@ export function RolesData({
         `notification_${response.data.id}`,
         JSON.stringify({
           status: "pending",
+          project_id: response.data.project_id,
+          recipient_id: response.data.recipient_id,
+          sender_id: response.data.sender_id,
           notificationId: response.data.id,
         })
       );

@@ -4,7 +4,7 @@ import styles from "./MyProject.module.css";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import axios from "axios";
-import { ProductProps } from "../../helpers/projects.props";
+import { ProductProps } from "../../types/projects.props";
 
 export function MyProject({
   id,

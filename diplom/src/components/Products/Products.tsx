@@ -3,7 +3,7 @@ import { Product } from "../Product/Product";
 import Search from "../Search/Search";
 import styles from "./Products.module.css";
 import { useEffect, useState } from "react";
-import { ProductProps } from "../../helpers/projects.props";
+import { ProductProps } from "../../types/projects.props";
 
 interface ProductsProps {
   selectedCategories: string[];

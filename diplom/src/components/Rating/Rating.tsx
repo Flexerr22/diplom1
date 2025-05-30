@@ -5,20 +5,19 @@ import Button from "../Button/Button";
 import { ThumbsUp } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
-import { MessageProps } from "../../helpers/message.props";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 interface RatingProps {
   setActiveModal: (value: ModalTypeAccept) => void;
+  sender?: number;
+  project_id?: number;
 }
 
-export const Rating = ({ setActiveModal }: RatingProps) => {
+export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState<string>("");
-  const [notificationId, setNotificationId] = useState<number | null>(null);
-  const [sender, setSender] = useState<number | null>();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -29,36 +28,8 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
   };
 
   useEffect(() => {
-    getMessage();
   }, []);
 
-  const getMessage = async () => {
-    const jwt = Cookies.get("jwt");
-    if (!jwt) return;
-
-    try {
-      const decoded = jwtDecode<{ sub: string }>(jwt);
-      const user_id = parseInt(decoded.sub, 10);
-
-      const response = await axios.get<MessageProps[]>(
-        `http://127.0.0.1:8000/notifications/${user_id}`
-      );
-
-      const extMessage = response.data.find(
-        (notification) =>
-          notification.recipient_id === user_id &&
-          notification.status === "accepted"
-      );
-      setSender(extMessage?.sender_id);
-      if (extMessage) {
-        setNotificationId(extMessage.id);
-      } else {
-        setNotificationId(null);
-      }
-    } catch (error) {
-      console.error("Произошла ошибка", error);
-    }
-  };
 
   const postRating = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,21 +67,48 @@ export const Rating = ({ setActiveModal }: RatingProps) => {
         `http://127.0.0.1:8000/ratings/create-rating/${sender}`,
         reviewData
       );
-
-      // Удаляем уведомление только после успешной отправки оценки
-      if (notificationId) {
-        await axios.delete(
-          `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
-        );
-        setNotificationId(null);
+      console.log(reviewData)
+      if (project_id) { // Добавляем проверку
+        await deleteProject();
       }
-
       navigate("/");
     } catch (error) {
       console.error("Произошла ошибка", error);
       setError("Не удалось отправить отзыв. Попробуйте позже.");
     }
   };
+
+  const deleteProject = async () => {
+    if (!sender || !project_id) return;
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+    try{
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+
+      try {
+        // Пробуем удалить вариант где текущий пользователь - sender
+        await axios.delete('http://127.0.0.1:8000/project-members/', {
+          params: {
+            sender_id: user_id,
+            recipient_id: sender,
+            project_id: project_id
+          }
+        });
+      } catch  {
+        // Если не нашли, пробуем вариант где текущий пользователь - recipient
+        await axios.delete('http://127.0.0.1:8000/project-members/', {
+          params: {
+            sender_id: sender,
+            recipient_id: user_id,
+            project_id: project_id
+          }
+        });
+      }
+    } catch(error) {
+      console.error(error)
+    }
+  }
 
   const validateInput = (value: string): boolean => {
     const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;

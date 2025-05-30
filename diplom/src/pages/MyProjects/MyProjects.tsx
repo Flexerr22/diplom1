@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import styles from "./MyProjects.module.css";
 import Button from "../../components/Button/Button";
 import { MyProject } from "../../components/MyProject/MyProject";
-import { ProductProps } from "../../helpers/projects.props";
+import { ProductProps } from "../../types/projects.props";
 
 function MyProjects() {
   const { user_id } = useParams<{ user_id: string }>();

@@ -3,7 +3,7 @@ import Search from "../Search/Search";
 import styles from "./RolesGroupMentor.module.css";
 import { useEffect, useState } from "react";
 import { RolesData } from "../RolesData/RolesData";
-import { RolesGroupProps } from "../../helpers/projects.props";
+import { RolesGroupProps } from "../../types/projects.props";
 
 interface ProductsProps {
   selectedCategories: string[];

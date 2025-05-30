@@ -7,7 +7,7 @@ import { Project } from "../../components/Project/Project";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { MyProjectUser } from "../../components/MyProjectUser/MyProjectUser";
-import { ProductProps, RolesGroupProps } from "../../helpers/projects.props";
+import { ProductProps, RolesGroupProps } from "../../types/projects.props";
 import Button from "../../components/Button/Button";
 
 function Favourites() {

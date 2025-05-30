@@ -8,8 +8,8 @@ import Cookies from "js-cookie";
 import { Profile } from "../Profile/Profile";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
-import { MessageProps } from "../../helpers/message.props";
-import { ProfileInfo } from "../../helpers/user.props";
+import { MessageProps } from "../../types/message.props";
+import { ProfileInfo } from "../../types/user.props";
 
 export type ModalType = "login" | "messages" | "profile" | null;
 

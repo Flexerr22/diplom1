@@ -90,3 +90,77 @@
   font-size: 20px;
   margin-top: 50px;
 }
+.rating_block{
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 30vw;
+  margin-bottom: 2rem;
+}
+.rating_block p{
+  font-weight: bold;
+  font-family: var(--secondary-font);
+}
+.rating{
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(211, 211, 211);
+  border-radius: 20px;
+  padding: 1rem;
+}
+.rating p{
+  font-weight: 500;
+  font-family: var(--secondary-font);
+}
+.rating span{
+  font-size: 25px;
+  color: rgb(227, 227, 4);
+}
+.rating_avg1{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.user_rating{
+  display: flex;
+  justify-content: space-between;
+}
+
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.sliderContent {
+  flex: 1;
+  margin: 0 15px;
+}
+
+.sliderButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.sliderDots {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.activeDot {
+  background-color: #333;
+}

@@ -5,13 +5,14 @@ import { Container } from "../Container/Container";
 import {
   CreateProjectRequest,
   ProductProps,
-} from "../../helpers/projects.props";
-import { jwtDecode } from "jwt-decode";
+} from "../../types/projects.props";
 import Cookies from "js-cookie";
-import { MessageProps } from "../../helpers/message.props";
 import { ProgressBar } from "../ProgressBar/ProgressBar";
 import Button from "../Button/Button";
 import { Rating } from "../Rating/Rating";
+import { jwtDecode } from "jwt-decode";
+import { ProfileInfo } from "../../types/user.props";
+
 
 interface Step {
   id: number;
@@ -28,100 +29,98 @@ export function AcceptProject() {
   const [activeModal, setActiveModal] = useState<ModalTypeAccept>(null);
   const [projects, setProjects] = useState<ProductProps[]>([]);
   const [userRole, setUserRole] = useState("");
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const role = Cookies.get("role");
     if (role) {
       setUserRole(role);
     }
+    getProjectMembers();
+  }, []);
 
+  useEffect(() => {
     if (projectId) {
-      const saved = localStorage.getItem(`steps_${projectId}`);
-      if (saved) {
-        setSteps(JSON.parse(saved));
-      } else {
-        setSteps([]);
-      }
+      getProjectUsers();
     }
   }, [projectId]);
 
-  // сохранение шагов при каждом изменении
-  useEffect(() => {
-    if (projectId) {
-      localStorage.setItem(`steps_${projectId}`, JSON.stringify(steps));
+  const getProjectById = async (id: number) => {
+    try {
+      const response = await axios.get<CreateProjectRequest>(
+        `http://127.0.0.1:8000/projects/${id}`
+      );
+      setProject(response.data);
+    } catch (error) {
+      console.error("Ошибка при загрузке проекта:", error);
     }
-  }, [steps]);
+  };
 
-  useEffect(() => {
-    const getProjectById = async () => {
-      if (!projectId) return;
-      try {
-        const response = await axios.get<CreateProjectRequest>(
-          `http://127.0.0.1:8000/projects/${projectId}`
-        );
-        setProject(response.data);
-      } catch (error) {
-        console.error("Ошибка при загрузке проекта:", error);
-      }
-    };
-    getAcceptedUserProjects();
-    getProjectById();
-  }, [projectId]);
-
-  const getAcceptedUserProjects = async () => {
+  const getProjectMembers = async () => {
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
 
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
-
-      // 1. Получаем все проекты пользователя
-      const userProjectsResponse = await axios.get<ProductProps[]>(
-        `http://127.0.0.1:8000/projects/my-projects/${user_id}`
-      );
-      const allUserProjects = userProjectsResponse.data;
-
-      // 2. Получаем все уведомления пользователя (где он отправитель или получатель)
-      const notificationsResponse = await axios.get<MessageProps[]>(
-        `http://127.0.0.1:8000/notifications/${user_id}`
-      );
-      const allNotifications = notificationsResponse.data;
-
-      console.log("Все проекты пользователя:", allUserProjects);
-      console.log("Все уведомления пользователя:", allNotifications);
-
-      // 3. Фильтруем только принятые уведомления
-      const acceptedNotifications = allNotifications.filter(
-        (notification) => notification.status === "accepted"
+      
+      const membersResponse = await axios.get<number[]>(
+        `http://127.0.0.1:8000/project-members/my-projects/${user_id}`
       );
       
-      console.log("Принятые уведомления:", acceptedNotifications);
-
-      // 4. Получаем уникальные ID проектов из принятых уведомлений
-      const acceptedProjectIds = [
-        ...new Set(
-          acceptedNotifications.map((notification) => notification.project_id)
-        ),
-      ];
-
-      console.log("ID принятых проектов:", acceptedProjectIds);
-
-      // 5. Фильтруем проекты пользователя, которые есть в acceptedProjectIds
-      const acceptedProjects = allUserProjects.filter((project) =>
-        acceptedProjectIds.includes(project.id)
-      );
-
-      console.log("Принятые проекты:", acceptedProjects);
-
-      setProjects(acceptedProjects);
-
-      // 6. Устанавливаем первый проект по умолчанию, если есть проекты
-      if (acceptedProjects.length > 0 && !projectId) {
-        setProjectId(acceptedProjects[0].id);
+      if (membersResponse.data?.length > 0) {
+        const projectsPromises = membersResponse.data.map(id => 
+          axios.get<ProductProps>(`http://127.0.0.1:8000/projects/${id}`)
+        );
+        
+        const projectsResponses = await Promise.all(projectsPromises);
+        const projectsData = projectsResponses.map(res => res.data);
+        
+        setProjects(projectsData);
+        
+        if (projectsData.length > 0) {
+          const firstProjectId = projectsData[0].id;
+          setProjectId(firstProjectId);
+          getProjectById(firstProjectId);
+        }
       }
     } catch (error) {
-      console.error("Ошибка при получении данных:", error);
+      console.error("Ошибка при загрузке проектов:", error);
+    }
+  };
+
+  const getProjectUsers = async () => {
+    if (!projectId) return;
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+  
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+      const response = await axios.get<number[]>(
+        `http://127.0.0.1:8000/project-members/${projectId}/users/${user_id}`
+      );
+
+      console.log(response.data)
+      
+      const usersPromises = response.data.map(id => 
+        axios.get<ProfileInfo>(`http://127.0.0.1:8000/users/${id}`)
+      );
+      
+      const usersResponses = await Promise.all(usersPromises);
+      const usersData = usersResponses.map(res => ({
+        id: res.data.id,
+        name: res.data.name
+      }));
+      
+      setUsers(usersData);
+      
+      // if (usersData.length > 0) {
+      //   setSelectedUserId(usersData[0].name);
+      // }
+    } catch (error) {
+      console.error("Ошибка при загрузке пользователей проекта:", error);
     }
   };
 
@@ -147,45 +146,46 @@ export function AcceptProject() {
     setSteps(steps.filter((step) => step.id !== id));
   };
 
+  const handleProjectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedProjectId = Number(e.target.value);
+    setProjectId(selectedProjectId);
+    await getProjectById(selectedProjectId);
+  };
+
   const completedCount = steps.filter((step) => step.completed).length;
   const progress = steps.length
     ? Math.round((completedCount / steps.length) * 100)
     : 0;
 
-  if (projects.length === 0) {
-    const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects'
+  if (!projects || projects.length === 0) {
+    const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects';
     return (
       <Container>
         <div className={styles.project_no}>
           <p>Отправьте заявку на сотрудничество для начала работы над совместным проектом</p>
-            <a href={searchLink}>
-              <Button appearence="small">Начать поиск</Button>
-            </a>
+          <a href={searchLink}>
+            <Button appearence="small">Начать поиск</Button>
+          </a>
         </div>
       </Container>
     );
   }
-    
+
   if (!project) {
     return <div>Загрузка...</div>;
   }
-
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedProjectId = Number(e.target.value);
-    setProjectId(selectedProjectId);
-    setProject(null); // Сбрасываем текущий проект перед загрузкой нового
-  };
 
   return (
     <>
       <Container>
         <div className={styles.main}>
+        <div className={styles.user_project}>
           <div className={styles.projectSelect}>
             <label>Выберите проект:</label>
-            <select value={projectId || ""} onChange={handleProjectChange}>
-              <option value="" disabled>
-                Выберите проект
-              </option>
+            <select 
+              value={projectId || ""} 
+              onChange={handleProjectChange}
+            >
               {projects.map((proj) => (
                 <option key={proj.id} value={proj.id}>
                   {proj.title}
@@ -193,6 +193,23 @@ export function AcceptProject() {
               ))}
             </select>
           </div>
+
+          {users.length > 0 && (
+            <div className={styles.projectSelect}>
+              <label>Выберите участника:</label>
+              <select
+                value={selectedUserId || ""}
+                onChange={(e) => setSelectedUserId(Number(e.target.value))}
+              >
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name || `Пользователь ${user.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
           {projectId && (
             <div className={styles.progress}>
               <p className={styles.progress_title}>Прогресс проекта:</p>
@@ -496,7 +513,7 @@ export function AcceptProject() {
                 </Button>
               )}
               {activeModal === "rating" && (
-                <Rating setActiveModal={setActiveModal} />
+                <Rating setActiveModal={setActiveModal} sender={selectedUserId} project_id={projectId} />
               )}
             </div>
           )}
@@ -505,3 +522,4 @@ export function AcceptProject() {
     </>
   );
 }
+

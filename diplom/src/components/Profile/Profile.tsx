@@ -4,14 +4,23 @@ import Cookies from "js-cookie";
 import { ModalType } from "../Header/Header";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import { ProfileInfo } from "../../helpers/user.props";
+import { ProfileInfo } from "../../types/user.props";
 import { useNavigate } from "react-router-dom";
+import { RatingAllProps } from "../../types/rating_all.props";
+import { RatingProps } from "../../types/rating.props";
+import { CircleArrowLeft, CircleArrowRight } from "lucide-react";
+
 
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
   closeModal: () => void;
   setActiveModal: (value: ModalType) => void;
 }
+
+interface RatingWithSender extends RatingAllProps {
+  senderName: string;
+}
+
 
 export function Profile({
   setIsAuth,
@@ -23,7 +32,10 @@ export function Profile({
   const [isEditing, setIsEditing] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rating, setRating] = useState<RatingWithSender[]>([]);
+  const [ratingAvg, setRatingAvg] = useState<RatingProps | null>(null)
   const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [userEditData, setUserEditData] = useState<ProfileInfo>({
     email: "",
     name: "",
@@ -35,6 +47,15 @@ export function Profile({
     budget: "",
     investmentFocus: "",
   });
+
+
+  const nextSlide = () => {
+  setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? rating.length - 1 : prev - 1));
+  };
 
   // Списки для выпадающих списков
   const specializations = [
@@ -62,6 +83,12 @@ export function Profile({
     "Розничная торговля",
     "Искусство и культура",
   ];
+
+  useEffect(() => {
+    getRating();
+    getRatingAvg();
+    getUserProfile();
+  }, [])
 
   const deleteProfile = async () => {
     try {
@@ -117,6 +144,68 @@ export function Profile({
   const handleClickOutside = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       setActiveModal(null);
+    }
+  };
+
+  const getRating = async () => {
+  const jwt = Cookies.get("jwt");
+  if (!jwt) {
+    console.error("JWT-токен отсутствует");
+    return;
+  }
+
+  try {
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const user_id = decoded.sub;
+
+    const response = await axios.get<RatingAllProps[]>(
+      `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
+    );
+
+    // Загружаем имена для всех отправителей
+    const ratingsWithSenders = await Promise.all(
+      response.data.map(async (ratingItem) => {
+        try {
+          const senderResponse = await axios.get<ProfileInfo>(
+            `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
+          );
+          return {
+            ...ratingItem,
+            senderName: senderResponse.data.name,
+          };
+        } catch (error) {
+          console.error("Ошибка при получении имени отправителя:", error);
+          return {
+            ...ratingItem,
+            senderName: "Неизвестный пользователь",
+          };
+        }
+      })
+    );
+
+    setRating(ratingsWithSenders);
+    console.log("Ratings with sender names:", ratingsWithSenders);
+  } catch (error) {
+    console.error("Ошибка при получении оценок:", error);
+  }
+};
+
+  const getRatingAvg = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      console.error("JWT-токен отсутствует");
+      return;
+    }
+    try{
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = decoded.sub;
+      const responce = await axios.get<RatingProps>(
+      `http://127.0.0.1:8000/ratings/get-avg-rating/${user_id}`
+      );
+      setRatingAvg(responce.data);
+      console.log(responce.data);
+    } catch(error){
+      console.error(error)
     }
   };
 
@@ -288,6 +377,7 @@ export function Profile({
       <div className={styles["modal_secondary"]}>
         <div className={styles.profile}>
           {error && <div className={styles.error}>{error}</div>}
+          <div className={styles.profile_info_block}>
           <div className={styles.profile_info}>
             {isEditing ? (
               <input
@@ -305,6 +395,19 @@ export function Profile({
                 alt="Фото пользователя"
               />
             )}
+            
+          </div>
+          <div className={styles.profile_rating}>
+            <p>Ваш рейтинг</p>
+              {ratingAvg?.average_rating ? (
+                  <div className={styles.rating_avg}>
+                    <p>{ratingAvg.average_rating}</p>
+                    <span>★</span>
+                  </div>
+                ) : (
+                  ""
+              )}
+          </div>
           </div>
           <div>
             <div className={styles.profile_info}>
@@ -451,6 +554,47 @@ export function Profile({
               </div>
             </>
           )}
+
+          <div className={styles.rating_block}>
+            <p>Ваши отзывы</p>
+            {rating.length > 0 ? (
+              <div className={styles.sliderContainer}>
+                <button onClick={prevSlide} className={styles.sliderButton}>
+                  <CircleArrowLeft />
+                </button>
+                <div className={styles.sliderContent}>
+                  <div className={styles.rating}>
+                    <div className={styles.user_rating}>
+                      <p>{rating[currentSlide].senderName}</p>
+                      <div className={styles.rating_avg1}>
+                        <p>{rating[currentSlide].amount}</p>
+                        <span>★</span>
+                      </div>
+                    </div>
+                    <p>{rating[currentSlide].review}</p>
+                  </div>
+                </div>
+                <button onClick={nextSlide} className={styles.sliderButton}>
+                  <CircleArrowRight />
+                </button>
+              </div>
+            ) : (
+              <p>Пока нет отзывов</p>
+            )}
+            {rating.length > 1 && (
+              <div className={styles.sliderDots}>
+                {rating.map((_, index) => (
+                  <span
+                    key={index}
+                    className={`${styles.dot} ${
+                      index === currentSlide ? styles.activeDot : ""
+                    }`}
+                    onClick={() => setCurrentSlide(index)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
           {isEditing ? (
             <>

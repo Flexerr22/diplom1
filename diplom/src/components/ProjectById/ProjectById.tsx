@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../Header/Header";
 import { Container } from "../Container/Container";
-import { CreateProjectRequest } from "../../helpers/projects.props";
+import { CreateProjectRequest } from "../../types/projects.props";
 
 export function ProjectById() {
   const { project_id } = useParams<{ project_id: string }>();

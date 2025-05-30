@@ -1,4 +1,4 @@
-import { ProductProps } from "../../helpers/projects.props";
+import { ProductProps } from "../../types/projects.props";
 import Button from "../Button/Button";
 import styles from "./ProjectLast.module.css";
 import { Link } from "react-router-dom";
