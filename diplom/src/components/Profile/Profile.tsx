@@ -10,7 +10,6 @@ import { RatingAllProps } from "../../types/rating_all.props";
 import { RatingProps } from "../../types/rating.props";
 import { CircleArrowLeft, CircleArrowRight } from "lucide-react";
 
-
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
   closeModal: () => void;
@@ -20,7 +19,6 @@ interface LoginComponentProps {
 interface RatingWithSender extends RatingAllProps {
   senderName: string;
 }
-
 
 export function Profile({
   setIsAuth,
@@ -33,7 +31,7 @@ export function Profile({
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState<RatingWithSender[]>([]);
-  const [ratingAvg, setRatingAvg] = useState<RatingProps | null>(null)
+  const [ratingAvg, setRatingAvg] = useState<RatingProps | null>(null);
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [userEditData, setUserEditData] = useState<ProfileInfo>({
@@ -48,9 +46,8 @@ export function Profile({
     investmentFocus: "",
   });
 
-
   const nextSlide = () => {
-  setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
+    setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
@@ -88,7 +85,7 @@ export function Profile({
     getRating();
     getRatingAvg();
     getUserProfile();
-  }, [])
+  }, []);
 
   const deleteProfile = async () => {
     try {
@@ -148,47 +145,47 @@ export function Profile({
   };
 
   const getRating = async () => {
-  const jwt = Cookies.get("jwt");
-  if (!jwt) {
-    console.error("JWT-токен отсутствует");
-    return;
-  }
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      console.error("JWT-токен отсутствует");
+      return;
+    }
 
-  try {
-    const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = decoded.sub;
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = decoded.sub;
 
-    const response = await axios.get<RatingAllProps[]>(
-      `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
-    );
+      const response = await axios.get<RatingAllProps[]>(
+        `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
+      );
 
-    // Загружаем имена для всех отправителей
-    const ratingsWithSenders = await Promise.all(
-      response.data.map(async (ratingItem) => {
-        try {
-          const senderResponse = await axios.get<ProfileInfo>(
-            `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
-          );
-          return {
-            ...ratingItem,
-            senderName: senderResponse.data.name,
-          };
-        } catch (error) {
-          console.error("Ошибка при получении имени отправителя:", error);
-          return {
-            ...ratingItem,
-            senderName: "Неизвестный пользователь",
-          };
-        }
-      })
-    );
+      // Загружаем имена для всех отправителей
+      const ratingsWithSenders = await Promise.all(
+        response.data.map(async (ratingItem) => {
+          try {
+            const senderResponse = await axios.get<ProfileInfo>(
+              `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
+            );
+            return {
+              ...ratingItem,
+              senderName: senderResponse.data.name,
+            };
+          } catch (error) {
+            console.error("Ошибка при получении имени отправителя:", error);
+            return {
+              ...ratingItem,
+              senderName: "Неизвестный пользователь",
+            };
+          }
+        })
+      );
 
-    setRating(ratingsWithSenders);
-    console.log("Ratings with sender names:", ratingsWithSenders);
-  } catch (error) {
-    console.error("Ошибка при получении оценок:", error);
-  }
-};
+      setRating(ratingsWithSenders);
+      console.log("Ratings with sender names:", ratingsWithSenders);
+    } catch (error) {
+      console.error("Ошибка при получении оценок:", error);
+    }
+  };
 
   const getRatingAvg = async () => {
     const jwt = Cookies.get("jwt");
@@ -196,16 +193,16 @@ export function Profile({
       console.error("JWT-токен отсутствует");
       return;
     }
-    try{
+    try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = decoded.sub;
       const responce = await axios.get<RatingProps>(
-      `http://127.0.0.1:8000/ratings/get-avg-rating/${user_id}`
+        `http://127.0.0.1:8000/ratings/get-avg-rating/${user_id}`
       );
       setRatingAvg(responce.data);
       console.log(responce.data);
-    } catch(error){
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -378,36 +375,35 @@ export function Profile({
         <div className={styles.profile}>
           {error && <div className={styles.error}>{error}</div>}
           <div className={styles.profile_info_block}>
-          <div className={styles.profile_info}>
-            {isEditing ? (
-              <input
-                name="avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleChange}
-                className={styles["input"]}
-              />
-            ) : (
-              <img
-                src={`http://127.0.0.1:8000/${userData.avatar}`}
-                width={100}
-                height={100}
-                alt="Фото пользователя"
-              />
-            )}
-            
-          </div>
-          <div className={styles.profile_rating}>
-            <p>Ваш рейтинг</p>
-              {ratingAvg?.average_rating ? (
-                  <div className={styles.rating_avg}>
-                    <p>{ratingAvg.average_rating}</p>
-                    <span>★</span>
-                  </div>
-                ) : (
-                  ""
+            <div className={styles.profile_info}>
+              {isEditing ? (
+                <input
+                  name="avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className={styles["input"]}
+                />
+              ) : (
+                <img
+                  src={`http://127.0.0.1:8000/${userData.avatar}`}
+                  width={100}
+                  height={100}
+                  alt="Фото пользователя"
+                />
               )}
-          </div>
+            </div>
+            <div className={styles.profile_rating}>
+              <p>Ваш рейтинг</p>
+              {ratingAvg?.average_rating ? (
+                <div className={styles.rating_avg}>
+                  <p>{ratingAvg.average_rating}</p>
+                  <span>★</span>
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
           </div>
           <div>
             <div className={styles.profile_info}>
@@ -505,9 +501,7 @@ export function Profile({
                     required
                   />
                 ) : (
-                  <ul>
-                    <li>{userData.skills}</li>
-                  </ul>
+                  <textarea>{userData.skills}</textarea>
                 )}
               </div>
             </>

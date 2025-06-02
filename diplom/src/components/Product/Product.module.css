@@ -8,10 +8,10 @@
   box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.2);
   transition: box-shadow 0.3s ease;
   border: 1px solid #dbdbdb;
-  height: 65vh;
+  height: 100%;
 }
 .description {
-  width: 315px;
+  width: 70%;
   height: 91px;
   padding: 0 0px 0 45px;
   outline: none;

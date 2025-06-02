@@ -2,10 +2,7 @@ import styles from "./AcceptProject.module.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Container } from "../Container/Container";
-import {
-  CreateProjectRequest,
-  ProductProps,
-} from "../../types/projects.props";
+import { CreateProjectRequest, ProductProps } from "../../types/projects.props";
 import Cookies from "js-cookie";
 import { ProgressBar } from "../ProgressBar/ProgressBar";
 import Button from "../Button/Button";
@@ -13,11 +10,15 @@ import { Rating } from "../Rating/Rating";
 import { jwtDecode } from "jwt-decode";
 import { ProfileInfo } from "../../types/user.props";
 
-
 interface Step {
   id: number;
   text: string;
   completed: boolean;
+}
+
+interface ProjectUser {
+  id: number;
+  name: string;
 }
 
 export type ModalTypeAccept = "rating" | null;
@@ -29,7 +30,7 @@ export function AcceptProject() {
   const [activeModal, setActiveModal] = useState<ModalTypeAccept>(null);
   const [projects, setProjects] = useState<ProductProps[]>([]);
   const [userRole, setUserRole] = useState("");
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<ProjectUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -64,21 +65,21 @@ export function AcceptProject() {
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
-      
+
       const membersResponse = await axios.get<number[]>(
         `http://127.0.0.1:8000/project-members/my-projects/${user_id}`
       );
-      
+
       if (membersResponse.data?.length > 0) {
-        const projectsPromises = membersResponse.data.map(id => 
+        const projectsPromises = membersResponse.data.map((id) =>
           axios.get<ProductProps>(`http://127.0.0.1:8000/projects/${id}`)
         );
-        
+
         const projectsResponses = await Promise.all(projectsPromises);
-        const projectsData = projectsResponses.map(res => res.data);
-        
+        const projectsData = projectsResponses.map((res) => res.data);
+
         setProjects(projectsData);
-        
+
         if (projectsData.length > 0) {
           const firstProjectId = projectsData[0].id;
           setProjectId(firstProjectId);
@@ -94,7 +95,7 @@ export function AcceptProject() {
     if (!projectId) return;
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
-  
+
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
@@ -102,23 +103,22 @@ export function AcceptProject() {
         `http://127.0.0.1:8000/project-members/${projectId}/users/${user_id}`
       );
 
-      console.log(response.data)
-      
-      const usersPromises = response.data.map(id => 
+      const usersPromises = response.data.map((id) =>
         axios.get<ProfileInfo>(`http://127.0.0.1:8000/users/${id}`)
       );
-      
+
       const usersResponses = await Promise.all(usersPromises);
-      const usersData = usersResponses.map(res => ({
+      const usersData = usersResponses.map((res) => ({
         id: res.data.id,
-        name: res.data.name
+        name: res.data.name,
       }));
-      
+
       setUsers(usersData);
-      
-      // if (usersData.length > 0) {
-      //   setSelectedUserId(usersData[0].name);
-      // }
+
+      // Устанавливаем первого пользователя как выбранного по умолчанию
+      if (usersData.length > 0) {
+        setSelectedUserId(usersData[0].id ?? null);
+      }
     } catch (error) {
       console.error("Ошибка при загрузке пользователей проекта:", error);
     }
@@ -146,7 +146,9 @@ export function AcceptProject() {
     setSteps(steps.filter((step) => step.id !== id));
   };
 
-  const handleProjectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleProjectChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const selectedProjectId = Number(e.target.value);
     setProjectId(selectedProjectId);
     await getProjectById(selectedProjectId);
@@ -158,11 +160,14 @@ export function AcceptProject() {
     : 0;
 
   if (!projects || projects.length === 0) {
-    const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects';
+    const searchLink = userRole === "entrepreneur" ? "/mentor" : "/projects";
     return (
       <Container>
         <div className={styles.project_no}>
-          <p>Отправьте заявку на сотрудничество для начала работы над совместным проектом</p>
+          <p>
+            Отправьте заявку на сотрудничество для начала работы над совместным
+            проектом
+          </p>
           <a href={searchLink}>
             <Button appearence="small">Начать поиск</Button>
           </a>
@@ -179,37 +184,34 @@ export function AcceptProject() {
     <>
       <Container>
         <div className={styles.main}>
-        <div className={styles.user_project}>
-          <div className={styles.projectSelect}>
-            <label>Выберите проект:</label>
-            <select 
-              value={projectId || ""} 
-              onChange={handleProjectChange}
-            >
-              {projects.map((proj) => (
-                <option key={proj.id} value={proj.id}>
-                  {proj.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {users.length > 0 && (
+          <div className={styles.user_project}>
             <div className={styles.projectSelect}>
-              <label>Выберите участника:</label>
-              <select
-                value={selectedUserId || ""}
-                onChange={(e) => setSelectedUserId(Number(e.target.value))}
-              >
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name || `Пользователь ${user.id}`}
+              <label>Выберите проект:</label>
+              <select value={projectId || ""} onChange={handleProjectChange}>
+                {projects.map((proj) => (
+                  <option key={proj.id} value={proj.id}>
+                    {proj.title}
                   </option>
                 ))}
               </select>
             </div>
-          )}
-        </div>
+
+            {users.length > 0 && (
+              <div className={styles.projectSelect}>
+                <label>Выберите участника:</label>
+                <select
+                  value={selectedUserId || ""}
+                  onChange={(e) => setSelectedUserId(Number(e.target.value))}
+                >
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name || `Пользователь ${user.id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
           {projectId && (
             <div className={styles.progress}>
               <p className={styles.progress_title}>Прогресс проекта:</p>
@@ -513,7 +515,11 @@ export function AcceptProject() {
                 </Button>
               )}
               {activeModal === "rating" && (
-                <Rating setActiveModal={setActiveModal} sender={selectedUserId} project_id={projectId} />
+                <Rating
+                  setActiveModal={setActiveModal}
+                  sender={selectedUserId}
+                  project_id={projectId}
+                />
               )}
             </div>
           )}
@@ -522,4 +528,3 @@ export function AcceptProject() {
     </>
   );
 }
-
