@@ -8,10 +8,13 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { CreateProjectRequest } from "../../types/projects.props";
+import { Modal } from "../../components/Modal/Modal";
 
 export function CreateProject() {
   const [role, setRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isAuthtozise, setIsAuthtorize] = useState(false);
   const [projectData, setProjectData] = useState<CreateProjectRequest>({
     title: "",
     description: "",
@@ -75,6 +78,13 @@ export function CreateProject() {
     "Бизнес-менторство",
     "Коучинг",
   ];
+
+  
+
+  useEffect(() => {
+    const jwt = Cookies.get("jwt");
+    setIsAuthtorize(!!jwt); // Обновляем при каждом изменении jwt
+  }, []);
 
   const validateInput = (value: string): boolean => {
     // Проверка на недопустимые символы
@@ -146,6 +156,45 @@ export function CreateProject() {
 
     setProjectData((prevState) => ({ ...prevState, [name]: normalizedValue }));
   };
+
+  if(!isAuthtozise){
+    return (
+      <>
+      <Header />
+      <Container>
+        <div className={styles.auth}>
+        <b>Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы создать проект</b>
+          <Button
+            appearence="big"
+            className={styles["button_register_info"]}
+            onClick={() => setModalOpen(true)}
+          >
+            Зарегистрироваться
+          </Button>
+          </div>
+        {modalOpen && (
+          <div className={styles["modal_main"]}>
+            <div className={styles["modal_secondary"]}>
+              <button
+                      onClick={() => setModalOpen(false)}
+                      className={styles["close"]}
+                    >
+                      ✖
+                    </button>
+              <Modal 
+                closeModal={() => setModalOpen(false)} 
+                setIsAuth={(value) => {
+                  setIsAuthtorize(value);
+                  setModalOpen(false);
+                }} 
+              />
+            </div>
+          </div>
+        )}
+        </Container>
+    </>
+    )
+  }
 
   return (
     <>
@@ -232,7 +281,7 @@ export function CreateProject() {
                     <input
                       type="number"
                       name="revenue"
-                      placeholder="Выручка"
+                      placeholder="Выручка ( в руб. )"
                       value={projectData.revenue}
                       onChange={handleInputChange}
                       required
@@ -247,7 +296,7 @@ export function CreateProject() {
                     <input
                       type="number"
                       name="investment"
-                      placeholder="Требуемые инвестиции"
+                      placeholder="Требуемые инвестиции ( в руб. )"
                       value={projectData.investment}
                       onChange={handleInputChange}
                       required
@@ -286,7 +335,7 @@ export function CreateProject() {
                     <input
                       type="number"
                       name="mentorExperience"
-                      placeholder="Опыт работы наставника"
+                      placeholder="Опыт работы наставника ( в мес. )"
                       value={projectData.mentorExperience}
                       onChange={handleInputChange}
                       required

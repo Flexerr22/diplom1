@@ -10,7 +10,6 @@ import { RatingAllProps } from "../../types/rating_all.props";
 import { RatingProps } from "../../types/rating.props";
 import { CircleArrowLeft, CircleArrowRight } from "lucide-react";
 
-
 interface LoginComponentProps {
   setIsAuth: (value: boolean) => void;
   closeModal: () => void;
@@ -21,7 +20,6 @@ interface RatingWithSender extends RatingAllProps {
   senderName: string;
 }
 
-
 export function Profile({
   setIsAuth,
   closeModal,
@@ -31,9 +29,10 @@ export function Profile({
   const [userData, setUserData] = useState<ProfileInfo | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState<RatingWithSender[]>([]);
-  const [ratingAvg, setRatingAvg] = useState<RatingProps | null>(null)
+  const [ratingAvg, setRatingAvg] = useState<RatingProps | null>(null);
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [userEditData, setUserEditData] = useState<ProfileInfo>({
@@ -48,9 +47,25 @@ export function Profile({
     investmentFocus: "",
   });
 
+  const formatNumber = (value: number | string): string => {
+    // Если значение - строка, пытаемся преобразовать в число
+    const numberValue = typeof value === 'string' 
+      ? parseFloat(value) 
+      : value;
+    
+    // Проверяем, является ли значение числом
+    if (isNaN(numberValue)) {
+      return value.toString();
+    }
+    
+    // Форматируем число с разделителями тысяч
+    return numberValue.toLocaleString('ru-RU', {
+      maximumFractionDigits: 2
+    });
+  };
 
   const nextSlide = () => {
-  setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
+    setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
@@ -88,7 +103,7 @@ export function Profile({
     getRating();
     getRatingAvg();
     getUserProfile();
-  }, [])
+  }, []);
 
   const deleteProfile = async () => {
     try {
@@ -132,12 +147,18 @@ export function Profile({
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, files } = event.target;
+    const { name, files } = event.target;
 
     if (name === "avatar" && files && files[0]) {
-      setFile(files[0]);
-    } else {
-      setUserEditData((prev) => ({ ...prev, [name]: value }));
+      const selectedFile = files[0];
+      setFile(selectedFile);
+
+      // Создаем превью для изображения
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
     }
   };
 
@@ -148,47 +169,47 @@ export function Profile({
   };
 
   const getRating = async () => {
-  const jwt = Cookies.get("jwt");
-  if (!jwt) {
-    console.error("JWT-токен отсутствует");
-    return;
-  }
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      console.error("JWT-токен отсутствует");
+      return;
+    }
 
-  try {
-    const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = decoded.sub;
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = decoded.sub;
 
-    const response = await axios.get<RatingAllProps[]>(
-      `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
-    );
+      const response = await axios.get<RatingAllProps[]>(
+        `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
+      );
 
-    // Загружаем имена для всех отправителей
-    const ratingsWithSenders = await Promise.all(
-      response.data.map(async (ratingItem) => {
-        try {
-          const senderResponse = await axios.get<ProfileInfo>(
-            `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
-          );
-          return {
-            ...ratingItem,
-            senderName: senderResponse.data.name,
-          };
-        } catch (error) {
-          console.error("Ошибка при получении имени отправителя:", error);
-          return {
-            ...ratingItem,
-            senderName: "Неизвестный пользователь",
-          };
-        }
-      })
-    );
+      // Загружаем имена для всех отправителей
+      const ratingsWithSenders = await Promise.all(
+        response.data.map(async (ratingItem) => {
+          try {
+            const senderResponse = await axios.get<ProfileInfo>(
+              `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
+            );
+            return {
+              ...ratingItem,
+              senderName: senderResponse.data.name,
+            };
+          } catch (error) {
+            console.error("Ошибка при получении имени отправителя:", error);
+            return {
+              ...ratingItem,
+              senderName: "Неизвестный пользователь",
+            };
+          }
+        })
+      );
 
-    setRating(ratingsWithSenders);
-    console.log("Ratings with sender names:", ratingsWithSenders);
-  } catch (error) {
-    console.error("Ошибка при получении оценок:", error);
-  }
-};
+      setRating(ratingsWithSenders);
+      console.log("Ratings with sender names:", ratingsWithSenders);
+    } catch (error) {
+      console.error("Ошибка при получении оценок:", error);
+    }
+  };
 
   const getRatingAvg = async () => {
     const jwt = Cookies.get("jwt");
@@ -196,16 +217,16 @@ export function Profile({
       console.error("JWT-токен отсутствует");
       return;
     }
-    try{
+    try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = decoded.sub;
       const responce = await axios.get<RatingProps>(
-      `http://127.0.0.1:8000/ratings/get-avg-rating/${user_id}`
+        `http://127.0.0.1:8000/ratings/get-avg-rating/${user_id}`
       );
       setRatingAvg(responce.data);
       console.log(responce.data);
-    } catch(error){
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -321,6 +342,7 @@ export function Profile({
         ...prev,
         ...response.data,
       }));
+      setPreviewImage(null);
       setIsEditing(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -378,36 +400,66 @@ export function Profile({
         <div className={styles.profile}>
           {error && <div className={styles.error}>{error}</div>}
           <div className={styles.profile_info_block}>
-          <div className={styles.profile_info}>
-            {isEditing ? (
-              <input
-                name="avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleChange}
-                className={styles["input"]}
-              />
-            ) : (
-              <img
-                src={`http://127.0.0.1:8000/${userData.avatar}`}
-                width={100}
-                height={100}
-                alt="Фото пользователя"
-              />
-            )}
-            
-          </div>
-          <div className={styles.profile_rating}>
-            <p>Ваш рейтинг</p>
-              {ratingAvg?.average_rating ? (
-                  <div className={styles.rating_avg}>
-                    <p>{ratingAvg.average_rating}</p>
-                    <span>★</span>
+            <div className={styles.profile_info}>
+              {isEditing ? (
+                <label className={styles.upload_container}>
+                  <input
+                    name="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className={styles.file_input}
+                  />
+                  <div className={styles.avatar_preview}>
+                    {previewImage ? (
+                      <img
+                        src={previewImage}
+                        alt="Предпросмотр аватара"
+                        className={styles.avatar_image}
+                      />
+                    ) : userData?.avatar ? (
+                      <img
+                        src={`http://127.0.0.1:8000/${userData.avatar}`}
+                        alt="Текущий аватар"
+                        className={styles.avatar_image}
+                      />
+                    ) : (
+                      <div className={styles.upload_placeholder}>
+                        <span className={styles.plus_icon}>+</span>
+                        <span className={styles.upload_text}>Добавить фото</span>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  ""
+                </label>
+              ) : (
+                <div className={styles.avatar_display}>
+                  {userData?.avatar ? (
+                    <img
+                      src={`http://127.0.0.1:8000/${userData.avatar}`}
+                      alt="Аватар пользователя"
+                      className={styles.avatar_image}
+                    />
+                  ) : (
+                    <div className={styles.default_avatar}>
+                      <span className={styles.default_icon}>👤</span>
+                    </div>
+                  )}
+                </div>
               )}
-          </div>
+            </div>
+            {(userRole === 'mentor' || userRole === 'investor') && 
+               <div className={styles.profile_rating}>
+                  <p>Ваш рейтинг</p>
+                  {ratingAvg?.average_rating ? (
+                    <div className={styles.rating_avg}>
+                      <p>{ratingAvg.average_rating}</p>
+                      <span>★</span>
+                    </div>
+                  ) : (
+                    "Пока нет рейтинга"
+                  )}
+                </div>
+            }
           </div>
           <div>
             <div className={styles.profile_info}>
@@ -480,7 +532,7 @@ export function Profile({
           {userRole === "mentor" && (
             <>
               <div className={styles.profile_info}>
-                <label>Опыт работы:</label>
+                <label>Опыт работы ( в мес. ):</label>
                 {isEditing ? (
                   <input
                     type="number"
@@ -491,7 +543,7 @@ export function Profile({
                     required
                   />
                 ) : (
-                  <p>{userData.experience}</p>
+                  <p>{userData.experience} мес.</p>
                 )}
               </div>
               <div className={styles.profile_info}>
@@ -505,9 +557,7 @@ export function Profile({
                     required
                   />
                 ) : (
-                  <ul>
-                    <li>{userData.skills}</li>
-                  </ul>
+                  <textarea>{userData.skills}</textarea>
                 )}
               </div>
             </>
@@ -516,7 +566,7 @@ export function Profile({
           {userRole === "investor" && (
             <>
               <div className={styles.profile_info}>
-                <label>Бюджет:</label>
+                <label>Бюджет ( в руб. ):</label>
                 {isEditing ? (
                   <input
                     type="number"
@@ -527,7 +577,9 @@ export function Profile({
                     required
                   />
                 ) : (
-                  <p>{userData.budget}</p>
+                  <p>
+                    {Number(userData.budget).toLocaleString('ru-RU')} ₽
+                  </p>
                 )}
               </div>
               <div className={styles.profile_info}>
@@ -554,11 +606,12 @@ export function Profile({
               </div>
             </>
           )}
-
+          {(userRole === 'mentor' || userRole === 'investor') && (
           <div className={styles.rating_block}>
-            <p>Ваши отзывы</p>
             {rating.length > 0 ? (
-              <div className={styles.sliderContainer}>
+              <>
+                <p>Ваши отзывы</p>
+                <div className={styles.sliderContainer}>
                 <button onClick={prevSlide} className={styles.sliderButton}>
                   <CircleArrowLeft />
                 </button>
@@ -578,6 +631,7 @@ export function Profile({
                   <CircleArrowRight />
                 </button>
               </div>
+              </>
             ) : (
               <p>Пока нет отзывов</p>
             )}
@@ -595,6 +649,7 @@ export function Profile({
               </div>
             )}
           </div>
+          )}
 
           {isEditing ? (
             <>

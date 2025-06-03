@@ -281,9 +281,11 @@ export function RolesData({
             ""
           )}
           {role === "mentor" ? (
-            <p>{experience}</p>
+            <p>{experience} мес.</p>
           ) : role === "investor" ? (
-            <p>{budget}</p>
+            <p>
+              {Number(budget).toLocaleString('ru-RU')} ₽
+            </p>
           ) : (
             ""
           )}

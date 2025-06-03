@@ -5,21 +5,13 @@ import styles from "./Info.module.css";
 import { Modal } from "../Modal/Modal";
 import Cookies from "js-cookie";
 
-interface InfoProps {
-  closeModal: () => void;
-  setIsAuth: (value: boolean) => void;
-}
-
-export function Info({ closeModal, setIsAuth }: InfoProps) {
+export function Info() {
   const [modalOpen, setModalOpen] = useState(false);
   const [isAuthtozise, setIsAuthtorize] = useState(false);
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
-
-    if (jwt) {
-      setIsAuthtorize(true);
-    }
+    setIsAuthtorize(!!jwt); // Обновляем при каждом изменении jwt
   }, []);
   return (
     <Container>
@@ -47,12 +39,18 @@ export function Info({ closeModal, setIsAuth }: InfoProps) {
           <div className={styles["modal_main"]}>
             <div className={styles["modal_secondary"]}>
               <button
-                onClick={() => setModalOpen(false)}
-                className={styles["close"]}
-              >
-                ✖
-              </button>
-              <Modal closeModal={closeModal} setIsAuth={setIsAuth} />
+                      onClick={() => setModalOpen(false)}
+                      className={styles["close"]}
+                    >
+                      ✖
+                    </button>
+              <Modal 
+                closeModal={() => setModalOpen(false)} 
+                setIsAuth={(value) => {
+                  setIsAuthtorize(value);
+                  setModalOpen(false);
+                }} 
+              />
             </div>
           </div>
         )}

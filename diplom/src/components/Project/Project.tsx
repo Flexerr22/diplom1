@@ -68,11 +68,15 @@ export function Project({
             <b>Требуемые вложения:</b>
           )}
           {role === "mentor" ? (
-            <p>{experience}</p>
+            <p>{experience} мес.</p>
           ) : role === "investor" ? (
-            <p>{budget}</p>
+            <p>
+              {Number(budget).toLocaleString('ru-RU')} ₽
+            </p>
           ) : (
-            <p>{investment}</p>
+            <p>
+              {Number(investment).toLocaleString('ru-RU')} ₽
+            </p>
           )}
         </div>
         <div className={styles["reit"]}>

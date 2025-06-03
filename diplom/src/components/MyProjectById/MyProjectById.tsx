@@ -87,6 +87,23 @@ export function MyProjectById() {
     "Маркетинг",
   ];
 
+  const formatNumber = (value: number | string): string => {
+    // Если значение - строка, пытаемся преобразовать в число
+    const numberValue = typeof value === 'string' 
+      ? parseFloat(value) 
+      : value;
+    
+    // Проверяем, является ли значение числом
+    if (isNaN(numberValue)) {
+      return value.toString();
+    }
+    
+    // Форматируем число с разделителями тысяч
+    return numberValue.toLocaleString('ru-RU', {
+      maximumFractionDigits: 2
+    });
+  };
+
   useEffect(() => {
     const role = Cookies.get("role");
 
@@ -312,7 +329,7 @@ export function MyProjectById() {
                     )}
                     {project.revenue && (
                       <div className={styles.field}>
-                        <label>Выручка:</label>
+                        <label>Выручка (в руб.):</label>
                         {isEditing ? (
                           <input
                             type="text"
@@ -325,7 +342,7 @@ export function MyProjectById() {
                         ) : (
                           <input
                             type="text"
-                            value={project.revenue}
+                            value={`${formatNumber(project.revenue)} ₽`}
                             readOnly
                             className={styles.input}
                             placeholder="Выручка"
@@ -341,7 +358,7 @@ export function MyProjectById() {
                   <div className={styles.inputs}>
                     {project.investment && (
                       <div className={styles.field}>
-                        <label>Инвестиции:</label>
+                        <label>Инвестиции (в руб.):</label>
                         {isEditing ? (
                           <input
                             type="text"
@@ -354,7 +371,7 @@ export function MyProjectById() {
                         ) : (
                           <input
                             type="text"
-                            value={project.investment}
+                            value={`${formatNumber(project.investment)} ₽`}
                             readOnly
                             className={styles.input}
                             placeholder="Инвестиции"
@@ -377,7 +394,7 @@ export function MyProjectById() {
                         ) : (
                           <input
                             type="text"
-                            value={project.equity}
+                            value={`${project.equity} %`}
                             readOnly
                             className={styles.input}
                             placeholder="Доля"
@@ -424,7 +441,7 @@ export function MyProjectById() {
                   <div className={styles.inputs}>
                     {project.mentorExperience && (
                       <div className={styles.field}>
-                        <label>Опыт ментора:</label>
+                        <label>Опыт ментора (в мес.):</label>
                         {isEditing ? (
                           <input
                             type="text"
@@ -437,7 +454,7 @@ export function MyProjectById() {
                         ) : (
                           <input
                             type="text"
-                            value={project.mentorExperience}
+                            value={`${project.mentorExperience} мес.`}
                             readOnly
                             className={styles.input}
                             placeholder="Опыт ментора"
@@ -542,7 +559,7 @@ export function MyProjectById() {
                   )}
                   {project.experience && (
                     <div className={styles.field}>
-                      <label>Стаж работы в проекте:</label>
+                      <label>Стаж работы в проекте (в мес.):</label>
                       {isEditing ? (
                         <input
                           type="text"
@@ -556,7 +573,7 @@ export function MyProjectById() {
                       ) : (
                         <input
                           type="text"
-                          value={project.experience}
+                          value={`${project.experience} мес.`}
                           readOnly
                           className={styles.input}
                           placeholder="Опыт"
@@ -585,8 +602,7 @@ export function MyProjectById() {
                           ))}
                         </select>
                       ) : (
-                        <input
-                          type="text"
+                        <textarea
                           value={project.skills}
                           readOnly
                           className={styles.input}
@@ -628,7 +644,7 @@ export function MyProjectById() {
                 <div className={styles.inputs}>
                   {project.budget && (
                     <div className={styles.field}>
-                      <label>Выделенный бюджет:</label>
+                      <label>Выделенный бюджет (в руб.):</label>
                       {isEditing ? (
                         <input
                           type="text"
@@ -641,7 +657,7 @@ export function MyProjectById() {
                       ) : (
                         <input
                           type="text"
-                          value={project.budget}
+                          value={`${formatNumber(project.budget)} ₽`}
                           readOnly
                           className={styles.input}
                           placeholder="Бюджет"

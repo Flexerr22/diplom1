@@ -121,10 +121,6 @@ export function Login({ closeModal, setIsAuth }: LoginComponentProps) {
   return (
     <div className={styles["login"]}>
       <p className={styles["title"]}>Войти в аккаунт</p>
-      <button className={styles.google}>
-        <img src="/google.svg" width={20} height={20} alt="Иконка google" />
-        Войти с помощью Google
-      </button>
       <div className={styles.border_or}>
         <div className={styles.border}></div>
         <p className={styles.or}>OR</p>

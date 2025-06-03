@@ -1,10 +1,13 @@
-import { CircleArrowUp } from "lucide-react";
+import { Check, CircleArrowUp, Pen, Trash2, X } from "lucide-react";
 import Header from "../../components/Header/Header";
 import styles from "./Chats.module.css";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { Container } from "../../components/Container/Container";
+import { Modal } from "../../components/Modal/Modal";
+import Button from "../../components/Button/Button";
 
 interface User {
   id: number;
@@ -25,7 +28,16 @@ function Chats() {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<ChatMessagesProps[]>([]);
-  const [userId, setUserId] = useState<number | null>(null); // Изменено на number | null
+  const [isAuthtozise, setIsAuthtorize] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editedMessage, setEditedMessage] = useState("");
+  
+  useEffect(() => {
+    const jwt = Cookies.get("jwt");
+    setIsAuthtorize(!!jwt); // Обновляем при каждом изменении jwt
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,6 +62,37 @@ function Chats() {
       getMessages(userId, selectedUser.id);
     }
   }, [selectedUser, userId]);
+
+  const deleteMessage = async (message_id: number) => {
+  try {
+    await axios.delete(`http://127.0.0.1:8000/chat/message/${message_id}`);
+    // Удаляем сообщение из локального состояния
+    setMessages(prev => prev.filter(msg => msg.id !== message_id));
+      } catch (error) {
+        console.error("Ошибка при удалении сообщения:", error);
+      }
+    }
+
+    const editMessage = async (message_id: number) => {
+        if (!editedMessage.trim()) return;
+        
+        try {
+          await axios.patch(
+            `http://127.0.0.1:8000/chat/message/${message_id}`,
+            { new_message: editedMessage }
+          );
+          
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === message_id ? { ...msg, message: editedMessage } : msg
+            )
+          );
+          setEditingMessageId(null);
+          setEditedMessage("");
+        } catch (error) {
+          console.error("Ошибка при редактировании сообщения:", error);
+        }
+      };
 
   const getAllChats = async (user_id: number) => {
     try {
@@ -97,6 +140,45 @@ function Chats() {
     }
   };
 
+  if(!isAuthtozise){
+    return (
+      <>
+      <Header />
+      <Container>
+        <div className={styles.auth}>
+        <b>Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы иметь возможность общаться с другими пользователями</b>
+          <Button
+            appearence="big"
+            className={styles["button_register_info"]}
+            onClick={() => setModalOpen(true)}
+          >
+            Зарегистрироваться
+          </Button>
+          </div>
+        {modalOpen && (
+          <div className={styles["modal_main"]}>
+            <div className={styles["modal_secondary"]}>
+              <button
+                      onClick={() => setModalOpen(false)}
+                      className={styles["close"]}
+                    >
+                      ✖
+                    </button>
+              <Modal 
+                closeModal={() => setModalOpen(false)} 
+                setIsAuth={(value) => {
+                  setIsAuthtorize(value);
+                  setModalOpen(false);
+                }} 
+              />
+            </div>
+          </div>
+        )}
+        </Container>
+    </>
+    )
+  }
+
   return (
     <>
       <Header />
@@ -137,7 +219,7 @@ function Chats() {
             <div className={styles.newMessage}>
               <div className={styles.messagesContainer}>
                 {messages
-                  .filter(msg => msg.message.length > 0) // Фильтруем сообщения с длиной > 0
+                  .filter(msg => msg.message.length > 0)
                   .map((msg) => (
                     <div
                       key={msg.id}
@@ -145,13 +227,59 @@ function Chats() {
                         msg.sender_id === userId ? styles.sent : styles.received
                       }`}
                     >
-                      <p>{msg.message}</p>
-                      <span className={styles.time}>
-                        {new Date(msg.time).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      {editingMessageId === msg.id ? (
+                        <div className={styles.editContainer}>
+                          <input
+                            value={editedMessage}
+                            onChange={(e) => setEditedMessage(e.target.value)}
+                            className={styles.editInput}
+                            autoFocus
+                          />
+                          <div className={styles.editButtons}>
+                            <Check 
+                              size={18} 
+                              className={styles.iconConfirm}
+                              onClick={() => editMessage(msg.id)}
+                            />
+                            <X 
+                              size={18} 
+                              className={styles.iconCancel}
+                              onClick={() => {
+                                setEditingMessageId(null);
+                                setEditedMessage("");
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <p>{msg.message}</p>
+                      )}
+                      <div>
+                        <div className={styles.message_icons}>
+                          {msg.sender_id === userId && editingMessageId !== msg.id && (
+                            <>
+                              <Pen 
+                                size={20} 
+                                onClick={() => {
+                                  setEditingMessageId(msg.id);
+                                  setEditedMessage(msg.message);
+                                }}
+                              />
+                              <Trash2 
+                                size={20} 
+                                className={styles.icon_delete} 
+                                onClick={() => deleteMessage(msg.id)}
+                              />
+                            </>
+                          )}
+                        </div>
+                        <span className={styles.time}>
+                          {new Date(msg.time).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
                     </div>
                   ))
                 }

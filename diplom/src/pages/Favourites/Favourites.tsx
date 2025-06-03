@@ -9,11 +9,14 @@ import Cookies from "js-cookie";
 import { MyProjectUser } from "../../components/MyProjectUser/MyProjectUser";
 import { ProductProps, RolesGroupProps } from "../../types/projects.props";
 import Button from "../../components/Button/Button";
+import { Modal } from "../../components/Modal/Modal";
 
 function Favourites() {
   const [projects, setProjects] = useState<ProductProps[]>([]);
   const [projectsUser, setProjectsUser] = useState<RolesGroupProps[]>([]);
   const [userRole, setUserRole] = useState("")
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isAuthtozise, setIsAuthtorize] = useState(false);
 
   useEffect(() => {
     const role = Cookies.get("role");
@@ -21,6 +24,11 @@ function Favourites() {
       setUserRole(role)
     }
   })
+
+  useEffect(() => {
+    const jwt = Cookies.get("jwt");
+    setIsAuthtorize(!!jwt); // Обновляем при каждом изменении jwt
+  }, []);
 
   useEffect(() => {
     getMyProject();
@@ -65,6 +73,45 @@ function Favourites() {
     }
   };
 
+  if(!isAuthtozise){
+    return (
+      <>
+      <Header />
+      <Container>
+        <div className={styles.auth}>
+        <b>Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы иметь возможность добавлять в избранное</b>
+          <Button
+            appearence="big"
+            className={styles["button_register_info"]}
+            onClick={() => setModalOpen(true)}
+          >
+            Зарегистрироваться
+          </Button>
+          </div>
+        {modalOpen && (
+          <div className={styles["modal_main"]}>
+            <div className={styles["modal_secondary"]}>
+              <button
+                      onClick={() => setModalOpen(false)}
+                      className={styles["close"]}
+                    >
+                      ✖
+                    </button>
+              <Modal 
+                closeModal={() => setModalOpen(false)} 
+                setIsAuth={(value) => {
+                  setIsAuthtorize(value);
+                  setModalOpen(false);
+                }} 
+              />
+            </div>
+          </div>
+        )}
+        </Container>
+    </>
+    )
+  }
+
   if (projects.length === 0 && projectsUser.length === 0) {
     const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects'
     return (
@@ -106,8 +153,7 @@ function Favourites() {
                   experience={item.experience}
                   role={item.role}
                   description={item.description}
-                  skills={item.skills}
-                />
+                  skills={item.skills}                />
               ))}
             </div>
             <div className={styles["products"]}>

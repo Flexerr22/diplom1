@@ -29,6 +29,23 @@ export function UserInfo() {
     setCurrentSlide((prev) => (prev === 0 ? rating.length - 1 : prev - 1));
   };
 
+  const formatNumber = (value: number | string): string => {
+    // Если значение - строка, пытаемся преобразовать в число
+    const numberValue = typeof value === 'string' 
+      ? parseFloat(value) 
+      : value;
+    
+    // Проверяем, является ли значение числом
+    if (isNaN(numberValue)) {
+      return value.toString();
+    }
+    
+    // Форматируем число с разделителями тысяч
+    return numberValue.toLocaleString('ru-RU', {
+      maximumFractionDigits: 2
+    });
+  };
+
   useEffect(() => {
     const getMyProject = async () => {
       try {
@@ -102,9 +119,12 @@ export function UserInfo() {
       <Container>
         <div className={styles.main}>
           <div className={styles.form}>
-            <h2>{user.name}</h2>
+            <div className={styles.username}>
+              <h2>Пользователь:</h2>
+              <h2>{user.name}</h2>
+            </div>
             <div className={styles.main_info}>
-              <p>Основная информация</p>
+              <b>Основная информация</b>
               <div className={styles.field}>
                 <label>Описание:</label>
                 <textarea
@@ -117,7 +137,7 @@ export function UserInfo() {
             </div>
 
             <div className={styles.main_details}>
-              <p>Детали профиля</p>
+              <b>Детали профиля</b>
               <div className={styles.inputs}>
                 {user.specialization && (
                   <div className={styles.field}>
@@ -133,10 +153,10 @@ export function UserInfo() {
                 )}
                 {user.experience && (
                   <div className={styles.field}>
-                    <label>Опыт:</label>
+                    <label>Опыт (в мес.):</label>
                     <input
                       type="text"
-                      value={user.experience}
+                      value={`${user.experience} мес.`}
                       readOnly
                       className={styles.input}
                       placeholder="Опыт"
@@ -157,10 +177,10 @@ export function UserInfo() {
                 )}
                 {user.budget && (
                   <div className={styles.field}>
-                    <label>Бюджет:</label>
+                    <label>Бюджет (в руб.):</label>
                     <input
                       type="text"
-                      value={user.budget}
+                      value={`${formatNumber(user.budget)} ₽`}
                       readOnly
                       className={styles.input}
                       placeholder="Бюджет"

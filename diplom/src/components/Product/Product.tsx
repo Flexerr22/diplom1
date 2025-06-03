@@ -217,7 +217,9 @@ export function Product({
         </textarea>
         <div className={styles["price"]}>
           <b>Требуемые вложения:</b>
-          <p>{investment}</p>
+          <p>
+            {Number(investment).toLocaleString('ru-RU')} ₽
+          </p>
         </div>
         <div className={styles["reit"]}>
           <b>Специальность: </b>

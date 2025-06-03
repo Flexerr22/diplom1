@@ -5,7 +5,42 @@
   height: 90vh;
   flex-direction: column;
 }
-
+.auth{
+  display: flex;
+  flex-direction: column;
+  margin-top: 3rem;
+  gap: 2rem;
+  align-items: start;
+}
+.modal_main {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+.modal_secondary {
+  background-color: white;
+  padding: 24px;
+  border-radius: 30px;
+  position: relative;
+  width: 400px;
+}
+.close {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  color: white;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+}
+.close:hover {
+  color: black;
+}
 .topbar {
   display: flex;
   border-bottom: 1px solid #dbdbdb;
@@ -149,6 +184,13 @@
 .message {
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+.message_icons{
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  margin-left: 1rem;
 }
 
 .mes_block.current-user {
@@ -223,4 +265,33 @@
   margin-top: 4px;
   text-align: right;
   padding: 1rem;
+}
+.editContainer{
+  display: flex;
+  gap: 10px;
+}
+.editInput{
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-family: var(--font);
+}
+.editButtons{
+  display: flex;
+  flex-direction: column;
+}
+.iconConfirm{
+  cursor: pointer;
+  color: #00f500;
+}
+.iconCancel{
+  cursor: pointer;
+  color: rgb(245, 78, 78);
+}
+.icon_delete{
+  cursor: pointer;
+}
+.edit_icon{
+  cursor: pointer;
 }

@@ -10,6 +10,23 @@ export function ProjectById() {
   const { project_id } = useParams<{ project_id: string }>();
   const [project, setProject] = useState<CreateProjectRequest | null>(null);
 
+  const formatNumber = (value: number | string): string => {
+    // Если значение - строка, пытаемся преобразовать в число
+    const numberValue = typeof value === 'string' 
+      ? parseFloat(value) 
+      : value;
+    
+    // Проверяем, является ли значение числом
+    if (isNaN(numberValue)) {
+      return value.toString();
+    }
+    
+    // Форматируем число с разделителями тысяч
+    return numberValue.toLocaleString('ru-RU', {
+      maximumFractionDigits: 2
+    });
+  };
+
   useEffect(() => {
     const getProjectById = async () => {
       try {
@@ -101,10 +118,10 @@ export function ProjectById() {
                     )}
                     {project.revenue && (
                       <div className={styles.field}>
-                        <label>Выручка:</label>
+                        <label>Выручка (в руб.):</label>
                         <input
                           type="text"
-                          value={project.revenue}
+                          value={`${formatNumber(project.revenue)} ₽`}
                           readOnly
                           className={styles.input}
                           placeholder="Выручка"
@@ -121,10 +138,10 @@ export function ProjectById() {
                   <p>Для инвесторов</p>
                   <div className={styles.inputs}>
                     <div className={styles.field}>
-                      <label>Инвестиции:</label>
+                      <label>Инвестиции (в руб.):</label>
                       <input
                         type="text"
-                        value={project.investment}
+                        value={`${formatNumber(project.investment)} ₽`}
                         readOnly
                         className={styles.input}
                         placeholder="Инвестиции"
@@ -135,7 +152,7 @@ export function ProjectById() {
                         <label>Доля:</label>
                         <input
                           type="text"
-                          value={project.equity}
+                          value={`${project.equity} %`}
                           readOnly
                           className={styles.input}
                           placeholder="Доля"
@@ -164,10 +181,10 @@ export function ProjectById() {
                   <p>Ожидания от наставника</p>
                   <div className={styles.inputs}>
                     <div className={styles.field}>
-                      <label>Опыт ментора:</label>
+                      <label>Опыт ментора (в мес.):</label>
                       <input
                         type="text"
-                        value={project.mentorExperience}
+                        value={`${project.mentorExperience} мес.`}
                         readOnly
                         className={styles.input}
                         placeholder="Опыт ментора"
@@ -219,10 +236,10 @@ export function ProjectById() {
                   </div>
                   {project.experience && (
                     <div className={styles.field}>
-                      <label>Опыт:</label>
+                      <label>Опыт (в мес.):</label>
                       <input
                         type="text"
-                        value={project.experience}
+                        value={`${project.experience} мес.`}
                         readOnly
                         className={styles.input}
                         placeholder="Опыт"
@@ -261,10 +278,10 @@ export function ProjectById() {
                   <p>Информация об инвесторе</p>
                   <div className={styles.inputs}>
                     <div className={styles.field}>
-                      <label>Выделенный бюджет:</label>
+                      <label>Выделенный бюджет (в руб.):</label>
                       <input
                         type="text"
-                        value={project.budget}
+                        value={`${project.budget} ₽`}
                         readOnly
                         className={styles.input}
                         placeholder="Бюджет"

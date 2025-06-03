@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 interface RatingProps {
   setActiveModal: (value: ModalTypeAccept) => void;
-  sender?: number;
+  sender?: number | null;
   project_id?: number;
 }
 
@@ -27,9 +27,7 @@ export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
     }
   };
 
-  useEffect(() => {
-  }, []);
-
+  useEffect(() => {}, []);
 
   const postRating = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,11 +42,6 @@ export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
       return;
     }
 
-    if (!sender) {
-      setError("Не удалось определить получателя оценки");
-      return;
-    }
-
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
 
@@ -56,19 +49,27 @@ export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
 
+      // Если sender не передан, используем первого пользователя из списка
+      const recipientId = sender || (users.length > 0 ? users[0].id : null);
+
+      if (!recipientId) {
+        setError("Не удалось определить получателя оценки");
+        return;
+      }
+
       const reviewData = {
-        user_id: sender,
+        user_id: recipientId,
         sender_id: user_id,
         amount: rating,
         review: reviewText,
       };
 
       await axios.post(
-        `http://127.0.0.1:8000/ratings/create-rating/${sender}`,
+        `http://127.0.0.1:8000/ratings/create-rating/${recipientId}`,
         reviewData
       );
-      console.log(reviewData)
-      if (project_id) { // Добавляем проверку
+
+      if (project_id) {
         await deleteProject();
       }
       navigate("/");
@@ -82,33 +83,33 @@ export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
     if (!sender || !project_id) return;
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
-    try{
+    try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
 
       try {
         // Пробуем удалить вариант где текущий пользователь - sender
-        await axios.delete('http://127.0.0.1:8000/project-members/', {
+        await axios.delete("http://127.0.0.1:8000/project-members/", {
           params: {
             sender_id: user_id,
             recipient_id: sender,
-            project_id: project_id
-          }
+            project_id: project_id,
+          },
         });
-      } catch  {
+      } catch {
         // Если не нашли, пробуем вариант где текущий пользователь - recipient
-        await axios.delete('http://127.0.0.1:8000/project-members/', {
+        await axios.delete("http://127.0.0.1:8000/project-members/", {
           params: {
             sender_id: sender,
             recipient_id: user_id,
-            project_id: project_id
-          }
+            project_id: project_id,
+          },
         });
       }
-    } catch(error) {
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
-  }
+  };
 
   const validateInput = (value: string): boolean => {
     const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;

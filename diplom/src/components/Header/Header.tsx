@@ -23,6 +23,11 @@ function Header() {
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
+    setIsAuth(!!jwt); // Обновляем при каждом изменении jwt
+  }, []);
+
+  useEffect(() => {
+    const jwt = Cookies.get("jwt");
     const role = Cookies.get("role");
 
     if (jwt) {
@@ -86,7 +91,9 @@ function Header() {
 
           <nav className={styles["nav-text"]}>
             <ul className={styles["ul"]}>
-              {userRole === "entrepreneur" && (
+              {isAuth && (
+                <>
+                {userRole === "entrepreneur" && (
                 <>
                   <li>
                     <a href="/mentor">Наставникам</a>
@@ -98,12 +105,18 @@ function Header() {
                   <div className={styles["border"]}></div>
                 </>
               )}
-
-              {(userRole === "mentor" || userRole === "investor") && (
+              </>
+              )}
+              
+              {isAuth && (
+                <>
+                {(userRole === "mentor" || userRole === "investor") && (
                 <>
                   <li>
                     <a href="/projects">Проекты</a>
                   </li>
+                </>
+              )}
                 </>
               )}
               {isAuth && (
@@ -150,6 +163,8 @@ function Header() {
                 <Messages
                   setActiveModal={setActiveModal}
                   getNotifications={getMessage}
+                  closeModal={() => setActiveModal(null)}
+                  setIsAuth={setIsAuth}
                 />
               )}
               <a href="/favourites">
