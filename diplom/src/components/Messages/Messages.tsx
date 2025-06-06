@@ -18,7 +18,12 @@ interface MessagesProps {
   setIsAuth: (value: boolean) => void;
 }
 
-export function Messages({ setActiveModal, getNotifications, closeModal, setIsAuth }: MessagesProps) {
+export function Messages({
+  setActiveModal,
+  getNotifications,
+  closeModal,
+  setIsAuth,
+}: MessagesProps) {
   const [message, setMessage] = useState<MessageProps[]>([]);
   const [notificationId, setNotificationId] = useState<number | null>(null);
   const [deleteNotificationId, setDeleteNotificationId] = useState<
@@ -208,37 +213,40 @@ export function Messages({ setActiveModal, getNotifications, closeModal, setIsAu
     await getMessage();
   };
 
-  if(!isAuthtozise){
+  if (!isAuthtozise) {
     return (
       <div className={styles["modal_main"]} onClick={handleClickOutside}>
         <div className={styles["modal_secondary"]}>
-        <div className={styles.auth}>
-         <Bell size={75} className={styles.icon} /> 
-        <b>Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы иметь возможность получать уведомления</b>
-          <Button
-            appearence="small"
-            className={styles["button_register_info"]}
-            onClick={() => setModalOpen(true)}
-          >
-            Зарегистрироваться
-          </Button>
+          <div className={styles.auth}>
+            <Bell size={75} className={styles.icon} />
+            <b>
+              Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы
+              иметь возможность получать уведомления
+            </b>
+            <Button
+              appearence="small"
+              className={styles["button_register_info"]}
+              onClick={() => setModalOpen(true)}
+            >
+              Зарегистрироваться
+            </Button>
           </div>
-        {modalOpen && (
-          <div className={styles["modal_main"]}>
-            <div className={styles["modal_secondary"]}>
-              <button
-                onClick={() => setModalOpen(false)}
-                className={styles["close"]}
-              >
-                ✖
-              </button>
-              <Modal closeModal={closeModal} setIsAuth={setIsAuth} />
+          {modalOpen && (
+            <div className={styles["modal_main"]}>
+              <div className={styles["modal_secondary"]}>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className={styles["close"]}
+                >
+                  ✖
+                </button>
+                <Modal closeModal={closeModal} setIsAuth={setIsAuth} />
+              </div>
             </div>
-          </div>
-        )}
-    </div>
-    </div>
-    )
+          )}
+        </div>
+      </div>
+    );
   }
 
   if (isLoading) {

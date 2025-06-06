@@ -79,8 +79,6 @@ export function CreateProject() {
     "Коучинг",
   ];
 
-  
-
   useEffect(() => {
     const jwt = Cookies.get("jwt");
     setIsAuthtorize(!!jwt); // Обновляем при каждом изменении jwt
@@ -157,43 +155,46 @@ export function CreateProject() {
     setProjectData((prevState) => ({ ...prevState, [name]: normalizedValue }));
   };
 
-  if(!isAuthtozise){
+  if (!isAuthtozise) {
     return (
       <>
-      <Header />
-      <Container>
-        <div className={styles.auth}>
-        <b>Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы создать проект</b>
-          <Button
-            appearence="big"
-            className={styles["button_register_info"]}
-            onClick={() => setModalOpen(true)}
-          >
-            Зарегистрироваться
-          </Button>
+        <Header />
+        <Container>
+          <div className={styles.auth}>
+            <b>
+              Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы
+              создать проект
+            </b>
+            <Button
+              appearence="big"
+              className={styles["button_register_info"]}
+              onClick={() => setModalOpen(true)}
+            >
+              Зарегистрироваться
+            </Button>
           </div>
-        {modalOpen && (
-          <div className={styles["modal_main"]}>
-            <div className={styles["modal_secondary"]}>
-              <button
-                      onClick={() => setModalOpen(false)}
-                      className={styles["close"]}
-                    >
-                      ✖
-                    </button>
-              <Modal 
-                closeModal={() => setModalOpen(false)} 
-                setIsAuth={(value) => {
-                  setIsAuthtorize(value);
-                  setModalOpen(false);
-                }} 
-              />
+          {modalOpen && (
+            <div className={styles["modal_main"]}>
+              <div className={styles["modal_secondary"]}>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className={styles["close"]}
+                >
+                  ✖
+                </button>
+                <Modal
+                  closeModal={() => setModalOpen(false)}
+                  setIsAuth={(value) => {
+                    setIsAuthtorize(value);
+                    setModalOpen(false);
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </Container>
-    </>
-    )
+      </>
+    );
   }
 
   return (
@@ -393,7 +394,7 @@ export function CreateProject() {
                   <input
                     type="number"
                     name="experience"
-                    placeholder="Стаж работы в проекте"
+                    placeholder="Стаж работы в проекте (в мес.)"
                     value={projectData.experience}
                     onChange={handleInputChange}
                     required
@@ -425,7 +426,7 @@ export function CreateProject() {
                   <input
                     type="number"
                     name="budget"
-                    placeholder="Размер инвестиций"
+                    placeholder="Размер инвестиций (в руб.)"
                     value={projectData.budget}
                     onChange={handleInputChange}
                     required

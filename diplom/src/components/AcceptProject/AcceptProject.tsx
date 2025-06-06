@@ -9,12 +9,7 @@ import Button from "../Button/Button";
 import { Rating } from "../Rating/Rating";
 import { jwtDecode } from "jwt-decode";
 import { ProfileInfo } from "../../types/user.props";
-
-interface Step {
-  id: number;
-  text: string;
-  completed: boolean;
-}
+import { StepsProps } from "../../types/steps.props";
 
 interface ProjectUser {
   id: number;
@@ -25,7 +20,7 @@ export type ModalTypeAccept = "rating" | null;
 export function AcceptProject() {
   const [project, setProject] = useState<CreateProjectRequest | null>(null);
   const [projectId, setProjectId] = useState<number | null>(null);
-  const [steps, setSteps] = useState<Step[]>([]);
+  const [steps, setSteps] = useState<StepsProps[]>([]);
   const [newStep, setNewStep] = useState<string>("");
   const [activeModal, setActiveModal] = useState<ModalTypeAccept>(null);
   const [projects, setProjects] = useState<ProductProps[]>([]);
@@ -33,21 +28,18 @@ export function AcceptProject() {
   const [users, setUsers] = useState<ProjectUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
-
   const formatNumber = (value: number | string): string => {
     // Если значение - строка, пытаемся преобразовать в число
-    const numberValue = typeof value === 'string' 
-      ? parseFloat(value) 
-      : value;
-    
+    const numberValue = typeof value === "string" ? parseFloat(value) : value;
+
     // Проверяем, является ли значение числом
     if (isNaN(numberValue)) {
       return value.toString();
     }
-    
+
     // Форматируем число с разделителями тысяч
-    return numberValue.toLocaleString('ru-RU', {
-      maximumFractionDigits: 2
+    return numberValue.toLocaleString("ru-RU", {
+      maximumFractionDigits: 2,
     });
   };
 
@@ -64,6 +56,12 @@ export function AcceptProject() {
       getProjectUsers();
     }
   }, [projectId]);
+
+  useEffect(() => {
+    if (projectId && selectedUserId) {
+      getSteps();
+    }
+  }, [projectId, selectedUserId]);
 
   const getProjectById = async (id: number) => {
     try {
@@ -142,28 +140,6 @@ export function AcceptProject() {
     }
   };
 
-  const handleAddStep = () => {
-    if (newStep.trim()) {
-      setSteps([
-        ...steps,
-        { id: Date.now(), text: newStep.trim(), completed: false },
-      ]);
-      setNewStep("");
-    }
-  };
-
-  const handleToggleStep = (id: number) => {
-    setSteps(
-      steps.map((step) =>
-        step.id === id ? { ...step, completed: !step.completed } : step
-      )
-    );
-  };
-
-  const handleDeleteStep = (id: number) => {
-    setSteps(steps.filter((step) => step.id !== id));
-  };
-
   const handleProjectChange = async (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -172,7 +148,83 @@ export function AcceptProject() {
     await getProjectById(selectedProjectId);
   };
 
-  const completedCount = steps.filter((step) => step.completed).length;
+  const getSteps = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+
+      const response = await axios.get<StepsProps[]>(
+        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`
+      );
+      setSteps(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const postSteps = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+
+      const Steps = {
+        sender_id: user_id,
+        recipient_id: selectedUserId,
+        project_id: projectId,
+        status: "rejected",
+        step: newStep,
+      };
+
+      await axios.post("http://127.0.0.1:8000/project-steps/add-step", Steps);
+      setNewStep(""); // Очищаем поле ввода
+      await getSteps(); // Обновляем список шагов
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateSteps = async (id: number) => {
+    try {
+      // Находим шаг в текущем состоянии
+      const stepToUpdate = steps.find((step) => step.id === id);
+      if (!stepToUpdate) return;
+
+      // Определяем новый статус (противоположный текущему)
+      const newStatus =
+        stepToUpdate.status === "accepted" ? "rejected" : "accepted";
+
+      const update = {
+        status: newStatus,
+      };
+
+      await axios.put(
+        `http://127.0.0.1:8000/project-steps/update-step/${id}`,
+        update
+      );
+      await getSteps(); // Обновляем список шагов
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteSteps = async (id: number) => {
+    try {
+      await axios.delete(
+        `http://127.0.0.1:8000/project-steps/delete-step/${id}`
+      );
+      await getSteps(); // Обновляем список шагов
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const completedCount = steps.filter(
+    (step) => step.status === "accepted"
+  ).length;
   const progress = steps.length
     ? Math.round((completedCount / steps.length) * 100)
     : 0;
@@ -237,17 +289,19 @@ export function AcceptProject() {
                 <div>
                   <p>Этапы:</p>
                   <div className={styles.steps}>
-                    {steps.map((step) => (
-                      <div key={step.id} className={styles.step}>
+                    {steps.map((step, index) => (
+                      <div key={index} className={styles.step}>
                         <span
-                          className={step.completed ? styles.completed : ""}
+                          className={
+                            step.status === "accepted" ? styles.completed : ""
+                          }
                         >
-                          {step.text}
+                          {step.step}
                         </span>
-                        <button onClick={() => handleToggleStep(step.id)}>
-                          {step.completed ? "Отменить" : "Выполнен"}
+                        <button onClick={() => updateSteps(step.id)}>
+                          {step.status === "accepted" ? "Отменить" : "Выполнен"}
                         </button>
-                        <button onClick={() => handleDeleteStep(step.id)}>
+                        <button onClick={() => deleteSteps(step.id)}>
                           Удалить
                         </button>
                       </div>
@@ -259,7 +313,7 @@ export function AcceptProject() {
                         onChange={(e) => setNewStep(e.target.value)}
                         placeholder="Новый этап"
                       />
-                      <button onClick={handleAddStep}>Добавить</button>
+                      <button onClick={postSteps}>Добавить</button>
                     </div>
                   </div>
                 </div>
