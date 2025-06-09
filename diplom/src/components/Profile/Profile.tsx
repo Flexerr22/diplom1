@@ -18,6 +18,7 @@ interface LoginComponentProps {
 
 interface RatingWithSender extends RatingAllProps {
   senderName: string;
+  senderAvatar: string | null; // Добавляем поле для аватара
 }
 
 export function Profile({
@@ -46,23 +47,6 @@ export function Profile({
     budget: "",
     investmentFocus: "",
   });
-
-  const formatNumber = (value: number | string): string => {
-    // Если значение - строка, пытаемся преобразовать в число
-    const numberValue = typeof value === 'string' 
-      ? parseFloat(value) 
-      : value;
-    
-    // Проверяем, является ли значение числом
-    if (isNaN(numberValue)) {
-      return value.toString();
-    }
-    
-    // Форматируем число с разделителями тысяч
-    return numberValue.toLocaleString('ru-RU', {
-      maximumFractionDigits: 2
-    });
-  };
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
@@ -169,47 +153,49 @@ export function Profile({
   };
 
   const getRating = async () => {
-    const jwt = Cookies.get("jwt");
-    if (!jwt) {
-      console.error("JWT-токен отсутствует");
-      return;
-    }
+  const jwt = Cookies.get("jwt");
+  if (!jwt) {
+    console.error("JWT-токен отсутствует");
+    return;
+  }
 
-    try {
-      const decoded = jwtDecode<{ sub: string }>(jwt);
-      const user_id = decoded.sub;
+  try {
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const user_id = decoded.sub;
 
-      const response = await axios.get<RatingAllProps[]>(
-        `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
-      );
+    const response = await axios.get<RatingAllProps[]>(
+      `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
+    );
 
-      // Загружаем имена для всех отправителей
-      const ratingsWithSenders = await Promise.all(
-        response.data.map(async (ratingItem) => {
-          try {
-            const senderResponse = await axios.get<ProfileInfo>(
-              `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
-            );
-            return {
-              ...ratingItem,
-              senderName: senderResponse.data.name,
-            };
-          } catch (error) {
-            console.error("Ошибка при получении имени отправителя:", error);
-            return {
-              ...ratingItem,
-              senderName: "Неизвестный пользователь",
-            };
-          }
-        })
-      );
+    // Загружаем имена и аватары для всех отправителей
+    const ratingsWithSenders = await Promise.all(
+      response.data.map(async (ratingItem) => {
+        try {
+          const senderResponse = await axios.get<ProfileInfo>(
+            `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
+          );
+          return {
+            ...ratingItem,
+            senderName: senderResponse.data.name,
+            senderAvatar: senderResponse.data.avatar // Добавляем аватар
+          };
+        } catch (error) {
+          console.error("Ошибка при получении данных отправителя:", error);
+          return {
+            ...ratingItem,
+            senderName: "Неизвестный пользователь",
+            senderAvatar: null
+          };
+        }
+      })
+    );
 
-      setRating(ratingsWithSenders);
-      console.log("Ratings with sender names:", ratingsWithSenders);
-    } catch (error) {
-      console.error("Ошибка при получении оценок:", error);
-    }
-  };
+    setRating(ratingsWithSenders);
+    console.log("Ratings with sender data:", ratingsWithSenders);
+  } catch (error) {
+    console.error("Ошибка при получении оценок:", error);
+  }
+};
 
   const getRatingAvg = async () => {
     const jwt = Cookies.get("jwt");
@@ -304,7 +290,7 @@ export function Profile({
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = decoded.sub;
-
+      
       const formData = new FormData();
 
       // Добавляем файл, если он есть
@@ -327,12 +313,7 @@ export function Profile({
 
       const response = await axios.patch<ProfileInfo>(
         `http://127.0.0.1:8000/users/update-user/${user_id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
 
       console.log("Обновленные данные:", response.data);
@@ -343,7 +324,8 @@ export function Profile({
         ...response.data,
       }));
       setPreviewImage(null);
-      setIsEditing(false);
+    setFile(null); // Очищаем состояние файла
+    setIsEditing(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Ошибка сервера:", error.response?.data);
@@ -608,42 +590,57 @@ export function Profile({
           )}
           {(userRole === 'mentor' || userRole === 'investor') && (
           <div className={styles.rating_block}>
+            <h3>Отзывы</h3>
             {rating.length > 0 ? (
-              <>
-                <p>Ваши отзывы</p>
-                <div className={styles.sliderContainer}>
-                <button onClick={prevSlide} className={styles.sliderButton}>
+              <div className={styles.reviewsContainer}>
+                <button onClick={prevSlide} className={styles.navButton}>
                   <CircleArrowLeft />
                 </button>
-                <div className={styles.sliderContent}>
-                  <div className={styles.rating}>
-                    <div className={styles.user_rating}>
-                      <p>{rating[currentSlide].senderName}</p>
-                      <div className={styles.rating_avg1}>
-                        <p>{rating[currentSlide].amount}</p>
-                        <span>★</span>
+                
+                <div className={styles.reviewCard}>
+                  <div className={styles.reviewHeader}>
+                    {rating[currentSlide].senderAvatar ? (
+                      <img 
+                        src={`http://127.0.0.1:8000/${rating[currentSlide].senderAvatar}`}
+                        alt={`Аватар ${rating[currentSlide].senderName}`}
+                        className={styles.senderAvatar}
+                        width={50} 
+                        height={50}
+                      />
+                    ) : (
+                      <div className={styles.avatarPlaceholder}>
+                        {rating[currentSlide].senderName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <h4>{rating[currentSlide].senderName}</h4>
+                      <div className={styles.ratingStars}>
+                        {'★'.repeat(Math.floor(rating[currentSlide].amount))}
+                        {'☆'.repeat(5 - Math.floor(rating[currentSlide].amount))}
                       </div>
                     </div>
-                    <p>{rating[currentSlide].review}</p>
+                  </div>
+                  <div className={styles.reviewText}>
+                    "{rating[currentSlide].review}"
                   </div>
                 </div>
-                <button onClick={nextSlide} className={styles.sliderButton}>
+                
+                <button onClick={nextSlide} className={styles.navButton}>
                   <CircleArrowRight />
                 </button>
               </div>
-              </>
             ) : (
-              <p>Пока нет отзывов</p>
+              <p className={styles.noReviews}>Пока нет отзывов</p>
             )}
+            
             {rating.length > 1 && (
-              <div className={styles.sliderDots}>
+              <div className={styles.dotsContainer}>
                 {rating.map((_, index) => (
-                  <span
+                  <button
                     key={index}
-                    className={`${styles.dot} ${
-                      index === currentSlide ? styles.activeDot : ""
-                    }`}
+                    className={`${styles.dot} ${index === currentSlide ? styles.activeDot : ''}`}
                     onClick={() => setCurrentSlide(index)}
+                    aria-label={`Перейти к отзыву ${index + 1}`}
                   />
                 ))}
               </div>

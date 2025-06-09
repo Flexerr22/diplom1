@@ -6,9 +6,14 @@ import { Register } from "../Register/Register";
 interface ModalProps {
   closeModal: () => void;
   setIsAuth: (value: boolean) => void;
+  onLoginSuccess?: () => void;
 }
 
-export function Modal({ closeModal, setIsAuth }: ModalProps) {
+export function Modal({ 
+  closeModal, 
+  setIsAuth, 
+  onLoginSuccess 
+}: ModalProps) {
   const [isButtonAuth, setIsButtonAuth] = useState(false);
 
   return (
@@ -28,9 +33,16 @@ export function Modal({ closeModal, setIsAuth }: ModalProps) {
         </button>
       </div>
       {isButtonAuth ? (
-        <Login closeModal={closeModal} setIsAuth={setIsAuth} />
+        <Login 
+          closeModal={closeModal} 
+          setIsAuth={setIsAuth} 
+          onLoginSuccess={onLoginSuccess || (() => {})} // Добавляем fallback
+        />
       ) : (
-        <Register setIsAuth={setIsAuth} setIsButtonAuth={setIsButtonAuth} />
+        <Register 
+          setIsAuth={setIsAuth} 
+          setIsButtonAuth={setIsButtonAuth} 
+        />
       )}
     </div>
   );

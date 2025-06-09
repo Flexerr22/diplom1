@@ -13,10 +13,10 @@ interface ProductsProps {
 }
 
 const experienceMapping: { [key: string]: { min: number; max: number } } = {
-  "от 1-3 лет": { min: 1, max: 3 },
-  "от 3-6 лет": { min: 3, max: 6 },
-  "от 6 до 9 лет": { min: 6, max: 9 },
-  "более 10 лет": { min: 10, max: Infinity },
+  "от 1 до 36 мес.": { min: 1, max: 36 },
+  "от 36 до 72 мес.": { min: 36, max: 72 },
+  "от 72 до 108 мес.": { min: 72, max: 108 },
+  "более 108 мес.": { min: 108, max: Infinity },
 };
 
 export function RolesGroupMentor({

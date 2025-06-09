@@ -12,9 +12,10 @@ interface RatingProps {
   setActiveModal: (value: ModalTypeAccept) => void;
   sender?: number | null;
   project_id?: number;
+  deleteAllSteps: () => Promise<void>;
 }
 
-export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
+export const Rating = ({ setActiveModal, deleteAllSteps, sender, project_id }: RatingProps) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState<string>("");
@@ -69,9 +70,16 @@ export const Rating = ({ setActiveModal, sender, project_id }: RatingProps) => {
         reviewData
       );
 
+      const storageKey = `notification_${recipientId}_${project_id}`;
+      localStorage.removeItem(storageKey);
+
+      const storageKey1 = `project_notification_${user_id}_${project_id}`;
+      localStorage.removeItem(storageKey1);
+
       if (project_id) {
         await deleteProject();
       }
+      await deleteAllSteps();
       navigate("/");
     } catch (error) {
       console.error("Произошла ошибка", error);

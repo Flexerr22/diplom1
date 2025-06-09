@@ -132,11 +132,13 @@
   box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.step span {
+.step textarea {
   flex: 1;
   font-size: 18px;
   font-family: var(--secondary-font);
   color: #333;
+  border: none;
+  background: none;
 }
 
 .completed {
@@ -167,7 +169,7 @@
   margin-top: 10px;
 }
 
-.newStep input {
+.newStep textarea {
   flex: 1;
   padding: 10px;
   font-size: 16px;

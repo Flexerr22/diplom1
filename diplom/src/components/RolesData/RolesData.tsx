@@ -30,6 +30,19 @@ export function RolesData({
   );
   const [rating, setRating] = useState<RatingProps | null>(null);
 
+  const translateRole = (role: string) => {
+    switch (role) {
+      case "mentor":
+        return "Ментор";
+      case "investor":
+        return "Инвестор";
+      case "entrepreneur":
+        return "Предприниматель";
+      default:
+        return role;
+    }
+  };
+
   useEffect(() => {
     getRating();
     const favorites = JSON.parse(
@@ -37,29 +50,6 @@ export function RolesData({
     );
     if (favorites.includes(id)) {
       setIsAdd(true);
-    }
-
-    const notificationKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith("notification_")
-    );
-    
-    for (const key of notificationKeys) {
-      const notification = JSON.parse(localStorage.getItem(key) || "{}");
-      if (notification.notificationId && notification.status === "pending") {
-        setIsSending(true);
-        setNotificationId(notification.notificationId);
-        break;
-      }
-      if (notification.notificationId && notification.status === "accepted") {
-        setIsAccept(true);
-        setNotificationId(notification.notificationId);
-        break;
-      }
-      if (notification.notificationId && notification.status === "rejected") {
-        setIsReject(true);
-        setNotificationId(notification.notificationId);
-        break;
-      }
     }
 
     const getAll = async () => {
@@ -73,7 +63,6 @@ export function RolesData({
         const response = await axios.get<ProductProps[]>(
           `http://127.0.0.1:8000/projects/my-projects/${user_id}`
         );
-        console.log("Ответ от сервера:", response.data);
         setUserProjects(response.data);
 
         if (response.data.length > 0) {
@@ -83,49 +72,71 @@ export function RolesData({
         console.error("Ошибка при получении проектов:", error);
       }
     };
-    checkExistingNotification();
+
     getAll();
   }, [id]);
 
+  useEffect(() => {
+    if (selectedProjectId !== null) {
+      checkExistingNotification();
+      checkLocalStorageNotification();
+    }
+  }, [selectedProjectId, id]);
+
+  const checkLocalStorageNotification = () => {
+    if (selectedProjectId === null) return;
+    
+    const storageKey = `notification_${id}_${selectedProjectId}`;
+    const notificationData = localStorage.getItem(storageKey);
+    
+    if (notificationData) {
+      const parsed = JSON.parse(notificationData);
+      setNotificationId(parsed.notificationId);
+      setIsSending(parsed.status === "pending");
+      setIsAccept(parsed.status === "accepted");
+      setIsReject(parsed.status === "rejected");
+    } else {
+      setIsSending(false);
+      setIsAccept(false);
+      setIsReject(false);
+      setNotificationId(null);
+    }
+  };
 
   const checkExistingNotification = async () => {
     const jwt = Cookies.get("jwt");
-    if (!jwt || !selectedProjectId) return;
-  
+    if (!jwt || selectedProjectId === null) return;
+
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
-  
+
       const response = await axios.get<MessageProps[]>(
         `http://127.0.0.1:8000/notifications/user-notifications/${user_id}`
       );
-  
+
       const existingNotification = response.data.find(
         (notif) =>
           notif.project_id === selectedProjectId &&
           notif.recipient_id === id
       );
-  
+
+      const storageKey = `notification_${id}_${selectedProjectId}`;
+      
       if (existingNotification) {
-        setNotificationId(existingNotification.id);
-        setIsSending(existingNotification.status === "pending");
-        setIsAccept(existingNotification.status === "accepted");
-        setIsAccept(existingNotification.status === "rejected");
-        
         localStorage.setItem(
-          `notification_${existingNotification.id}`,
+          storageKey,
           JSON.stringify({
             status: existingNotification.status,
             notificationId: existingNotification.id,
-            project_id: selectedProjectId,
-            recipient_id: id,
-            timestamp: new Date().toISOString()
           })
         );
+        setNotificationId(existingNotification.id);
+        setIsSending(existingNotification.status === "pending");
+        setIsAccept(existingNotification.status === "accepted");
+        setIsReject(existingNotification.status === "rejected");
       } else {
-        if (notificationId) {
-          localStorage.removeItem(`notification_${notificationId}`);
-        }
+        localStorage.removeItem(storageKey);
         setIsSending(false);
         setIsAccept(false);
         setIsReject(false);
@@ -170,7 +181,7 @@ export function RolesData({
   };
 
   const postMessage = async () => {
-    if (!selectedProjectId) {
+    if (selectedProjectId === null) {
       alert("Пожалуйста, выберите проект для сотрудничества");
       return;
     }
@@ -191,35 +202,39 @@ export function RolesData({
         alert("Нельзя отправить запрос самому себе!");
         return;
       }
+      const projectResponse = await axios.get(
+        `http://127.0.0.1:8000/projects/${selectedProjectId}`
+      );
+      const userResponse = await axios.get(
+        `http://127.0.0.1:8000/users/${sender_id}`
+      );
+
       const notificationData = {
         project_id: selectedProjectId,
         recipient_id: id,
         sender_id,
         status: "pending",
-        text: `Пользователь хочет сотрудничать по проекту с вами как "${role}"`,
+        text: `Пользователь ${userResponse.data.name} хочет сотрудничать по проекту "${projectResponse.data.title}" с вами как "${translateRole(
+          role
+        )}"`,
       };
-      console.log(notificationData);
+
       const response = await axios.post<MessageProps>(
         `http://127.0.0.1:8000/notifications/send-notification/${recipient_id}`,
         notificationData
       );
 
+      const storageKey = `notification_${id}_${selectedProjectId}`;
       localStorage.setItem(
-        `notification_${response.data.id}`,
+        storageKey,
         JSON.stringify({
           status: "pending",
-          project_id: response.data.project_id,
-          recipient_id: response.data.recipient_id,
-          sender_id: response.data.sender_id,
           notificationId: response.data.id,
         })
       );
-      setNotificationId(response.data.id);
-      setIsSending(true);
-      alert("Запрос отправлен!");
 
-      // Проверяем сразу после отправки
-      await checkExistingNotification();
+      setNotificationId(response.data.id);
+      alert("Запрос отправлен!");
     } catch (error) {
       console.error("Ошибка при отправке:", error);
       alert("Не удалось отправить запрос");
@@ -228,15 +243,20 @@ export function RolesData({
   };
 
   const getRating = async () => {
-    const responce = await axios.get<RatingProps>(
-      `http://127.0.0.1:8000/ratings/get-avg-rating/${id}`
-    );
-    setRating(responce.data);
-    console.log(responce.data);
+    try {
+      const response = await axios.get<RatingProps>(
+        `http://127.0.0.1:8000/ratings/get-avg-rating/${id}`
+      );
+      setRating(response.data);
+    } catch (error) {
+      console.error("Ошибка при получении рейтинга:", error);
+    }
   };
 
   const deleteMessage = async () => {
-    if (!notificationId) return;
+    if (!notificationId || selectedProjectId === null) return;
+
+    localStorage.removeItem(`notification_${id}_${selectedProjectId}`)
 
     try {
       await axios.delete(
@@ -245,20 +265,20 @@ export function RolesData({
 
       setNotificationId(null);
       setIsSending(false);
-
-      localStorage.removeItem(`notification_${notificationId}`);
       alert("Заявка отменена");
-
-      // Проверяем сразу после удаления
-      await checkExistingNotification();
     } catch (error) {
       console.error("Ошибка при отмене:", error);
       alert("Не удалось отменить заявку");
     }
   };
 
+  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newProjectId = Number(e.target.value);
+    setSelectedProjectId(newProjectId);
+  };
+
   return (
-    <div>
+    <div className={styles["main"]}>
       <div className={styles["product"]}>
         {rating?.average_rating ? (
           <div className={styles.rating}>
@@ -283,9 +303,7 @@ export function RolesData({
           {role === "mentor" ? (
             <p>{experience} мес.</p>
           ) : role === "investor" ? (
-            <p>
-              {Number(budget).toLocaleString('ru-RU')} ₽
-            </p>
+            <p>{Number(budget).toLocaleString("ru-RU")} ₽</p>
           ) : (
             ""
           )}
@@ -312,7 +330,7 @@ export function RolesData({
             <div className={styles["project-selector"]}>
               <label>Выберите проект:</label>
               <select
-                onChange={(e) => setSelectedProjectId(Number(e.target.value))}
+                onChange={handleProjectChange}
                 value={selectedProjectId || ""}
               >
                 {userProjects.map((project) => (
@@ -324,25 +342,28 @@ export function RolesData({
             </div>
           )}
           {isAccept ? (
-              <div className={styles.status_message}>
-                <b>Заявка принята</b>
-              </div>
-            ) : isReject ? (
-              <div className={styles.status_message}>
-                <b>Заявка отклонена</b>
-              </div>
-            ) : isSending ? (
-              <Button
-                className={styles["button_product"]}
-                onClick={deleteMessage}
-              >
-                Отменить заявку
-              </Button>
-            ) : (
-              <Button className={styles["button_product"]} onClick={postMessage}>
-                Сотрудничать
-              </Button>
-            )}
+            <div className={styles.status_message}>
+              <b>Заявка принята</b>
+            </div>
+          ) : isReject ? (
+            <div className={styles.status_message}>
+              <b>Заявка отклонена</b>
+            </div>
+          ) : isSending ? (
+            <Button
+              className={styles["button_product"]}
+              onClick={deleteMessage}
+            >
+              Отменить заявку
+            </Button>
+          ) : (
+            <Button
+              className={styles["button_product"]}
+              onClick={postMessage}
+            >
+              Сотрудничать
+            </Button>
+          )}
         </div>
       </div>
     </div>

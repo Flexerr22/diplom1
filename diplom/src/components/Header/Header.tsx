@@ -1,7 +1,7 @@
 import Button from "../Button/Button";
 import styles from "./Header.module.css";
 import { Container } from "../Container/Container";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Modal } from "../Modal/Modal";
 import { Messages } from "../Messages/Messages";
 import Cookies from "js-cookie";
@@ -77,6 +77,36 @@ function Header() {
       setActiveModal(null);
     }
   };
+
+  const loadUserData = useCallback(async () => {
+    const jwt = Cookies.get("jwt");
+    const role = Cookies.get("role");
+
+    if (jwt) {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      setUserId(decoded.sub);
+
+      try {
+        const response = await axios.get<ProfileInfo>(
+          `http://127.0.0.1:8000/users/${decoded.sub}`
+        );
+        setUserAvatar(response.data.avatar);
+      } catch (error) {
+        console.error("Ошибка при получении данных профиля:", error);
+      }
+    }
+    
+    if (role) {
+      setUserRole(role);
+    }
+    
+    await getMessage();
+  }, []);
+
+  // Загружаем данные при монтировании и при изменении isAuth
+  useEffect(() => {
+    loadUserData();
+  }, [isAuth, loadUserData]);
 
   return (
     <div className={styles["color"]}>
@@ -186,7 +216,7 @@ function Header() {
                 src={
                   userAvatar
                     ? `http://127.0.0.1:8000/${userAvatar}`
-                    : "/team.avif"
+                    : "user.png"
                 }
                 alt="Иконка профиля"
                 className={styles.icon_profile}
@@ -207,21 +237,19 @@ function Header() {
           </div>
         </header>
         {activeModal === "login" && (
-          <div className={styles["modal_main"]} onClick={handleClickOutside}>
-            <div className={styles["modal_secondary"]}>
-              <button
-                onClick={() => setActiveModal(null)}
-                className={styles["close"]}
-              >
-                ✖
-              </button>
-              <Modal
-                closeModal={() => setActiveModal(null)}
-                setIsAuth={setIsAuth}
-              />
+            <div className={styles["modal_main"]} onClick={handleClickOutside}>
+              <div className={styles["modal_secondary"]}>
+                <button onClick={() => setActiveModal(null)} className={styles["close"]}>
+                  ✖
+                </button>
+                <Modal
+                  closeModal={() => setActiveModal(null)}
+                  setIsAuth={setIsAuth}
+                  onLoginSuccess={loadUserData}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </Container>
     </div>
   );

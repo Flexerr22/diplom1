@@ -5,7 +5,6 @@
 .checkbox {
   background: white;
   border-radius: 20px;
-  margin-top: 40px;
   padding: 10px 40px 33px 46px;
   display: flex;
   flex-direction: column;

@@ -260,6 +260,7 @@ function Chats() {
                             <>
                               <Pen 
                                 size={20} 
+                                className={styles.edit_icon}
                                 onClick={() => {
                                   setEditingMessageId(msg.id);
                                   setEditedMessage(msg.message);

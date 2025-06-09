@@ -149,43 +149,100 @@ export function AcceptProject() {
   };
 
   const getSteps = async () => {
-    const jwt = Cookies.get("jwt");
-    if (!jwt) return;
-    try {
-      const decoded = jwtDecode<{ sub: string }>(jwt);
-      const user_id = parseInt(decoded.sub, 10);
+  const jwt = Cookies.get("jwt");
+  if (!jwt || !projectId || !selectedUserId) return;
+  
+  try {
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const user_id = parseInt(decoded.sub, 10);
 
-      const response = await axios.get<StepsProps[]>(
-        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`
-      );
-      setSteps(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    // Запрос 1: где текущий пользователь - отправитель
+    const stepsAsSender = await axios.get<StepsProps[]>(
+      `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`
+    );
 
-  const postSteps = async () => {
-    const jwt = Cookies.get("jwt");
-    if (!jwt) return;
-    try {
-      const decoded = jwtDecode<{ sub: string }>(jwt);
-      const user_id = parseInt(decoded.sub, 10);
+    // Запрос 2: где текущий пользователь - получатель
+    const stepsAsRecipient = await axios.get<StepsProps[]>(
+      `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${selectedUserId}/${user_id}`
+    );
 
-      const Steps = {
-        sender_id: user_id,
-        recipient_id: selectedUserId,
-        project_id: projectId,
-        status: "rejected",
-        step: newStep,
-      };
+    // Объединяем результаты
+    const allSteps = [...stepsAsSender.data, ...stepsAsRecipient.data];
+    setSteps(allSteps);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-      await axios.post("http://127.0.0.1:8000/project-steps/add-step", Steps);
-      setNewStep(""); // Очищаем поле ввода
-      await getSteps(); // Обновляем список шагов
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const validateInput = (value: string): boolean => {
+  // Проверка на недопустимые символы
+  const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
+  if (!regex.test(value)) {
+    alert("Недопустимые символы. Разрешены только буквы, цифры, пробелы и .,:%!?()@_-");
+    return false;
+  }
+
+  // Проверка на множественные пробелы
+  if (/\s{2,}/.test(value)) {
+    alert("Нельзя вводить более одного пробела подряд.");
+    return false;
+  }
+
+  // Проверка, что есть хотя бы один не-пробельный символ
+  if (/^\s*$/.test(value) && value !== "") {
+    alert("Введите хотя бы один символ (не пробел)");
+    return false;
+  }
+
+  // Проверка минимальной длины
+  if (value.trim().length < 3) {
+    alert("Название этапа должно содержать минимум 3 символа");
+    return false;
+  }
+
+  // Проверка максимальной длины
+  if (value.length > 200) {
+    alert("Название этапа не должно превышать 200 символов");
+    return false;
+  }
+
+  return true;
+};
+
+const postSteps = async () => {
+  const jwt = Cookies.get("jwt");
+  if (!jwt) return;
+  
+  // Валидация ввода
+  if (!newStep.trim()) {
+    alert("Поле не может быть пустым");
+    return;
+  }
+
+  if (!validateInput(newStep)) {
+    return;
+  }
+
+  try {
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const user_id = parseInt(decoded.sub, 10);
+
+    const Steps = {
+      sender_id: user_id,
+      recipient_id: selectedUserId,
+      project_id: projectId,
+      status: "rejected",
+      step: newStep.trim(), // Удаляем лишние пробелы
+    };
+
+    await axios.post("http://127.0.0.1:8000/project-steps/add-step", Steps);
+    setNewStep(""); // Очищаем поле ввода
+    await getSteps(); // Обновляем список шагов
+  } catch (error) {
+    console.error(error);
+    alert("Произошла ошибка при добавлении этапа");
+  }
+};
 
   const updateSteps = async (id: number) => {
     try {
@@ -221,6 +278,37 @@ export function AcceptProject() {
       console.error(error);
     }
   };
+
+  const deleteAllSteps = async () => {
+  const jwt = Cookies.get("jwt");
+  if (!jwt || !projectId || !selectedUserId) return;
+  
+  try {
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const user_id = parseInt(decoded.sub, 10);
+
+    // Удаляем шаги в обоих направлениях
+    await Promise.all([
+      axios.delete(
+        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`,
+        { headers: { Authorization: `Bearer ${jwt}` } }
+      ),
+      axios.delete(
+        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${selectedUserId}/${user_id}`,
+        { headers: { Authorization: `Bearer ${jwt}` } }
+      )
+    ]);
+    
+    // Обновляем список шагов после удаления
+    await getSteps();
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      console.log("Шагов для удаления не найдено");
+      return;
+    }
+    console.error("Ошибка при удалении шагов:", error);
+  }
+};
 
   const completedCount = steps.filter(
     (step) => step.status === "accepted"
@@ -291,13 +379,13 @@ export function AcceptProject() {
                   <div className={styles.steps}>
                     {steps.map((step, index) => (
                       <div key={index} className={styles.step}>
-                        <span
+                        <textarea
                           className={
                             step.status === "accepted" ? styles.completed : ""
                           }
                         >
                           {step.step}
-                        </span>
+                        </textarea>
                         <button onClick={() => updateSteps(step.id)}>
                           {step.status === "accepted" ? "Отменить" : "Выполнен"}
                         </button>
@@ -307,8 +395,7 @@ export function AcceptProject() {
                       </div>
                     ))}
                     <div className={styles.newStep}>
-                      <input
-                        type="text"
+                      <textarea
                         value={newStep}
                         onChange={(e) => setNewStep(e.target.value)}
                         placeholder="Новый этап"
@@ -591,6 +678,7 @@ export function AcceptProject() {
                   setActiveModal={setActiveModal}
                   sender={selectedUserId}
                   project_id={projectId}
+                  deleteAllSteps={deleteAllSteps}
                 />
               )}
             </div>

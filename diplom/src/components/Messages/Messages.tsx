@@ -1,15 +1,12 @@
 import { Bell, CircleX, Ellipsis } from "lucide-react";
 import styles from "./Messages.module.css";
-import Header, { ModalType } from "../Header/Header";
+import { ModalType } from "../Header/Header";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { MessageProps } from "../../types/message.props";
 import { ProjectMembersProps } from "../../types/project-members.props";
-import { Container } from "../Container/Container";
-import { Modal } from "../Modal/Modal";
-import Button from "../Button/Button";
 
 interface MessagesProps {
   setActiveModal: (value: ModalType) => void;
@@ -21,25 +18,9 @@ interface MessagesProps {
 export function Messages({
   setActiveModal,
   getNotifications,
-  closeModal,
-  setIsAuth,
 }: MessagesProps) {
   const [message, setMessage] = useState<MessageProps[]>([]);
-  const [notificationId, setNotificationId] = useState<number | null>(null);
-  const [deleteNotificationId, setDeleteNotificationId] = useState<
-    number | null
-  >(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [isAuthtozise, setIsAuthtorize] = useState(false);
-
-  useEffect(() => {
-    const jwt = Cookies.get("jwt");
-
-    if (jwt) {
-      setIsAuthtorize(true);
-    }
-  }, []);
 
   useEffect(() => {
     getMessage();
@@ -47,45 +28,25 @@ export function Messages({
 
   const getMessage = async () => {
     const jwt = Cookies.get("jwt");
-    setIsLoading(false);
+    setIsLoading(true);
     if (!jwt) return;
 
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = parseInt(decoded.sub, 10);
 
-      const responce = await axios.get<MessageProps[]>(
+      const response = await axios.get<MessageProps[]>(
         `http://127.0.0.1:8000/notifications/${user_id}`
       );
-
-      const extMessage = responce.data.find(
-        (notification) =>
-          notification.recipient_id === user_id &&
-          notification.status === "pending"
+      
+      // Фильтруем уведомления для текущего пользователя
+      const userMessages = response.data.filter(
+        notification => 
+          notification.recipient_id === user_id ||
+          notification.sender_id === user_id
       );
 
-      const delMessage = responce.data.find(
-        (notification) =>
-          (notification.recipient_id === user_id ||
-            notification.sender_id === user_id) &&
-          (notification.status === "rejected" ||
-            notification.status === "accepted")
-      );
-
-      console.log(extMessage);
-
-      if (extMessage) {
-        setNotificationId(extMessage.id);
-      } else {
-        setNotificationId(null);
-      }
-
-      if (delMessage) {
-        setDeleteNotificationId(delMessage.id);
-      } else {
-        setDeleteNotificationId(null);
-      }
-      setMessage(responce.data);
+      setMessage(userMessages);
     } catch (error) {
       console.error("Произошла ошибка", error);
     } finally {
@@ -99,73 +60,87 @@ export function Messages({
     }
   };
 
-  const rejectMessage = async () => {
-    if (!notificationId) return;
-
-    await axios.post<MessageProps>(
-      `http://127.0.0.1:8000/notifications/reject-notification/${notificationId}`
-    );
-
-    const localNotification = localStorage.getItem(
-      `notification_${notificationId}`
-    );
-    if (localNotification) {
-      const notificationData = JSON.parse(localNotification);
-      notificationData.status = "rejected";
-      localStorage.setItem(
-        `notification_${notificationId}`,
-        JSON.stringify(notificationData)
+  const rejectMessage = async (notificationId: number) => {
+    try {
+      await axios.post<MessageProps>(
+        `http://127.0.0.1:8000/notifications/reject-notification/${notificationId}`
       );
-    }
 
-    if (getNotifications) {
-      await getNotifications();
+      await getMessage();
+
+      // Находим уведомление для обновления статуса
+      const notification = message.find(mes => mes.id === notificationId);
+      if (!notification) return;
+
+
+      // Обновляем UI
+      setMessage(prev => prev.map(mes => 
+        mes.id === notificationId ? { ...mes, status: "rejected" } : mes
+      ));
+
+            // Удаляем из LocalStorage
+      const storageKey = `notification_${notification.recipient_id}_${notification.project_id}`;
+      localStorage.removeItem(storageKey);
+
+      const storageKey1 = `project_notification_${notification.recipient_id}_${notification.project_id}`;
+      localStorage.removeItem(storageKey1);
+
+      if (getNotifications) {
+        await getNotifications();
+      }
+    } catch (error) {
+      console.error("Ошибка при отклонении уведомления:", error);
     }
-    // localStorage.removeItem(`notification_${notificationId}`);
-    setNotificationId(null);
-    await getMessage();
   };
 
-  const acceptMessage = async () => {
-    if (!notificationId) return;
-
+  const acceptMessage = async (notificationId: number) => {
+    
     try {
-      // Принимаем уведомление
+      // Находим уведомление для получения данных
+      const notification = message.find(mes => mes.id === notificationId);
+      if (!notification) return;
+      
+      // Принимаем уведомление на сервере
       await axios.post<MessageProps>(
         `http://127.0.0.1:8000/notifications/accept-notification/${notificationId}`
       );
 
-      // Обновляем статус уведомления в localStorage
-      const localNotification = localStorage.getItem(
-        `notification_${notificationId}`
-      );
-      if (!localNotification) {
-        console.error("Уведомление не найдено в localStorage");
-        return;
+      await getMessage();
+
+      // Обновляем LocalStorage
+      const storageKey = `notification_${notification.recipient_id}_${notification.project_id}`;
+      const existingData = localStorage.getItem(storageKey);
+      
+      if (existingData) {
+        const notificationData = JSON.parse(existingData);
+        notificationData.status = "accepted";
+        localStorage.setItem(storageKey, JSON.stringify(notificationData));
       }
 
-      const notificationData = JSON.parse(localNotification);
-      notificationData.status = "accepted";
-      localStorage.setItem(
-        `notification_${notificationId}`,
-        JSON.stringify(notificationData)
-      );
+      const projectKey = `project_notification_${notification.recipient_id}_${notification.project_id}`;
+      const existingData1 = localStorage.getItem(projectKey);
+      
+      if (existingData1) {
+        const notificationData = JSON.parse(existingData1);
+        notificationData.status = "accepted";
+        localStorage.setItem(projectKey, JSON.stringify(notificationData));
+      }
 
       // Подготавливаем данные для проекта и чата
       const projectMembersData = {
-        project_id: notificationData.project_id,
-        recipient_id: notificationData.recipient_id,
-        sender_id: notificationData.sender_id,
-        notification_id: notificationData.notificationId,
+        project_id: notification.project_id,
+        recipient_id: notification.recipient_id,
+        sender_id: notification.sender_id,
+        notification_id: notificationId,
       };
 
       const chatData = {
-        recipient_id: notificationData.recipient_id,
-        sender_id: notificationData.sender_id,
+        recipient_id: notification.recipient_id,
+        sender_id: notification.sender_id,
       };
 
       try {
-        // Пытаемся создать чат, но обрабатываем случай, когда он уже существует
+        // Создаем чат (если еще не существует)
         await axios.post(`http://127.0.0.1:8000/chat/session`, null, {
           params: chatData,
         });
@@ -174,9 +149,9 @@ export function Messages({
           axios.isAxiosError(chatError) &&
           chatError.response?.status === 400
         ) {
-          console.log("Чат уже существует, пропускаем создание");
+          console.log("Чат уже существует");
         } else {
-          throw chatError; // Перебрасываем другие ошибки
+          console.error("Ошибка при создании чата:", chatError);
         }
       }
 
@@ -186,82 +161,41 @@ export function Messages({
         projectMembersData
       );
 
-      // Обновляем данные
+      // Обновляем UI
+      setMessage(prev => prev.map(mes => 
+        mes.id === notificationId ? { ...mes, status: "accepted" } : mes
+      ));
+
       if (getNotifications) {
         await getNotifications();
       }
-      setNotificationId(null);
-      await getMessage();
     } catch (error) {
       console.error("Ошибка при принятии уведомления:", error);
-      // Здесь можно добавить обработку ошибки, например, показать сообщение пользователю
     }
   };
 
-  const deleteMessage = async () => {
-    if (!deleteNotificationId) return;
+  const deleteMessage = async (notificationId: number) => {
+    try {
+      // Находим уведомление для получения данных
+      const notification = message.find(mes => mes.id === notificationId);
+      if (!notification) return;
 
-    await axios.delete(
-      `http://127.0.0.1:8000/notifications/delete-notification/${deleteNotificationId}`
-    );
+      // Удаляем уведомление на сервере
+      await axios.delete(
+        `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
+      );
 
-    localStorage.removeItem(`notification_${deleteNotificationId}`);
-    if (getNotifications) {
-      await getNotifications();
+
+      // Обновляем UI
+      setMessage(prev => prev.filter(mes => mes.id !== notificationId));
+
+      if (getNotifications) {
+        await getNotifications();
+      }
+    } catch (error) {
+      console.error("Ошибка при удалении уведомления:", error);
     }
-    setDeleteNotificationId(null);
-    await getMessage();
   };
-
-  if (!isAuthtozise) {
-    return (
-      <div className={styles["modal_main"]} onClick={handleClickOutside}>
-        <div className={styles["modal_secondary"]}>
-          <div className={styles.auth}>
-            <Bell size={75} className={styles.icon} />
-            <b>
-              Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы
-              иметь возможность получать уведомления
-            </b>
-            <Button
-              appearence="small"
-              className={styles["button_register_info"]}
-              onClick={() => setModalOpen(true)}
-            >
-              Зарегистрироваться
-            </Button>
-          </div>
-          {modalOpen && (
-            <div className={styles["modal_main"]}>
-              <div className={styles["modal_secondary"]}>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className={styles["close"]}
-                >
-                  ✖
-                </button>
-                <Modal closeModal={closeModal} setIsAuth={setIsAuth} />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className={styles["modal_main"]} onClick={handleClickOutside}>
-        <div className={styles["modal_secondary"]}>
-          <div className={styles.header}>
-            <p>Уведомления</p>
-            <Ellipsis size={20} />
-          </div>
-          <div>Загрузка...</div>
-        </div>
-      </div>
-    );
-  }
 
   if (message.length === 0) {
     return (
@@ -269,7 +203,6 @@ export function Messages({
         <div className={styles["modal_secondary"]}>
           <div className={styles.header}>
             <p>Уведомления</p>
-            <Ellipsis size={20} />
           </div>
           <div className={styles.messages_block}>
             <Bell size={75} className={styles.icon} />
@@ -284,30 +217,48 @@ export function Messages({
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className={styles["modal_main"]} onClick={handleClickOutside}>
+        <div className={styles["modal_secondary"]}>
+          <div className={styles.header}>
+            <p>Уведомления</p>
+          </div>
+          <div>Загрузка...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles["modal_main"]} onClick={handleClickOutside}>
       <div className={styles["modal_secondary"]}>
         <div className={styles.header}>
           <p>Уведомления</p>
-          <Ellipsis size={20} />
         </div>
         {message.map((mes) => (
           <div key={mes.id} className={styles.main}>
             <div className={styles.new_message}>
               <p>{mes.text}</p>
-              {mes.status === "rejected" && (
-                <CircleX className={styles.icon} onClick={deleteMessage} />
-              )}
-              {mes.status === "accepted" && (
-                <CircleX className={styles.icon} onClick={deleteMessage} />
+              {(mes.status === "rejected" || mes.status === "accepted") && (
+                <CircleX 
+                  className={styles.icon} 
+                  onClick={() => deleteMessage(mes.id)} 
+                />
               )}
             </div>
             {mes.status === "pending" && (
               <div className={styles.message_buttons}>
-                <button className={styles.button_add} onClick={acceptMessage}>
+                <button 
+                  className={styles.button_add} 
+                  onClick={() => acceptMessage(mes.id)}
+                >
                   Принять
                 </button>
-                <button className={styles.button_close} onClick={rejectMessage}>
+                <button 
+                  className={styles.button_close} 
+                  onClick={() => rejectMessage(mes.id)}
+                >
                   Отклонить
                 </button>
               </div>

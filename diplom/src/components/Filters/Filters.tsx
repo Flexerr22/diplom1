@@ -1,5 +1,4 @@
 import { FiltersCheckboxGroup } from "../FiltersCheckboxGroup/FiltersCheckboxGroup";
-import { SortPopup } from "../SortPopup/sortpopup";
 import styles from "./Filters.module.css";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
@@ -29,10 +28,10 @@ const stages = [
 ];
 
 const mentorExperience = [
-  "от 1-3 лет",
-  "от 3-6 лет",
-  "от 6 до 9 лет",
-  "более 10 лет",
+  "от 1 до 36 мес.",
+  "от 36 до 72 мес.",
+  "от 72 до 108 мес.",
+  "более 108 мес.",
 ];
 
 const investment = [
@@ -57,6 +56,7 @@ export function Filters({
   onInvestChange,
 }: FiltersProps) {
   const [userRole, setUserRole] = useState("");
+  
   useEffect(() => {
     const role = Cookies.get("role");
     if (role) {
@@ -65,7 +65,6 @@ export function Filters({
   }, []);
   return (
     <div className={styles["main"]}>
-      <SortPopup />
       <div className={styles["checkbox"]}>
         <p className={styles["title"]}>Фильтрация</p>
         <div className={styles["checkbox_group"]}>
@@ -104,7 +103,7 @@ export function Filters({
             <FiltersCheckboxGroup
               name="new"
               className={styles["filter"]}
-              title="Требуемые инвестиции"
+              title="Бюджет инвестора"
               defaultItems={investment.map((invest) => ({
                 text: invest,
                 value: invest,

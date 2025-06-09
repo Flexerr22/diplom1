@@ -24,76 +24,64 @@ export function Product({
   const [notificationId, setNotificationId] = useState<number | null>(null);
 
   useEffect(() => {
-    const favorites = JSON.parse(
-      localStorage.getItem("favorites_user") || "[]"
-    );
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     if (favorites.includes(id)) {
       setIsAdd(true);
     }
 
-    const notificationKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith("notification_")
-    );
+    // Используем уникальный ключ для проекта
+    const storageKey = `project_notification_${user_id}_${id}`;
+    const notificationData = localStorage.getItem(storageKey);
     
-    for (const key of notificationKeys) {
-      const notification = JSON.parse(localStorage.getItem(key) || "{}");
-      if (notification.notificationId && notification.status === "pending") {
-        setIsSending(true);
-        setNotificationId(notification.notificationId);
-        break;
-      }
-      if (notification.notificationId && notification.status === "accepted") {
-        setIsAccept(true);
-        setNotificationId(notification.notificationId);
-        break;
-      }
-      if (notification.notificationId && notification.status === "rejected") {
-        setIsReject(true);
-        setNotificationId(notification.notificationId);
-        break;
-      }
+    if (notificationData) {
+      const notification = JSON.parse(notificationData);
+      setNotificationId(notification.notificationId);
+      setIsSending(notification.status === "pending");
+      setIsAccept(notification.status === "accepted");
+      setIsReject(notification.status === "rejected");
     }
+
     checkExistingNotification();
-  }, [id]);
+  }, [id, user_id]); // Добавляем user_id в зависимости
 
   const checkExistingNotification = async () => {
     const jwt = Cookies.get("jwt");
-    if (!jwt ) return;
+    if (!jwt) return;
   
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
-      const user_id = parseInt(decoded.sub, 10);
+      const current_user_id = parseInt(decoded.sub, 10);
   
       const response = await axios.get<MessageProps[]>(
-        `http://127.0.0.1:8000/notifications/user-notifications/${user_id}`
+        `http://127.0.0.1:8000/notifications/user-notifications/${current_user_id}`
       );
   
+      // Ищем уведомление для этого проекта и текущего пользователя как отправителя
       const existingNotification = response.data.find(
         (notif) =>
           notif.project_id === id &&
-          notif.recipient_id === id
+          notif.sender_id === current_user_id
       );
   
       if (existingNotification) {
-        setNotificationId(existingNotification.id);
-        setIsSending(existingNotification.status === "pending");
-        setIsAccept(existingNotification.status === "accepted");
-        setIsAccept(existingNotification.status === "rejected");
+        const storageKey = `project_notification_${user_id}_${id}`;
         
         localStorage.setItem(
-          `notification_${existingNotification.id}`,
+          storageKey,
           JSON.stringify({
             status: existingNotification.status,
             notificationId: existingNotification.id,
-            project_id: id,
-            recipient_id: id,
-            timestamp: new Date().toISOString()
           })
         );
+        
+        setNotificationId(existingNotification.id);
+        setIsSending(existingNotification.status === "pending");
+        setIsAccept(existingNotification.status === "accepted");
+        setIsReject(existingNotification.status === "rejected");
       } else {
-        if (notificationId) {
-          localStorage.removeItem(`notification_${notificationId}`);
-        }
+        const storageKey = `project_notification_${user_id}_${id}`;
+        localStorage.removeItem(storageKey);
+        
         setIsSending(false);
         setIsAccept(false);
         setIsReject(false);
@@ -112,12 +100,11 @@ export function Product({
     }
 
     const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = parseInt(decoded.sub, 10);
-    const project_id = id;
+    const current_user_id = parseInt(decoded.sub, 10);
 
     try {
       await axios.post(
-        `http://127.0.0.1:8000/users/favorites/add-to-favorites/${user_id}/${project_id}`
+        `http://127.0.0.1:8000/users/favorites/add-to-favorites/${current_user_id}/${id}`
       );
       setIsAdd(true);
 
@@ -143,41 +130,40 @@ export function Product({
 
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const sender_id = parseInt(decoded.sub, 10);
-      const recipient_id = user_id;
 
       if (sender_id === user_id) {
         alert("Нельзя отправить запрос самому себе!");
         return;
       }
+
+      const projectResponse = await axios.get(`http://127.0.0.1:8000/projects/${id}`);
+      const userResponse = await axios.get(`http://127.0.0.1:8000/users/${sender_id}`);
+
       const notificationData = {
         project_id: id,
-        recipient_id: user_id,
+        recipient_id: user_id, // Владелец проекта
         sender_id,
         status: "pending",
-        text: `Пользователь хочет сотрудничать по проекту "${title}"`,
+        text: `Пользователь ${userResponse.data.name} хочет сотрудничать по проекту "${projectResponse.data.title}"`,
       };
-      console.log(notificationData);
+
       const response = await axios.post<MessageProps>(
-        `http://127.0.0.1:8000/notifications/send-notification/${recipient_id}`,
+        `http://127.0.0.1:8000/notifications/send-notification/${user_id}`,
         notificationData
       );
 
+      // Используем уникальный ключ для проекта
+      const storageKey = `project_notification_${user_id}_${id}`;
       localStorage.setItem(
-        `notification_${response.data.id}`,
+        storageKey,
         JSON.stringify({
           status: "pending",
-          project_id: response.data.project_id,
-          recipient_id: response.data.recipient_id,
-          sender_id: response.data.sender_id,
           notificationId: response.data.id,
         })
       );
 
       setNotificationId(response.data.id);
-      setIsSending(true);
       alert("Запрос отправлен!");
-
-      // Проверяем сразу после отправки
       await checkExistingNotification();
     } catch (error) {
       console.error("Ошибка при отправке:", error);
@@ -194,13 +180,13 @@ export function Product({
         `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
       );
 
+      // Удаляем по уникальному ключу
+      const storageKey = `project_notification_${user_id}_${id}`;
+      localStorage.removeItem(storageKey);
+
       setNotificationId(null);
       setIsSending(false);
-
-      localStorage.removeItem("notification");
       alert("Заявка отменена");
-
-      // Проверяем сразу после удаления
       await checkExistingNotification();
     } catch (error) {
       console.error("Ошибка при отмене:", error);

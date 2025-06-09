@@ -12,6 +12,7 @@ import { RatingAllProps } from "../../types/rating_all.props";
 
 interface RatingWithSender extends RatingAllProps {
   senderName: string;
+  senderAvatar: string | null; // Добавляем поле для аватара
 }
 
 export function UserInfo() {
@@ -81,7 +82,7 @@ export function UserInfo() {
       `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
     );
 
-    // Загружаем имена для всех отправителей
+    // Загружаем имена и аватары для всех отправителей
     const ratingsWithSenders = await Promise.all(
       response.data.map(async (ratingItem) => {
         try {
@@ -91,19 +92,21 @@ export function UserInfo() {
           return {
             ...ratingItem,
             senderName: senderResponse.data.name,
+            senderAvatar: senderResponse.data.avatar // Добавляем аватар
           };
         } catch (error) {
-          console.error("Ошибка при получении имени отправителя:", error);
+          console.error("Ошибка при получении данных отправителя:", error);
           return {
             ...ratingItem,
             senderName: "Неизвестный пользователь",
+            senderAvatar: null
           };
         }
       })
     );
 
     setRating(ratingsWithSenders);
-    console.log("Ratings with sender names:", ratingsWithSenders);
+    console.log("Ratings with sender data:", ratingsWithSenders);
   } catch (error) {
     console.error("Ошибка при получении оценок:", error);
   }
@@ -120,7 +123,7 @@ export function UserInfo() {
         <div className={styles.main}>
           <div className={styles.form}>
             <div className={styles.username}>
-              <h2>Пользователь:</h2>
+              <h2>Имя:</h2>
               <h2>{user.name}</h2>
             </div>
             <div className={styles.main_info}>
@@ -203,64 +206,85 @@ export function UserInfo() {
             </div>
           </div>
           <div className={styles.rating_block}>
-            <p>Отзывы, которые были оставлены пользователю</p>
+            <h3>Отзывы</h3>
             {rating.length > 0 ? (
-              <div className={styles.sliderContainer}>
-                <button onClick={prevSlide} className={styles.sliderButton}>
+              <div className={styles.reviewsContainer}>
+                <button onClick={prevSlide} className={styles.navButton}>
                   <CircleArrowLeft />
                 </button>
-                <div className={styles.sliderContent}>
-                  <div className={styles.rating}>
-                    <div className={styles.user_rating}>
-                      <p>{rating[currentSlide].senderName}</p>
-                      <div className={styles.rating_avg1}>
-                        <p>{rating[currentSlide].amount}</p>
-                        <span>★</span>
+                
+                <div className={styles.reviewCard}>
+                  <div className={styles.reviewHeader}>
+                    {rating[currentSlide].senderAvatar ? (
+                      <img 
+                        src={`http://127.0.0.1:8000/${rating[currentSlide].senderAvatar}`}
+                        alt={`Аватар ${rating[currentSlide].senderName}`}
+                        className={styles.senderAvatar}
+                        width={50} 
+                        height={50}
+                      />
+                    ) : (
+                      <div className={styles.avatarPlaceholder}>
+                        {rating[currentSlide].senderName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <h4>{rating[currentSlide].senderName}</h4>
+                      <div className={styles.ratingStars}>
+                        {'★'.repeat(Math.floor(rating[currentSlide].amount))}
+                        {'☆'.repeat(5 - Math.floor(rating[currentSlide].amount))}
                       </div>
                     </div>
-                    <p>{rating[currentSlide].review}</p>
+                  </div>
+                  <div className={styles.reviewText}>
+                    "{rating[currentSlide].review}"
                   </div>
                 </div>
-                <button onClick={nextSlide} className={styles.sliderButton}>
+                
+                <button onClick={nextSlide} className={styles.navButton}>
                   <CircleArrowRight />
                 </button>
               </div>
             ) : (
-              <p>Пока нет отзывов</p>
+              <p className={styles.noReviews}>Пока нет отзывов</p>
             )}
+            
             {rating.length > 1 && (
-              <div className={styles.sliderDots}>
+              <div className={styles.dotsContainer}>
                 {rating.map((_, index) => (
-                  <span
+                  <button
                     key={index}
-                    className={`${styles.dot} ${
-                      index === currentSlide ? styles.activeDot : ""
-                    }`}
+                    className={`${styles.dot} ${index === currentSlide ? styles.activeDot : ''}`}
                     onClick={() => setCurrentSlide(index)}
+                    aria-label={`Перейти к отзыву ${index + 1}`}
                   />
                 ))}
               </div>
             )}
           </div>
           <b className={styles.title}>Последние успешные проекты</b>
-          <div className={styles["products"]}>
-            {projects.map((item, index) => (
-              <ProjectLast
-                key={index}
-                id={item.id}
-                title={item.title}
-                tagline={item.tagline}
-                investment={item.investment}
-                category={item.category}
-                budget={item.budget}
-                experience={item.experience}
-                role={item.role}
-                description={item.description}
-                skills={item.skills}
-                user_id={item.user_id}
-              />
-            ))}
-          </div>
+          {projects.length > 0 ? (
+            <div className={styles["products"]}>
+              {projects.map((item, index) => (
+                <ProjectLast
+                  key={index}
+                  id={item.id}
+                  title={item.title}
+                  tagline={item.tagline}
+                  investment={item.investment}
+                  category={item.category}
+                  budget={item.budget}
+                  experience={item.experience}
+                  role={item.role}
+                  description={item.description}
+                  skills={item.skills}
+                  user_id={item.user_id}
+                />
+              ))}
+            </div>
+          ): (
+            <p className={styles.noReviews}>Пользователь пока не добавил последние успешные проекты</p>
+          )}
         </div>
       </Container>
     </>
