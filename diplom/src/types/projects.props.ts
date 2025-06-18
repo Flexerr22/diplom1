@@ -23,6 +23,7 @@ export interface ProductProps {
   user_id: number;
 }
 export interface CreateProjectRequest {
+  id?: number;
   title: string;
   description: string;
   tagline?: string;

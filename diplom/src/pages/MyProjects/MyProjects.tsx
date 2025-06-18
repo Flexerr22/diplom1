@@ -7,6 +7,7 @@ import styles from "./MyProjects.module.css";
 import Button from "../../components/Button/Button";
 import { MyProject } from "../../components/MyProject/MyProject";
 import { ProductProps } from "../../types/projects.props";
+import { Footer } from "../../components/Footer/Footer";
 
 function MyProjects() {
   const { user_id } = useParams<{ user_id: string }>();
@@ -63,6 +64,7 @@ function MyProjects() {
           </div>
         )}
       </Container>
+      <Footer />
     </>
   );
 }

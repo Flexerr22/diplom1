@@ -10,20 +10,21 @@ import { MyProjectUser } from "../../components/MyProjectUser/MyProjectUser";
 import { ProductProps, RolesGroupProps } from "../../types/projects.props";
 import Button from "../../components/Button/Button";
 import { Modal } from "../../components/Modal/Modal";
+import { Footer } from "../../components/Footer/Footer";
 
 function Favourites() {
   const [projects, setProjects] = useState<ProductProps[]>([]);
   const [projectsUser, setProjectsUser] = useState<RolesGroupProps[]>([]);
-  const [userRole, setUserRole] = useState("")
+  const [userRole, setUserRole] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [isAuthtozise, setIsAuthtorize] = useState(false);
 
   useEffect(() => {
     const role = Cookies.get("role");
-    if(role){
-      setUserRole(role)
+    if (role) {
+      setUserRole(role);
     }
-  })
+  });
 
   useEffect(() => {
     const jwt = Cookies.get("jwt");
@@ -73,58 +74,61 @@ function Favourites() {
     }
   };
 
-  if(!isAuthtozise){
+  if (!isAuthtozise) {
     return (
       <>
-      <Header />
-      <Container>
-        <div className={styles.auth}>
-        <b>Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы иметь возможность добавлять в избранное</b>
-          <Button
-            appearence="big"
-            className={styles["button_register_info"]}
-            onClick={() => setModalOpen(true)}
-          >
-            Зарегистрироваться
-          </Button>
+        <Header />
+        <Container>
+          <div className={styles.auth}>
+            <b>
+              Вы еще неавторизованы в системе. Пожалуйста авторизуйтесь чтобы
+              иметь возможность добавлять в избранное
+            </b>
+            <Button
+              appearence="big"
+              className={styles["button_register_info"]}
+              onClick={() => setModalOpen(true)}
+            >
+              Зарегистрироваться
+            </Button>
           </div>
-        {modalOpen && (
-          <div className={styles["modal_main"]}>
-            <div className={styles["modal_secondary"]}>
-              <button
-                      onClick={() => setModalOpen(false)}
-                      className={styles["close"]}
-                    >
-                      ✖
-                    </button>
-              <Modal 
-                closeModal={() => setModalOpen(false)} 
-                setIsAuth={(value) => {
-                  setIsAuthtorize(value);
-                  setModalOpen(false);
-                }} 
-              />
+          {modalOpen && (
+            <div className={styles["modal_main"]}>
+              <div className={styles["modal_secondary"]}>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className={styles["close"]}
+                >
+                  ✖
+                </button>
+                <Modal
+                  closeModal={() => setModalOpen(false)}
+                  setIsAuth={(value) => {
+                    setIsAuthtorize(value);
+                    setModalOpen(false);
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </Container>
-    </>
-    )
+      </>
+    );
   }
 
   if (projects.length === 0 && projectsUser.length === 0) {
-    const searchLink = userRole === 'entrepreneur' ? '/mentor' : '/projects'
+    const searchLink = userRole === "entrepreneur" ? "/mentor" : "/projects";
     return (
       <>
-      <Header />
-      <Container>
-        <div className={styles.project_no}>
-          <p>Добавьте проекты или пользователей, которые вам понравились</p>
+        <Header />
+        <Container>
+          <div className={styles.project_no}>
+            <p>Добавьте проекты или пользователей, которые вам понравились</p>
             <a href={searchLink}>
               <Button appearence="small">Добавить</Button>
             </a>
-        </div>
-      </Container>
+          </div>
+        </Container>
       </>
     );
   }
@@ -153,7 +157,8 @@ function Favourites() {
                   experience={item.experience}
                   role={item.role}
                   description={item.description}
-                  skills={item.skills}                />
+                  skills={item.skills}
+                />
               ))}
             </div>
             <div className={styles["products"]}>
@@ -173,6 +178,7 @@ function Favourites() {
           </div>
         )}
       </Container>
+      <Footer />
     </>
   );
 }

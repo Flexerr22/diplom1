@@ -18,7 +18,7 @@ interface LoginComponentProps {
 
 interface RatingWithSender extends RatingAllProps {
   senderName: string;
-  senderAvatar: string | null; // Добавляем поле для аватара
+  senderAvatar: string | null;
 }
 
 export function Profile({
@@ -48,15 +48,6 @@ export function Profile({
     investmentFocus: "",
   });
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? rating.length - 1 : prev - 1));
-  };
-
-  // Списки для выпадающих списков
   const specializations = [
     "Программирование",
     "Дизайн",
@@ -83,6 +74,15 @@ export function Profile({
     "Искусство и культура",
   ];
 
+  // Навигация по отзывам
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? rating.length - 1 : prev - 1));
+  };
+
   useEffect(() => {
     getRating();
     getRatingAvg();
@@ -99,28 +99,37 @@ export function Profile({
       navigate("/");
     } catch (e) {
       if (e instanceof AxiosError) {
-        console.log("Ошибка");
+        console.log("Ошибка выхода");
       }
     }
   };
 
-  const validateInput = (value: string): boolean => {
-    // Проверка на недопустимые символы
-    const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
-    if (!regex.test(value)) {
+  const validateInput = (value: string, fieldName: string): boolean => {
+    // Для числовых полей
+    const numericFields = ["experience", "budget"];
+    if (numericFields.includes(fieldName)) {
+      const numValue = parseFloat(value);
+      if (isNaN(numValue) && value !== "") return false;
+      if (numValue < 0) {
+        setError("Нельзя вводить отрицательные числа");
+        return false;
+      }
+    }
+
+    // Для текстовых полей
+    const textRegex = /^[a-zA-Zа-яА-ЯёЁ0-9\s.,!?()%:\-@]*$/;
+    if (!textRegex.test(value)) {
       setError(
-        "Недопустимые символы. Разрешены только буквы, цифры, пробелы и @_."
+        "Недопустимые символы. Разрешены только буквы, цифры и основные знаки препинания."
       );
       return false;
     }
 
-    // Проверка на множественные пробелы
     if (/\s{2,}/.test(value)) {
-      setError("Нельзя вводить более одного пробела подряд.");
+      setError("Нельзя вводить более одного пробела подряд");
       return false;
     }
 
-    // Проверка, что есть хотя бы один не-пробельный символ
     if (/^\s*$/.test(value) && value !== "") {
       setError("Введите хотя бы один символ (не пробел)");
       return false;
@@ -132,12 +141,10 @@ export function Profile({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = event.target;
-
     if (name === "avatar" && files && files[0]) {
       const selectedFile = files[0];
       setFile(selectedFile);
 
-      // Создаем превью для изображения
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
@@ -153,64 +160,56 @@ export function Profile({
   };
 
   const getRating = async () => {
-  const jwt = Cookies.get("jwt");
-  if (!jwt) {
-    console.error("JWT-токен отсутствует");
-    return;
-  }
-
-  try {
-    const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = decoded.sub;
-
-    const response = await axios.get<RatingAllProps[]>(
-      `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
-    );
-
-    // Загружаем имена и аватары для всех отправителей
-    const ratingsWithSenders = await Promise.all(
-      response.data.map(async (ratingItem) => {
-        try {
-          const senderResponse = await axios.get<ProfileInfo>(
-            `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
-          );
-          return {
-            ...ratingItem,
-            senderName: senderResponse.data.name,
-            senderAvatar: senderResponse.data.avatar // Добавляем аватар
-          };
-        } catch (error) {
-          console.error("Ошибка при получении данных отправителя:", error);
-          return {
-            ...ratingItem,
-            senderName: "Неизвестный пользователь",
-            senderAvatar: null
-          };
-        }
-      })
-    );
-
-    setRating(ratingsWithSenders);
-    console.log("Ratings with sender data:", ratingsWithSenders);
-  } catch (error) {
-    console.error("Ошибка при получении оценок:", error);
-  }
-};
-
-  const getRatingAvg = async () => {
     const jwt = Cookies.get("jwt");
-    if (!jwt) {
-      console.error("JWT-токен отсутствует");
-      return;
-    }
+    if (!jwt) return;
+
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = decoded.sub;
-      const responce = await axios.get<RatingProps>(
+
+      const response = await axios.get<RatingAllProps[]>(
+        `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
+      );
+
+      const ratingsWithSenders = await Promise.all(
+        response.data.map(async (ratingItem) => {
+          try {
+            const senderResponse = await axios.get<ProfileInfo>(
+              `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
+            );
+            return {
+              ...ratingItem,
+              senderName: senderResponse.data.name,
+              senderAvatar: senderResponse.data.avatar,
+            };
+          } catch (error) {
+            console.error("Ошибка при получении данных отправителя:", error);
+            return {
+              ...ratingItem,
+              senderName: "Неизвестный пользователь",
+              senderAvatar: null,
+            };
+          }
+        })
+      );
+
+      setRating(ratingsWithSenders);
+    } catch (error) {
+      console.error("Ошибка при получении оценок:", error);
+    }
+  };
+
+  const getRatingAvg = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = decoded.sub;
+      const response = await axios.get<RatingProps>(
         `http://127.0.0.1:8000/ratings/get-avg-rating/${user_id}`
       );
-      setRatingAvg(responce.data);
-      console.log(responce.data);
+      setRatingAvg(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -218,10 +217,7 @@ export function Profile({
 
   const getUserProfile = async () => {
     const jwt = Cookies.get("jwt");
-    if (!jwt) {
-      console.error("JWT-токен отсутствует");
-      return;
-    }
+    if (!jwt) return;
 
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
@@ -240,7 +236,7 @@ export function Profile({
   const handleEditProfile = async () => {
     const jwt = Cookies.get("jwt");
     if (!jwt) {
-      console.error("JWT-токен отсутствует");
+      setError("Требуется авторизация");
       return;
     }
 
@@ -260,14 +256,11 @@ export function Profile({
 
     const role = Cookies.get("role") || "";
     const fieldsToCheck = requiredFields[role] || [];
-
-    // Собираем список незаполненных полей
     const emptyFields = fieldsToCheck.filter(
       (field) => !userEditData[field] || userEditData[field]?.trim() === ""
     );
 
     if (emptyFields.length > 0) {
-      // Преобразуем названия полей в читаемый формат
       const fieldNames: Record<string, string> = {
         name: "Имя",
         email: "Email",
@@ -283,55 +276,70 @@ export function Profile({
         .map((field) => `- ${fieldNames[field] || field}`)
         .join("\n")}`;
 
-      alert(errorMessage);
+      setError(errorMessage);
       return;
     }
 
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const user_id = decoded.sub;
-      
+
       const formData = new FormData();
 
       // Добавляем файл, если он есть
       if (file) {
         formData.append("avatar", file);
-        console.log("Файл добавлен в FormData");
-      } else {
-        console.log("Файл отсутствует");
       }
 
       // Добавляем остальные поля
-      formData.append("name", userEditData.name || "");
-      formData.append("email", userEditData.email || "");
-      formData.append("description", userEditData.description || "");
-      formData.append("specialization", userEditData.specialization || "");
-      formData.append("experience", userEditData.experience || "");
-      formData.append("skills", userEditData.skills || "");
-      formData.append("budget", userEditData.budget || "");
-      formData.append("investmentFocus", userEditData.investmentFocus || "");
+      Object.entries(userEditData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && key !== "avatar") {
+          formData.append(key, value.toString());
+        }
+      });
+
+      // Добавляем заголовки для FormData
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${jwt}`,
+        },
+      };
 
       const response = await axios.patch<ProfileInfo>(
         `http://127.0.0.1:8000/users/update-user/${user_id}`,
-        formData
+        formData,
+        config
       );
 
-      console.log("Обновленные данные:", response.data);
-
       // Обновляем состояние
-      setUserData((prev) => ({
-        ...prev,
-        ...response.data,
-      }));
+      setUserData(response.data);
       setPreviewImage(null);
-    setFile(null); // Очищаем состояние файла
-    setIsEditing(false);
+      setFile(null);
+      setIsEditing(false);
+      setError(null);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Ошибка сервера:", error.response?.data);
+        if (error.response?.status === 422) {
+          // Обработка ошибок валидации от сервера
+          const serverErrors = error.response.data?.detail || [];
+          const errorMessages = serverErrors
+            .map((err: any) => {
+              const field = err.loc?.[1] || "поле";
+              return `${field}: ${err.msg}`;
+            })
+            .join("\n");
+
+          setError(`Ошибки валидации:\n${errorMessages}`);
+        } else {
+          setError(
+            `Ошибка сервера: ${error.response?.data?.detail || error.message}`
+          );
+        }
       } else {
-        console.error("Неизвестная ошибка:", error);
+        setError("Неизвестная ошибка при обновлении профиля");
       }
+      console.error("Ошибка при обновлении профиля:", error);
     }
   };
 
@@ -342,17 +350,9 @@ export function Profile({
   ) => {
     const { name, value } = e.target;
 
-    // Проверка на специальные символы
-    if (!validateInput(value)) {
-      setError(
-        "Недопустимые символы. Разрешены только буквы, цифры и пробелы."
-      );
-      return;
-    }
+    if (!validateInput(value, name)) return;
 
-    // Убираем лишние пробелы и сохраняем как строку
     const trimmedValue = value.replace(/\s+/g, " ");
-
     setError(null);
     setUserEditData((prev) => ({
       ...prev,
@@ -364,16 +364,12 @@ export function Profile({
     const role = Cookies.get("role");
     const jwt = Cookies.get("jwt");
 
-    if (role) {
-      setUserRole(role);
-    }
-    if (jwt) {
-      getUserProfile();
-    }
+    if (role) setUserRole(role);
+    if (jwt) getUserProfile();
   }, []);
 
   if (!userData) {
-    return <div>Loading...</div>;
+    return <div>Загрузка...</div>;
   }
 
   return (
@@ -381,6 +377,8 @@ export function Profile({
       <div className={styles["modal_secondary"]}>
         <div className={styles.profile}>
           {error && <div className={styles.error}>{error}</div>}
+
+          {/* Блок с аватаром и рейтингом */}
           <div className={styles.profile_info_block}>
             <div className={styles.profile_info}>
               {isEditing ? (
@@ -394,21 +392,16 @@ export function Profile({
                   />
                   <div className={styles.avatar_preview}>
                     {previewImage ? (
-                      <img
-                        src={previewImage}
-                        alt="Предпросмотр аватара"
-                        className={styles.avatar_image}
-                      />
+                      <img src={previewImage} alt="Предпросмотр аватара" />
                     ) : userData?.avatar ? (
                       <img
                         src={`http://127.0.0.1:8000/${userData.avatar}`}
                         alt="Текущий аватар"
-                        className={styles.avatar_image}
                       />
                     ) : (
                       <div className={styles.upload_placeholder}>
-                        <span className={styles.plus_icon}>+</span>
-                        <span className={styles.upload_text}>Добавить фото</span>
+                        <span>+</span>
+                        <span>Добавить фото</span>
                       </div>
                     )}
                   </div>
@@ -419,30 +412,30 @@ export function Profile({
                     <img
                       src={`http://127.0.0.1:8000/${userData.avatar}`}
                       alt="Аватар пользователя"
-                      className={styles.avatar_image}
                     />
                   ) : (
-                    <div className={styles.default_avatar}>
-                      <span className={styles.default_icon}>👤</span>
-                    </div>
+                    <div className={styles.default_avatar}>👤</div>
                   )}
                 </div>
               )}
             </div>
-            {(userRole === 'mentor' || userRole === 'investor') && 
-               <div className={styles.profile_rating}>
-                  <p>Ваш рейтинг</p>
-                  {ratingAvg?.average_rating ? (
-                    <div className={styles.rating_avg}>
-                      <p>{ratingAvg.average_rating}</p>
-                      <span>★</span>
-                    </div>
-                  ) : (
-                    "Пока нет рейтинга"
-                  )}
-                </div>
-            }
+
+            {(userRole === "mentor" || userRole === "investor") && (
+              <div className={styles.profile_rating}>
+                <p>Ваш рейтинг</p>
+                {ratingAvg?.average_rating ? (
+                  <div className={styles.rating_avg}>
+                    <p>{ratingAvg.average_rating}</p>
+                    <span>★</span>
+                  </div>
+                ) : (
+                  "Пока нет рейтинга"
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Основная информация */}
           <div>
             <div className={styles.profile_info}>
               <label>Ваш email</label>
@@ -474,6 +467,7 @@ export function Profile({
             </div>
           </div>
 
+          {/* Общие поля */}
           <div className={styles.profile_info}>
             <label>Описание:</label>
             {isEditing ? (
@@ -485,9 +479,10 @@ export function Profile({
                 required
               />
             ) : (
-              <textarea>{userData.description}</textarea>
+              <p>{userData.description}</p>
             )}
           </div>
+
           <div className={styles.profile_info}>
             <label>Специализация:</label>
             {isEditing ? (
@@ -500,9 +495,9 @@ export function Profile({
                 <option value="" disabled>
                   Выберите специализацию
                 </option>
-                {specializations.map((specialization, index) => (
-                  <option key={index} value={specialization}>
-                    {specialization}
+                {specializations.map((spec, index) => (
+                  <option key={index} value={spec}>
+                    {spec}
                   </option>
                 ))}
               </select>
@@ -511,17 +506,21 @@ export function Profile({
             )}
           </div>
 
+          {/* Поля для наставника */}
           {userRole === "mentor" && (
             <>
               <div className={styles.profile_info}>
-                <label>Опыт работы ( в мес. ):</label>
+                <label>Опыт работы (в мес.):</label>
                 {isEditing ? (
                   <input
                     type="number"
                     name="experience"
                     value={userEditData.experience || ""}
                     onChange={handleInputChange}
-                    maxLength={30}
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "e") e.preventDefault();
+                    }}
                     required
                   />
                 ) : (
@@ -533,35 +532,37 @@ export function Profile({
                 {isEditing ? (
                   <textarea
                     name="skills"
-                    value={userEditData.skills}
+                    value={userEditData.skills || ""}
                     onChange={handleInputChange}
                     maxLength={50}
                     required
                   />
                 ) : (
-                  <textarea>{userData.skills}</textarea>
+                  <p>{userData.skills}</p>
                 )}
               </div>
             </>
           )}
 
+          {/* Поля для инвестора */}
           {userRole === "investor" && (
             <>
               <div className={styles.profile_info}>
-                <label>Бюджет ( в руб. ):</label>
+                <label>Бюджет (в руб.):</label>
                 {isEditing ? (
                   <input
                     type="number"
                     name="budget"
                     value={userEditData.budget || ""}
                     onChange={handleInputChange}
-                    maxLength={15}
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "e") e.preventDefault();
+                    }}
                     required
                   />
                 ) : (
-                  <p>
-                    {Number(userData.budget).toLocaleString('ru-RU')} ₽
-                  </p>
+                  <p>{Number(userData.budget).toLocaleString("ru-RU")} ₽</p>
                 )}
               </div>
               <div className={styles.profile_info}>
@@ -588,92 +589,100 @@ export function Profile({
               </div>
             </>
           )}
-          {(userRole === 'mentor' || userRole === 'investor') && (
-          <div className={styles.rating_block}>
-            <h3>Отзывы</h3>
-            {rating.length > 0 ? (
-              <div className={styles.reviewsContainer}>
-                <button onClick={prevSlide} className={styles.navButton}>
-                  <CircleArrowLeft />
-                </button>
-                
-                <div className={styles.reviewCard}>
-                  <div className={styles.reviewHeader}>
-                    {rating[currentSlide].senderAvatar ? (
-                      <img 
-                        src={`http://127.0.0.1:8000/${rating[currentSlide].senderAvatar}`}
-                        alt={`Аватар ${rating[currentSlide].senderName}`}
-                        className={styles.senderAvatar}
-                        width={50} 
-                        height={50}
-                      />
-                    ) : (
-                      <div className={styles.avatarPlaceholder}>
-                        {rating[currentSlide].senderName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <h4>{rating[currentSlide].senderName}</h4>
-                      <div className={styles.ratingStars}>
-                        {'★'.repeat(Math.floor(rating[currentSlide].amount))}
-                        {'☆'.repeat(5 - Math.floor(rating[currentSlide].amount))}
+
+          {/* Блок с отзывами */}
+          {(userRole === "mentor" || userRole === "investor") && (
+            <div className={styles.rating_block}>
+              <h3>Отзывы</h3>
+              {rating.length > 0 ? (
+                <div className={styles.reviewsContainer}>
+                  <button onClick={prevSlide} className={styles.navButton}>
+                    <CircleArrowLeft />
+                  </button>
+
+                  <div className={styles.reviewCard}>
+                    <div className={styles.reviewHeader}>
+                      {rating[currentSlide].senderAvatar ? (
+                        <img
+                          src={`http://127.0.0.1:8000/${rating[currentSlide].senderAvatar}`}
+                          alt={`Аватар ${rating[currentSlide].senderName}`}
+                          className={styles.senderAvatar}
+                        />
+                      ) : (
+                        <div className={styles.avatarPlaceholder}>
+                          {rating[currentSlide].senderName
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h4>{rating[currentSlide].senderName}</h4>
+                        <div className={styles.ratingStars}>
+                          {"★".repeat(Math.floor(rating[currentSlide].amount))}
+                          {"☆".repeat(
+                            5 - Math.floor(rating[currentSlide].amount)
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div className={styles.reviewText}>
+                      "{rating[currentSlide].review}"
+                    </div>
                   </div>
-                  <div className={styles.reviewText}>
-                    "{rating[currentSlide].review}"
-                  </div>
+
+                  <button onClick={nextSlide} className={styles.navButton}>
+                    <CircleArrowRight />
+                  </button>
                 </div>
-                
-                <button onClick={nextSlide} className={styles.navButton}>
-                  <CircleArrowRight />
+              ) : (
+                <p className={styles.noReviews}>Пока нет отзывов</p>
+              )}
+
+              {rating.length > 1 && (
+                <div className={styles.dotsContainer}>
+                  {rating.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`${styles.dot} ${
+                        index === currentSlide ? styles.activeDot : ""
+                      }`}
+                      onClick={() => setCurrentSlide(index)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Кнопки управления */}
+          <div className={styles.buttonsContainer}>
+            {isEditing ? (
+              <div className={styles.buttons_block}>
+                <button
+                  className={styles.profile_button}
+                  onClick={handleEditProfile}
+                >
+                  Сохранить изменения
+                </button>
+                <button
+                  className={styles.profile_button}
+                  onClick={() => setIsEditing(false)}
+                >
+                  Отмена
                 </button>
               </div>
             ) : (
-              <p className={styles.noReviews}>Пока нет отзывов</p>
-            )}
-            
-            {rating.length > 1 && (
-              <div className={styles.dotsContainer}>
-                {rating.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`${styles.dot} ${index === currentSlide ? styles.activeDot : ''}`}
-                    onClick={() => setCurrentSlide(index)}
-                    aria-label={`Перейти к отзыву ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-          )}
-
-          {isEditing ? (
-            <>
               <button
                 className={styles.profile_button}
-                onClick={handleEditProfile}
+                onClick={() => setIsEditing(true)}
               >
-                Сохранить изменения
+                Редактировать профиль
               </button>
-              <button
-                className={styles.profile_button}
-                onClick={() => setIsEditing(false)}
-              >
-                Отмена
-              </button>
-            </>
-          ) : (
-            <button
-              className={styles.profile_button}
-              onClick={() => setIsEditing(true)}
-            >
-              Редактировать профиль
+            )}
+            <button className={styles.profile_button} onClick={deleteProfile}>
+              Выйти из аккаунта
             </button>
-          )}
-          <button className={styles.profile_button} onClick={deleteProfile}>
-            Выйти из аккаунта
-          </button>
+          </div>
         </div>
       </div>
     </div>

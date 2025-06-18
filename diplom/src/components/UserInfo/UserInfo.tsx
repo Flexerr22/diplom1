@@ -2,17 +2,26 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Container } from "../Container/Container";
-import styles from "./UserInfo.module.css"; // Создайте файл стилей UserInfo.module.css
+import styles from "./UserInfo.module.css";
 import Header from "../Header/Header";
 import { ProjectLast } from "../ProjectLast/ProjectLast";
 import { ProductProps } from "../../types/projects.props";
 import { ProfileInfo } from "../../types/user.props";
-import { CircleArrowLeft, CircleArrowRight } from "lucide-react";
+import {
+  CircleArrowLeft,
+  CircleArrowRight,
+  CircleCheckBig,
+} from "lucide-react";
 import { RatingAllProps } from "../../types/rating_all.props";
+import Button from "../Button/Button";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
+import { MessageProps } from "../../types/message.props";
+import { Footer } from "../Footer/Footer";
 
 interface RatingWithSender extends RatingAllProps {
   senderName: string;
-  senderAvatar: string | null; // Добавляем поле для аватара
+  senderAvatar: string | null;
 }
 
 export function UserInfo() {
@@ -20,10 +29,19 @@ export function UserInfo() {
   const [user, setUser] = useState<ProfileInfo | null>(null);
   const [projects, setProjects] = useState<ProductProps[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [rating, setRating] = useState<RatingWithSender[]>([])
+  const [rating, setRating] = useState<RatingWithSender[]>([]);
+  const [isAdd, setIsAdd] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isAccept, setIsAccept] = useState(false);
+  const [isReject, setIsReject] = useState(false);
+  const [notificationId, setNotificationId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null
+  );
+  const [userProjects, setUserProjects] = useState<ProductProps[]>([]); // Проекты текущего пользователя
 
   const nextSlide = () => {
-  setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
+    setCurrentSlide((prev) => (prev === rating.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
@@ -31,34 +49,123 @@ export function UserInfo() {
   };
 
   const formatNumber = (value: number | string): string => {
-    // Если значение - строка, пытаемся преобразовать в число
-    const numberValue = typeof value === 'string' 
-      ? parseFloat(value) 
-      : value;
-    
-    // Проверяем, является ли значение числом
+    const numberValue = typeof value === "string" ? parseFloat(value) : value;
     if (isNaN(numberValue)) {
       return value.toString();
     }
-    
-    // Форматируем число с разделителями тысяч
-    return numberValue.toLocaleString('ru-RU', {
-      maximumFractionDigits: 2
+    return numberValue.toLocaleString("ru-RU", {
+      maximumFractionDigits: 2,
     });
   };
 
+  // Получаем проекты текущего авторизованного пользователя
+  const getCurrentUserProjects = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
+
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const current_user_id = parseInt(decoded.sub, 10);
+
+      const response = await axios.get<ProductProps[]>(
+        `http://127.0.0.1:8000/projects/my-projects/${current_user_id}`
+      );
+      setUserProjects(response.data);
+
+      if (response.data.length > 0) {
+        setSelectedProjectId(response.data[0].id);
+      }
+    } catch (error) {
+      console.error(
+        "Ошибка при получении проектов текущего пользователя:",
+        error
+      );
+    }
+  };
+
+  // Проверяем существующее уведомление
+  const checkExistingNotification = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt || selectedProjectId === null) return;
+
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const current_user_id = parseInt(decoded.sub, 10);
+
+      const response = await axios.get<MessageProps[]>(
+        `http://127.0.0.1:8000/notifications/user-notifications/${current_user_id}`
+      );
+
+      const existingNotification = response.data.find(
+        (notif) =>
+          notif.project_id === selectedProjectId &&
+          notif.recipient_id === Number(user_id)
+      );
+
+      const storageKey = `notification_${user_id}_${selectedProjectId}`;
+
+      if (existingNotification) {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            status: existingNotification.status,
+            notificationId: existingNotification.id,
+          })
+        );
+        setNotificationId(existingNotification.id);
+        setIsSending(existingNotification.status === "pending");
+        setIsAccept(existingNotification.status === "accepted");
+        setIsReject(existingNotification.status === "rejected");
+      } else {
+        localStorage.removeItem(storageKey);
+        setIsSending(false);
+        setIsAccept(false);
+        setIsReject(false);
+        setNotificationId(null);
+      }
+    } catch (error) {
+      console.error("Ошибка при проверке уведомлений:", error);
+    }
+  };
+
+  // Проверяем уведомление в localStorage
+  const checkLocalStorageNotification = () => {
+    if (selectedProjectId === null) return;
+
+    const storageKey = `notification_${user_id}_${selectedProjectId}`;
+    const notificationData = localStorage.getItem(storageKey);
+
+    if (notificationData) {
+      const parsed = JSON.parse(notificationData);
+      setNotificationId(parsed.notificationId);
+      setIsSending(parsed.status === "pending");
+      setIsAccept(parsed.status === "accepted");
+      setIsReject(parsed.status === "rejected");
+    } else {
+      setIsSending(false);
+      setIsAccept(false);
+      setIsReject(false);
+      setNotificationId(null);
+    }
+  };
+
   useEffect(() => {
+    const favorites = JSON.parse(
+      localStorage.getItem("favorites_user") || "[]"
+    );
+    setIsAdd(favorites.includes(Number(user_id)));
+
     const getMyProject = async () => {
       try {
         const response = await axios.get<ProductProps[]>(
           `http://127.0.0.1:8000/projects/my-projects/${user_id}`
         );
-        console.log("Данные получены:", response.data); // Отладочный вывод
         setProjects(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке проекта:", error);
       }
     };
+
     const getUserById = async () => {
       try {
         const response = await axios.get<ProfileInfo>(
@@ -69,48 +176,168 @@ export function UserInfo() {
         console.error("Ошибка при загрузке пользователя:", error);
       }
     };
+
     getMyProject();
     getRating();
     getUserById();
+    getCurrentUserProjects(); // Загружаем проекты текущего пользователя
   }, [user_id]);
 
+  useEffect(() => {
+    if (selectedProjectId !== null) {
+      checkExistingNotification();
+      checkLocalStorageNotification();
+    }
+  }, [selectedProjectId, user_id]);
+
+  const deleteMessage = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt || !notificationId || selectedProjectId === null) return;
+
+    try {
+      await axios.delete(
+        `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
+      );
+
+      const storageKey = `notification_${user_id}_${selectedProjectId}`;
+      localStorage.removeItem(storageKey);
+
+      setIsSending(false);
+      setNotificationId(null);
+      alert("Запрос отменен!");
+    } catch (error) {
+      console.error("Ошибка при отмене запроса:", error);
+      alert("Не удалось отменить запрос");
+    }
+  };
+
   const getRating = async () => {
+    try {
+      const response = await axios.get<RatingAllProps[]>(
+        `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
+      );
 
-  try {
+      const ratingsWithSenders = await Promise.all(
+        response.data.map(async (ratingItem) => {
+          try {
+            const senderResponse = await axios.get<ProfileInfo>(
+              `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
+            );
+            return {
+              ...ratingItem,
+              senderName: senderResponse.data.name,
+              senderAvatar: senderResponse.data.avatar,
+            };
+          } catch (error) {
+            console.error("Ошибка при получении данных отправителя:", error);
+            return {
+              ...ratingItem,
+              senderName: "Неизвестный пользователь",
+              senderAvatar: null,
+            };
+          }
+        })
+      );
 
-    const response = await axios.get<RatingAllProps[]>(
-      `http://127.0.0.1:8000/ratings/get-all-ratings/${user_id}`
-    );
+      setRating(ratingsWithSenders);
+    } catch (error) {
+      console.error("Ошибка при получении оценок:", error);
+    }
+  };
 
-    // Загружаем имена и аватары для всех отправителей
-    const ratingsWithSenders = await Promise.all(
-      response.data.map(async (ratingItem) => {
-        try {
-          const senderResponse = await axios.get<ProfileInfo>(
-            `http://127.0.0.1:8000/users/${ratingItem.sender_id}`
-          );
-          return {
-            ...ratingItem,
-            senderName: senderResponse.data.name,
-            senderAvatar: senderResponse.data.avatar // Добавляем аватар
-          };
-        } catch (error) {
-          console.error("Ошибка при получении данных отправителя:", error);
-          return {
-            ...ratingItem,
-            senderName: "Неизвестный пользователь",
-            senderAvatar: null
-          };
-        }
-      })
-    );
+  const addFavourites = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      console.error("JWT-токен отсутствует");
+      return;
+    }
 
-    setRating(ratingsWithSenders);
-    console.log("Ratings with sender data:", ratingsWithSenders);
-  } catch (error) {
-    console.error("Ошибка при получении оценок:", error);
-  }
-};
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const current_user_id = parseInt(decoded.sub, 10);
+
+    try {
+      await axios.post(
+        `http://127.0.0.1:8000/mentors-investors/favorites/add-to-favorites/${current_user_id}/${user_id}?favorite_user_id=${user_id}`
+      );
+      setIsAdd(true);
+
+      const favorites = JSON.parse(
+        localStorage.getItem("favorites_user") || "[]"
+      );
+      if (!favorites.includes(Number(user_id))) {
+        favorites.push(Number(user_id));
+        localStorage.setItem("favorites_user", JSON.stringify(favorites));
+      }
+    } catch (error) {
+      console.error("Ошибка сервера:", error);
+    }
+  };
+
+  const postMessage = async () => {
+    if (selectedProjectId === null) {
+      alert("Пожалуйста, выберите проект для сотрудничества");
+      return;
+    }
+
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      alert("Войдите в систему, чтобы отправить запрос");
+      return;
+    }
+
+    try {
+      setIsSending(true);
+
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const sender_id = parseInt(decoded.sub, 10);
+
+      if (sender_id === Number(user_id)) {
+        alert("Нельзя отправить запрос самому себе!");
+        return;
+      }
+
+      const projectResponse = await axios.get(
+        `http://127.0.0.1:8000/projects/${selectedProjectId}`
+      );
+      const userResponse = await axios.get(
+        `http://127.0.0.1:8000/users/${sender_id}`
+      );
+
+      const notificationData = {
+        project_id: selectedProjectId,
+        recipient_id: Number(user_id),
+        sender_id,
+        status: "pending",
+        text: `Пользователь ${userResponse.data.name} хочет сотрудничать по проекту "${projectResponse.data.title}"`,
+      };
+
+      const response = await axios.post<MessageProps>(
+        `http://127.0.0.1:8000/notifications/send-notification/${user_id}`,
+        notificationData
+      );
+
+      const storageKey = `notification_${user_id}_${selectedProjectId}`;
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          status: "pending",
+          notificationId: response.data.id,
+        })
+      );
+
+      setNotificationId(response.data.id);
+      alert("Запрос отправлен!");
+    } catch (error) {
+      console.error("Ошибка при отправке:", error);
+      alert("Не удалось отправить запрос");
+      setIsSending(false);
+    }
+  };
+
+  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newProjectId = Number(e.target.value);
+    setSelectedProjectId(newProjectId);
+  };
 
   if (!user) {
     return <div>Загрузка...</div>;
@@ -169,8 +396,7 @@ export function UserInfo() {
                 {user.skills && (
                   <div className={styles.field}>
                     <label>Навыки:</label>
-                    <input
-                      type="text"
+                    <textarea
                       value={user.skills}
                       readOnly
                       className={styles.input}
@@ -205,6 +431,54 @@ export function UserInfo() {
               </div>
             </div>
           </div>
+          <div className={styles.actions}>
+            {isAdd ? (
+              <CircleCheckBig className={styles.favoriteIcon} />
+            ) : (
+              <Button className={styles.button_product} onClick={addFavourites}>
+                Добавить в избранное
+              </Button>
+            )}
+
+            {/* Добавляем выбор проекта текущего пользователя */}
+            {userProjects.length > 0 && (
+              <>
+                <div className={styles["project-selector"]}>
+                  <label>Выберите проект:</label>
+                  <select
+                    onChange={handleProjectChange}
+                    value={selectedProjectId || ""}
+                  >
+                    {userProjects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {isAccept ? (
+                  <div className={styles.statusMessage}>Заявка принята</div>
+                ) : isReject ? (
+                  <div className={styles.statusMessage}>Заявка отклонена</div>
+                ) : isSending ? (
+                  <Button
+                    className={styles.button_product}
+                    onClick={deleteMessage}
+                  >
+                    Отменить заявку
+                  </Button>
+                ) : (
+                  <Button
+                    className={styles.button_product}
+                    onClick={postMessage}
+                  >
+                    Сотрудничать
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
           <div className={styles.rating_block}>
             <h3>Отзывы</h3>
             {rating.length > 0 ? (
@@ -212,27 +486,31 @@ export function UserInfo() {
                 <button onClick={prevSlide} className={styles.navButton}>
                   <CircleArrowLeft />
                 </button>
-                
+
                 <div className={styles.reviewCard}>
                   <div className={styles.reviewHeader}>
                     {rating[currentSlide].senderAvatar ? (
-                      <img 
+                      <img
                         src={`http://127.0.0.1:8000/${rating[currentSlide].senderAvatar}`}
                         alt={`Аватар ${rating[currentSlide].senderName}`}
                         className={styles.senderAvatar}
-                        width={50} 
+                        width={50}
                         height={50}
                       />
                     ) : (
                       <div className={styles.avatarPlaceholder}>
-                        {rating[currentSlide].senderName.charAt(0).toUpperCase()}
+                        {rating[currentSlide].senderName
+                          .charAt(0)
+                          .toUpperCase()}
                       </div>
                     )}
                     <div>
                       <h4>{rating[currentSlide].senderName}</h4>
                       <div className={styles.ratingStars}>
-                        {'★'.repeat(Math.floor(rating[currentSlide].amount))}
-                        {'☆'.repeat(5 - Math.floor(rating[currentSlide].amount))}
+                        {"★".repeat(Math.floor(rating[currentSlide].amount))}
+                        {"☆".repeat(
+                          5 - Math.floor(rating[currentSlide].amount)
+                        )}
                       </div>
                     </div>
                   </div>
@@ -240,7 +518,7 @@ export function UserInfo() {
                     "{rating[currentSlide].review}"
                   </div>
                 </div>
-                
+
                 <button onClick={nextSlide} className={styles.navButton}>
                   <CircleArrowRight />
                 </button>
@@ -248,13 +526,15 @@ export function UserInfo() {
             ) : (
               <p className={styles.noReviews}>Пока нет отзывов</p>
             )}
-            
+
             {rating.length > 1 && (
               <div className={styles.dotsContainer}>
                 {rating.map((_, index) => (
                   <button
                     key={index}
-                    className={`${styles.dot} ${index === currentSlide ? styles.activeDot : ''}`}
+                    className={`${styles.dot} ${
+                      index === currentSlide ? styles.activeDot : ""
+                    }`}
                     onClick={() => setCurrentSlide(index)}
                     aria-label={`Перейти к отзыву ${index + 1}`}
                   />
@@ -282,11 +562,14 @@ export function UserInfo() {
                 />
               ))}
             </div>
-          ): (
-            <p className={styles.noReviews}>Пользователь пока не добавил последние успешные проекты</p>
+          ) : (
+            <p className={styles.noReviews}>
+              Пользователь пока не добавил последние успешные проекты
+            </p>
           )}
         </div>
       </Container>
+      <Footer />
     </>
   );
 }

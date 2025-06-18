@@ -4,7 +4,7 @@
 .products {
   display: flex;
   flex-wrap: wrap;
-  gap: 44px;
+  gap: 40px;
   margin-top: 40px;
 }
 .error {

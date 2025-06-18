@@ -25,14 +25,12 @@ export function Product({
 
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    if (favorites.includes(id)) {
-      setIsAdd(true);
-    }
+    setIsAdd(favorites.includes(String(id))); // Сравниваем как строки
 
     // Используем уникальный ключ для проекта
     const storageKey = `project_notification_${user_id}_${id}`;
     const notificationData = localStorage.getItem(storageKey);
-    
+
     if (notificationData) {
       const notification = JSON.parse(notificationData);
       setNotificationId(notification.notificationId);
@@ -47,25 +45,24 @@ export function Product({
   const checkExistingNotification = async () => {
     const jwt = Cookies.get("jwt");
     if (!jwt) return;
-  
+
     try {
       const decoded = jwtDecode<{ sub: string }>(jwt);
       const current_user_id = parseInt(decoded.sub, 10);
-  
+
       const response = await axios.get<MessageProps[]>(
         `http://127.0.0.1:8000/notifications/user-notifications/${current_user_id}`
       );
-  
+
       // Ищем уведомление для этого проекта и текущего пользователя как отправителя
       const existingNotification = response.data.find(
         (notif) =>
-          notif.project_id === id &&
-          notif.sender_id === current_user_id
+          notif.project_id === id && notif.sender_id === current_user_id
       );
-  
+
       if (existingNotification) {
         const storageKey = `project_notification_${user_id}_${id}`;
-        
+
         localStorage.setItem(
           storageKey,
           JSON.stringify({
@@ -73,7 +70,7 @@ export function Product({
             notificationId: existingNotification.id,
           })
         );
-        
+
         setNotificationId(existingNotification.id);
         setIsSending(existingNotification.status === "pending");
         setIsAccept(existingNotification.status === "accepted");
@@ -81,7 +78,7 @@ export function Product({
       } else {
         const storageKey = `project_notification_${user_id}_${id}`;
         localStorage.removeItem(storageKey);
-        
+
         setIsSending(false);
         setIsAccept(false);
         setIsReject(false);
@@ -109,7 +106,8 @@ export function Product({
       setIsAdd(true);
 
       const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-      if (!favorites.includes(id)) {
+      const projectIdStr = String(id);
+      if (!favorites.includes(projectIdStr)) {
         favorites.push(id);
         localStorage.setItem("favorites", JSON.stringify(favorites));
       }
@@ -136,8 +134,12 @@ export function Product({
         return;
       }
 
-      const projectResponse = await axios.get(`http://127.0.0.1:8000/projects/${id}`);
-      const userResponse = await axios.get(`http://127.0.0.1:8000/users/${sender_id}`);
+      const projectResponse = await axios.get(
+        `http://127.0.0.1:8000/projects/${id}`
+      );
+      const userResponse = await axios.get(
+        `http://127.0.0.1:8000/users/${sender_id}`
+      );
 
       const notificationData = {
         project_id: id,
@@ -203,9 +205,7 @@ export function Product({
         </textarea>
         <div className={styles["price"]}>
           <b>Требуемые вложения:</b>
-          <p>
-            {Number(investment).toLocaleString('ru-RU')} ₽
-          </p>
+          <p>{Number(investment).toLocaleString("ru-RU")} ₽</p>
         </div>
         <div className={styles["reit"]}>
           <b>Специальность: </b>
@@ -226,25 +226,25 @@ export function Product({
             <Button className={styles["button_product"]}>Подробнее</Button>
           </Link>
           {isAccept ? (
-              <div className={styles.status_message}>
-                <b>Заявка принята</b>
-              </div>
-            ) : isReject ? (
-              <div className={styles.status_message}>
-                <b>Заявка отклонена</b>
-              </div>
-            ) : isSending ? (
-              <Button
-                className={styles["button_product"]}
-                onClick={deleteMessage}
-              >
-                Отменить заявку
-              </Button>
-            ) : (
-              <Button className={styles["button_product"]} onClick={postMessage}>
-                Сотрудничать
-              </Button>
-            )}
+            <div className={styles.status_message}>
+              <b>Заявка принята</b>
+            </div>
+          ) : isReject ? (
+            <div className={styles.status_message}>
+              <b>Заявка отклонена</b>
+            </div>
+          ) : isSending ? (
+            <Button
+              className={styles["button_product"]}
+              onClick={deleteMessage}
+            >
+              Отменить заявку
+            </Button>
+          ) : (
+            <Button className={styles["button_product"]} onClick={postMessage}>
+              Сотрудничать
+            </Button>
+          )}
         </div>
       </div>
     </div>

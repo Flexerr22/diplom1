@@ -10,6 +10,7 @@ import { Rating } from "../Rating/Rating";
 import { jwtDecode } from "jwt-decode";
 import { ProfileInfo } from "../../types/user.props";
 import { StepsProps } from "../../types/steps.props";
+import { Footer } from "../Footer/Footer";
 
 interface ProjectUser {
   id: number;
@@ -149,100 +150,102 @@ export function AcceptProject() {
   };
 
   const getSteps = async () => {
-  const jwt = Cookies.get("jwt");
-  if (!jwt || !projectId || !selectedUserId) return;
-  
-  try {
-    const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = parseInt(decoded.sub, 10);
+    const jwt = Cookies.get("jwt");
+    if (!jwt || !projectId || !selectedUserId) return;
 
-    // Запрос 1: где текущий пользователь - отправитель
-    const stepsAsSender = await axios.get<StepsProps[]>(
-      `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`
-    );
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
 
-    // Запрос 2: где текущий пользователь - получатель
-    const stepsAsRecipient = await axios.get<StepsProps[]>(
-      `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${selectedUserId}/${user_id}`
-    );
+      // Запрос 1: где текущий пользователь - отправитель
+      const stepsAsSender = await axios.get<StepsProps[]>(
+        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`
+      );
 
-    // Объединяем результаты
-    const allSteps = [...stepsAsSender.data, ...stepsAsRecipient.data];
-    setSteps(allSteps);
-  } catch (error) {
-    console.error(error);
-  }
-};
+      // Запрос 2: где текущий пользователь - получатель
+      const stepsAsRecipient = await axios.get<StepsProps[]>(
+        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${selectedUserId}/${user_id}`
+      );
+
+      // Объединяем результаты
+      const allSteps = [...stepsAsSender.data, ...stepsAsRecipient.data];
+      setSteps(allSteps);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const validateInput = (value: string): boolean => {
-  // Проверка на недопустимые символы
-  const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
-  if (!regex.test(value)) {
-    alert("Недопустимые символы. Разрешены только буквы, цифры, пробелы и .,:%!?()@_-");
-    return false;
-  }
+    // Проверка на недопустимые символы
+    const regex = /^[a-zA-Zа-яА-Я0-9\s.,:%!?()@_-]*$/;
+    if (!regex.test(value)) {
+      alert(
+        "Недопустимые символы. Разрешены только буквы, цифры, пробелы и .,:%!?()@_-"
+      );
+      return false;
+    }
 
-  // Проверка на множественные пробелы
-  if (/\s{2,}/.test(value)) {
-    alert("Нельзя вводить более одного пробела подряд.");
-    return false;
-  }
+    // Проверка на множественные пробелы
+    if (/\s{2,}/.test(value)) {
+      alert("Нельзя вводить более одного пробела подряд.");
+      return false;
+    }
 
-  // Проверка, что есть хотя бы один не-пробельный символ
-  if (/^\s*$/.test(value) && value !== "") {
-    alert("Введите хотя бы один символ (не пробел)");
-    return false;
-  }
+    // Проверка, что есть хотя бы один не-пробельный символ
+    if (/^\s*$/.test(value) && value !== "") {
+      alert("Введите хотя бы один символ (не пробел)");
+      return false;
+    }
 
-  // Проверка минимальной длины
-  if (value.trim().length < 3) {
-    alert("Название этапа должно содержать минимум 3 символа");
-    return false;
-  }
+    // Проверка минимальной длины
+    if (value.trim().length < 3) {
+      alert("Название этапа должно содержать минимум 3 символа");
+      return false;
+    }
 
-  // Проверка максимальной длины
-  if (value.length > 200) {
-    alert("Название этапа не должно превышать 200 символов");
-    return false;
-  }
+    // Проверка максимальной длины
+    if (value.length > 100) {
+      alert("Название этапа не должно превышать 100 символов");
+      return false;
+    }
 
-  return true;
-};
+    return true;
+  };
 
-const postSteps = async () => {
-  const jwt = Cookies.get("jwt");
-  if (!jwt) return;
-  
-  // Валидация ввода
-  if (!newStep.trim()) {
-    alert("Поле не может быть пустым");
-    return;
-  }
+  const postSteps = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) return;
 
-  if (!validateInput(newStep)) {
-    return;
-  }
+    // Валидация ввода
+    if (!newStep.trim()) {
+      alert("Поле не может быть пустым");
+      return;
+    }
 
-  try {
-    const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = parseInt(decoded.sub, 10);
+    if (!validateInput(newStep)) {
+      return;
+    }
 
-    const Steps = {
-      sender_id: user_id,
-      recipient_id: selectedUserId,
-      project_id: projectId,
-      status: "rejected",
-      step: newStep.trim(), // Удаляем лишние пробелы
-    };
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
 
-    await axios.post("http://127.0.0.1:8000/project-steps/add-step", Steps);
-    setNewStep(""); // Очищаем поле ввода
-    await getSteps(); // Обновляем список шагов
-  } catch (error) {
-    console.error(error);
-    alert("Произошла ошибка при добавлении этапа");
-  }
-};
+      const Steps = {
+        sender_id: user_id,
+        recipient_id: selectedUserId,
+        project_id: projectId,
+        status: "rejected",
+        step: newStep.trim(), // Удаляем лишние пробелы
+      };
+
+      await axios.post("http://127.0.0.1:8000/project-steps/add-step", Steps);
+      setNewStep(""); // Очищаем поле ввода
+      await getSteps(); // Обновляем список шагов
+    } catch (error) {
+      console.error(error);
+      alert("Произошла ошибка при добавлении этапа");
+    }
+  };
 
   const updateSteps = async (id: number) => {
     try {
@@ -280,35 +283,35 @@ const postSteps = async () => {
   };
 
   const deleteAllSteps = async () => {
-  const jwt = Cookies.get("jwt");
-  if (!jwt || !projectId || !selectedUserId) return;
-  
-  try {
-    const decoded = jwtDecode<{ sub: string }>(jwt);
-    const user_id = parseInt(decoded.sub, 10);
+    const jwt = Cookies.get("jwt");
+    if (!jwt || !projectId || !selectedUserId) return;
 
-    // Удаляем шаги в обоих направлениях
-    await Promise.all([
-      axios.delete(
-        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`,
-        { headers: { Authorization: `Bearer ${jwt}` } }
-      ),
-      axios.delete(
-        `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${selectedUserId}/${user_id}`,
-        { headers: { Authorization: `Bearer ${jwt}` } }
-      )
-    ]);
-    
-    // Обновляем список шагов после удаления
-    await getSteps();
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 404) {
-      console.log("Шагов для удаления не найдено");
-      return;
+    try {
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const user_id = parseInt(decoded.sub, 10);
+
+      // Удаляем шаги в обоих направлениях
+      await Promise.all([
+        axios.delete(
+          `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${user_id}/${selectedUserId}`,
+          { headers: { Authorization: `Bearer ${jwt}` } }
+        ),
+        axios.delete(
+          `http://127.0.0.1:8000/project-steps/project/${projectId}/users/${selectedUserId}/${user_id}`,
+          { headers: { Authorization: `Bearer ${jwt}` } }
+        ),
+      ]);
+
+      // Обновляем список шагов после удаления
+      await getSteps();
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        console.log("Шагов для удаления не найдено");
+        return;
+      }
+      console.error("Ошибка при удалении шагов:", error);
     }
-    console.error("Ошибка при удалении шагов:", error);
-  }
-};
+  };
 
   const completedCount = steps.filter(
     (step) => step.status === "accepted"
@@ -383,6 +386,7 @@ const postSteps = async () => {
                           className={
                             step.status === "accepted" ? styles.completed : ""
                           }
+                          maxLength={100}
                         >
                           {step.step}
                         </textarea>
@@ -685,6 +689,7 @@ const postSteps = async () => {
           )}
         </div>
       </Container>
+      <Footer />
     </>
   );
 }

@@ -5,25 +5,31 @@ import { useParams } from "react-router-dom";
 import Header from "../Header/Header";
 import { Container } from "../Container/Container";
 import { CreateProjectRequest } from "../../types/projects.props";
+import { MessageProps } from "../../types/message.props";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import Button from "../Button/Button";
+import { CircleCheckBig } from "lucide-react";
+import { Footer } from "../Footer/Footer";
 
 export function ProjectById() {
   const { project_id } = useParams<{ project_id: string }>();
   const [project, setProject] = useState<CreateProjectRequest | null>(null);
+  const [isAdd, setIsAdd] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isAccept, setIsAccept] = useState(false);
+  const [isReject, setIsReject] = useState(false);
+  const [notificationId, setNotificationId] = useState<number | null>(null);
 
   const formatNumber = (value: number | string): string => {
-    // Если значение - строка, пытаемся преобразовать в число
-    const numberValue = typeof value === 'string' 
-      ? parseFloat(value) 
-      : value;
-    
-    // Проверяем, является ли значение числом
+    const numberValue = typeof value === "string" ? parseFloat(value) : value;
+
     if (isNaN(numberValue)) {
       return value.toString();
     }
-    
-    // Форматируем число с разделителями тысяч
-    return numberValue.toLocaleString('ru-RU', {
-      maximumFractionDigits: 2
+
+    return numberValue.toLocaleString("ru-RU", {
+      maximumFractionDigits: 2,
     });
   };
 
@@ -34,6 +40,25 @@ export function ProjectById() {
           `http://127.0.0.1:8000/projects/${project_id}`
         );
         setProject(response.data);
+
+        // Check favorites status
+        const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+        setIsAdd(favorites.includes(String(response.data.id)));
+
+        // Проверяем статус заявки из localStorage, если пользователь авторизован
+        const jwt = Cookies.get("jwt");
+        if (jwt && response.data) {
+          const storageKey = `project_notification_${response.data.user_id}_${response.data.id}`;
+          const notificationData = localStorage.getItem(storageKey);
+
+          if (notificationData) {
+            const { status, notificationId } = JSON.parse(notificationData);
+            setNotificationId(notificationId);
+            setIsSending(status === "pending");
+            setIsAccept(status === "accepted");
+            setIsReject(status === "rejected");
+          }
+        }
       } catch (error) {
         console.error("Ошибка при загрузке проекта:", error);
       }
@@ -41,6 +66,112 @@ export function ProjectById() {
 
     getProjectById();
   }, [project_id]);
+
+  const addFavourites = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      console.error("JWT-токен отсутствует");
+      return;
+    }
+
+    if (!project) return;
+
+    const decoded = jwtDecode<{ sub: string }>(jwt);
+    const current_user_id = parseInt(decoded.sub, 10);
+
+    try {
+      await axios.post(
+        `http://127.0.0.1:8000/users/favorites/add-to-favorites/${current_user_id}/${project.id}`
+      );
+      setIsAdd(true);
+
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+      const projectIdStr = String(project.id);
+      if (!favorites.includes(projectIdStr)) {
+        favorites.push(projectIdStr);
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+      }
+    } catch (error) {
+      console.error("Ошибка сервера:", error);
+    }
+  };
+
+  const postMessage = async () => {
+    const jwt = Cookies.get("jwt");
+    if (!jwt) {
+      alert("Войдите в систему, чтобы отправить запрос");
+      return;
+    }
+
+    try {
+      setIsSending(true);
+
+      const decoded = jwtDecode<{ sub: string }>(jwt);
+      const sender_id = parseInt(decoded.sub, 10);
+
+      if (!project) return;
+
+      if (sender_id === project.user_id) {
+        alert("Нельзя отправить запрос самому себе!");
+        return;
+      }
+
+      const userResponse = await axios.get(
+        `http://127.0.0.1:8000/users/${sender_id}`
+      );
+
+      const notificationData = {
+        project_id: project.id,
+        recipient_id: project.user_id,
+        sender_id,
+        status: "pending",
+        text: `Пользователь ${userResponse.data.name} хочет сотрудничать по проекту "${project.title}"`,
+      };
+
+      const response = await axios.post<MessageProps>(
+        `http://127.0.0.1:8000/notifications/send-notification/${project.user_id}`,
+        notificationData
+      );
+
+      // Сохраняем статус заявки в localStorage
+      const storageKey = `project_notification_${project.user_id}_${project.id}`;
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          status: "pending",
+          notificationId: response.data.id,
+        })
+      );
+
+      setNotificationId(response.data.id);
+      alert("Запрос отправлен!");
+    } catch (error) {
+      console.error("Ошибка при отправке:", error);
+      alert("Не удалось отправить запрос");
+      setIsSending(false);
+    }
+  };
+
+  const deleteMessage = async () => {
+    if (!notificationId || !project) return;
+
+    try {
+      await axios.delete(
+        `http://127.0.0.1:8000/notifications/delete-notification/${notificationId}`
+      );
+
+      // Удаляем статус заявки из localStorage
+      const storageKey = `project_notification_${project.user_id}_${project.id}`;
+      localStorage.removeItem(storageKey);
+
+      setNotificationId(null);
+      setIsSending(false);
+      alert("Заявка отменена");
+    } catch (error) {
+      console.error("Ошибка при отмене:", error);
+      alert("Не удалось отменить заявку");
+    }
+  };
 
   if (!project) {
     return <div>Загрузка...</div>;
@@ -302,9 +433,43 @@ export function ProjectById() {
                 </div>
               </>
             )}
+            <div className={styles.actions}>
+              {isAdd ? (
+                <CircleCheckBig className={styles.favorite_icon} />
+              ) : (
+                <Button
+                  className={styles.button_product}
+                  onClick={addFavourites}
+                >
+                  Добавить в избранное
+                </Button>
+              )}
+
+              {isAccept ? (
+                <div className={styles.status_message}>
+                  <b>Заявка принята</b>
+                </div>
+              ) : isReject ? (
+                <div className={styles.status_message}>
+                  <b>Заявка отклонена</b>
+                </div>
+              ) : isSending ? (
+                <Button
+                  className={styles.button_product}
+                  onClick={deleteMessage}
+                >
+                  Отменить заявку
+                </Button>
+              ) : (
+                <Button className={styles.button_product} onClick={postMessage}>
+                  Сотрудничать
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </Container>
+      <Footer />
     </>
   );
 }
